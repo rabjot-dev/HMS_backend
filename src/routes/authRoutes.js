@@ -2,12 +2,11 @@
 
 const express = require("express");
 const router = express.Router();
-
 const { body } = require("express-validator");
-
 const validate = require("../middleware/validate");
+const auth = require("../middleware/authMiddleware");
 
-const { signup, login } = require("../controller/authController");
+const { signup, login, currUser } = require("../controller/authController");
 
 // SIGNUP VALIDATION
 
@@ -64,6 +63,8 @@ const loginValidation = [
     body("password").isLength({min : 8}).withMessage("password must be atleast 8 characters")
 ];
 
-router.post("/signup", signup);
+router.post("/signup",signupValidation,validate, signup);
+router.post("/login",loginValidation, validate,login);
+router.get("/currentUser",auth, currUser);
 
 module.exports = router;

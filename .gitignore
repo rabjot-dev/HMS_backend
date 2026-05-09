@@ -37,6 +37,11 @@ bower_components
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
 
+# sonar
+.scannerwork/
+.sonar_lock
+report-task.txt
+
 # Dependency directories
 node_modules/
 jspm_packages/
@@ -69,6 +74,9 @@ web_modules/
 .env
 .env.*
 !.env.example
+
+# SonarQube config
+sonar-project.properties
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

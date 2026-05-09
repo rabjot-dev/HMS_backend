@@ -96,7 +96,30 @@ exports.login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:",err);
-    res.status(500).json({message: "Server error during login"});
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error during login" });
+  }
+};
+
+// CURRENT USER
+
+exports.currUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password_hash -__v");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.roles,
+        last_login: user.lastLoginAt,
+        created_at: user.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error("Unavailable to fetch current user",error);
+    res.status(500).json({message: error.message});
   }
 };
