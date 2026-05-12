@@ -43,6 +43,11 @@ const userSchema = new mongoose.Schema({
         ],
         required: true,
     },
+    // add this field to userSchema
+isFirstLogin: {
+    type: Boolean,
+    default: true
+}
 
 },
 {

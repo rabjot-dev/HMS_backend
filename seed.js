@@ -18,7 +18,8 @@ const seedAdmin = async () => {
         email: "admin@hospital.com",
         password_hash,
         role: "Admin",
-        status: "Active"
+        status: "Active",
+        isFirstLogin: false 
     });
 
     console.log("Admin created successfully");

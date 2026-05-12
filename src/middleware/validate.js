@@ -81,4 +81,18 @@ const validatePatientSignup = (req, res, next) => {
 
     next();
 };
-module.exports = { validateSignup, validateLogin, validatePatientSignup };
+const validateResetPassword = (req, res, next) => {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+    }
+
+    if (currentPassword === newPassword) {
+        return res.status(400).json({ message: "New password must be different from current password" });
+    }
+    next();
+}    
+
+// update exports
+module.exports = { validateSignup, validateLogin, validatePatientSignup, validateResetPassword };

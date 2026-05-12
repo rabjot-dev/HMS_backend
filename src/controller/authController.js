@@ -100,6 +100,14 @@ exports.login = async(req,res)=>{
             { expiresIn: "1d" }
     
     );
+    if (duplicate.isFirstLogin) {
+            return res.json({
+                message: "First login detected. Please reset your password.",
+                temporaryPassword: password,
+                isFirstLogin: true,
+                token
+            });
+        }
        
         res.json({
             message:"User logged in successfully",
@@ -204,41 +212,33 @@ exports.getAllAppointments=async(req,res)=>{
 
 //  change password
 
-exports.changePassword = async (req, res) => {
-  try {
-    const userId = req.user.id; // from JWT middleware
-    const { oldPassword, newPassword } = req.body;
+exports.resetPassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findById(req.user.id); // ← add this line
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-    const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+        const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Current password is incorrect" });
+        }
+
+        const password_hash = await bcrypt.hash(newPassword, 12);
+
+        await User.findByIdAndUpdate(req.user.id, { 
+            password_hash,
+            isFirstLogin: false    // ← add this
+        });
+        return res.status(200).json({ message: "Password reset successfully. Please login again." }); // ← add this
     }
-
-    const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: "Old password is incorrect" });
+    catch (e) {
+        console.error("FULL ERROR:", e);
+        return res.status(500).json({ message: "Internal Server Error", error: e.message });
     }
-
-    const newHash = await bcrypt.hash(newPassword, 12);
-
-    user.password_hash = newHash;
-
-    await user.save();
-
-    res.status(200).json({
-      message: "Password updated successfully",
-    });
-  } catch (error) {
-    console.log("CHANGE PASSWORD ERROR:", error);
-
-    res.status(500).json({
-      message: error.message,
-    });
-  }
-};
-
+};    
 
 
 //update user
