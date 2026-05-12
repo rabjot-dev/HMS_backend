@@ -5,7 +5,6 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect to database
 const startServer = async () => {
   try {
     await connnectDB();
@@ -14,9 +13,8 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error("Failed to connect to the database", error);
-    process.exit(1); // Exit the process with an error code
+    process.exit(1);
   }
 };
-
 startServer();
     console.log("Database connected successfully");
