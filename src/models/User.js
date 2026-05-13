@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
     roles: { type: [String], enum: Object.values(ROLES),required: true, },
     employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", default: null, },
     patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", default: null, },
-    isPasswordCreated: { type: Boolean, default: false, },
+    isFirstLogin: { type: Boolean, default: true, },
     status: { type: String, enum: [STATUS.ACTIVE, STATUS.INACTIVE], default: STATUS.ACTIVE,},
     lastLoginAt: { type: Date, default: null, },
   },
