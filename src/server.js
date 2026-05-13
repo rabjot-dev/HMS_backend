@@ -1,8 +1,7 @@
 require("dotenv").config();
 const connnectDB = require("./config/db");
-const express = require("express");
-const cors = require("cors");
-const app = express();
+const app = require("./app");
+const mongoose = require("mongoose");
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
