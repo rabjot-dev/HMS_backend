@@ -1,1 +1,7 @@
-require
+const STATUS = Object.freeze({
+  ACTIVE: "ACTIVE", INACTIVE: "INACTIVE",
+  BOOKED: "BOOKED", CANCELLED: "CANCELLED", COMPLETED: "COMPLETED",
+  PENDING: "PENDING", PAID: "PAID",
+});
+
+module.exports = STATUS;
