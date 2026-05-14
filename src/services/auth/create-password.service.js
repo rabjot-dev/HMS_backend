@@ -1,13 +1,37 @@
 const bcrypt = require("bcryptjs");
 
 const User = require("../../models/User");
+const Employee = require("../../models/Employee");
 
-const createEmployeePassword = async (passwordData) => {
-    const { email, password } = passwordData;
+const createEmployeePassword = async (passwordData,) => {
+    const {
+        loginId,
+        temporaryPassword,
+        newPassword,
+    } = passwordData;
 
-    const user = await User.findOne({
-        email: email.toLowerCase(),
-    });
+    let user = null;
+
+    const isEmailLogin =
+        loginId.includes("@");
+
+    if (isEmailLogin) {
+        user = await User.findOne({
+            email: loginId.toLowerCase(),
+        });
+    } else {
+        const employee = await Employee.findOne({
+            employeeCode: loginId,
+        });
+
+        if (!employee) {
+            throw new Error("Invalid login ID");
+        }
+
+        user = await User.findOne({
+            employeeId: employee._id,
+        });
+    }
 
     if (!user) {
         throw new Error("User not found");
@@ -19,20 +43,33 @@ const createEmployeePassword = async (passwordData) => {
         );
     }
 
-    const hashedPassword = await bcrypt.hash(
-        password,
-        10,
-    );
+    const isTemporaryPasswordValid =
+        await bcrypt.compare(
+            temporaryPassword,
+            user.passwordHash,
+        );
 
-    user.passwordHash = hashedPassword;
+    if (!isTemporaryPasswordValid) {
+        throw new Error(
+            "Invalid temporary password",
+        );
+    }
+
+    const hashedNewPassword =
+        await bcrypt.hash(newPassword, 10);
+
+    user.passwordHash =
+        hashedNewPassword;
 
     user.isFirstLogin = false;
 
     await user.save();
 
     return {
-        message: "Password created successfully",
+        message:
+            "Password created successfully",
     };
 };
 
-module.exports = createEmployeePassword;
+module.exports =
+    createEmployeePassword;
