@@ -1,6 +1,6 @@
 const loginUser = require("../services/auth/login.service");
 const getCurrentLoggedInUser = require(
-  "../services/auth/get-current-user.service",
+    "../services/auth/get-current-user.service",
 );
 const createEmployeePassword = require("../services/auth/create-password.service");
 
@@ -8,9 +8,7 @@ const createEmployeePassword = require("../services/auth/create-password.service
 //login
 const login = async (req, res) => {
     try {
-        const loginResponse = await loginUser(
-            req.body,
-        );
+        const loginResponse = await loginUser(req.body);
 
         return res.status(200).json({
             success: true,
@@ -29,10 +27,7 @@ const login = async (req, res) => {
 //create password
 const createPassword = async (req, res,) => {
     try {
-        const serviceResponse =
-            await createEmployeePassword(
-                req.body,
-            );
+        const serviceResponse = await createEmployeePassword(req.body,); 
 
         return res.status(200).json({
             success: true,
@@ -47,27 +42,20 @@ const createPassword = async (req, res,) => {
 };
 //get current logged in user
 
-const getCurrentUser = async (
-  request,
-  response,
-) => {
-  try {
-    const user =
-      await getCurrentLoggedInUser(
-        request.user.userId,
-      );
+const getCurrentUser = async (request, response,) => {
+    try {
+        const user =
+            await getCurrentLoggedInUser(request.user.userId);
 
-    return response.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    return response.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
+        return response.status(200).json({
+            success: true,
+            data: user,
+        });
+    } catch (error) {
+        return response.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
 };
-
-
-module.exports = { login,createPassword,getCurrentUser};
+module.exports = { login, createPassword, getCurrentUser };
