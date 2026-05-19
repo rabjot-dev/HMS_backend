@@ -95,4 +95,9 @@ const validateResetPassword = (req, res, next) => {
 }    
 
 // update exports
-module.exports = { validateSignup, validateLogin, validatePatientSignup, validateResetPassword };
+module.exports = {
+    validateSignup,
+    validateLogin,
+   // validatePatientSignup,
+    validateResetPassword
+};
