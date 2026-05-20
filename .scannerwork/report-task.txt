@@ -1,0 +1,6 @@
+projectKey=HMS-BACKEND
+serverUrl=http://localhost:9000
+serverVersion=26.1.0.118079
+dashboardUrl=http://localhost:9000/dashboard?id=HMS-BACKEND
+ceTaskId=467341ba-64ec-4851-9657-2858e43051f3
+ceTaskUrl=http://localhost:9000/api/ce/task?id=467341ba-64ec-4851-9657-2858e43051f3

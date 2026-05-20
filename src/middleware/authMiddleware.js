@@ -10,8 +10,10 @@ const verifyToken = (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     try {
+        console.log("TOKEN RECEIVED:", token);
+        console.log("JWT SECRET:", process.env.JWT_SECRET);
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;  // { id, role, email } now available in controller
+        req.user = decoded;  
         next();
     } catch (e) {
         return res.status(401).json({ message: "Invalid or expired token" });
