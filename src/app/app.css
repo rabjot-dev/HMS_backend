@@ -1,0 +1,100 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 60px;
+  background: #1a1a1a;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  font-size: 20px;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+}
+
+.brand-sub {
+  font-size: 12px;
+  color: #aaaaaa;
+  border-left: 1px solid #444444;
+  padding-left: 10px;
+  margin-left: 2px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-links a {
+  font-size: 14px;
+  font-weight: 500;
+  color: #aaaaaa;
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.nav-links a:hover {
+  background: #333333;
+  color: #ffffff;
+}
+
+.nav-links a.active {
+  background: #333333;
+  color: #ffffff;
+}
+
+.nav-links a.nav-btn {
+  background: #ffffff;
+  color: #1a1a1a;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.nav-links a.nav-btn:hover {
+  background: #eeeeee;
+}
+
+.nav-links a.nav-btn.active {
+  background: #eeeeee;
+  color: #1a1a1a;
+}
+
+@media (max-width: 540px) {
+  .navbar {
+    padding: 0 1rem;
+  }
+
+  .brand-sub {
+    display: none;
+  }
+
+  .nav-links a {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+}

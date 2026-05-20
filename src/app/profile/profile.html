@@ -1,0 +1,36 @@
+<div class="profile-container">
+  <h1>Employee Profile</h1>
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  @if (employee) {
+    <div class="profile-card">
+      <div class="profile-row">
+        <span class="label">Name</span>
+        <span class="value">{{ employee.name }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">Email</span>
+        <span class="value">{{ employee.email }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">Phone</span>
+        <span class="value">{{ employee.phone }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">Department</span>
+        <span class="value">{{ employee.department }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">Designation</span>
+        <span class="value">{{ employee.designation }}</span>
+      </div>
+      <div class="profile-row">
+        <span class="label">Employee Code</span>
+        <span class="value">{{ employee.employeeCode }}</span>
+      </div>
+    </div>
+  }
+</div>

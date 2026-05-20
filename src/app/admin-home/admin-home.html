@@ -1,0 +1,74 @@
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">🏥</span>
+      <span class="logo-text">HMS Admin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item" (click)="goToDashboard()">
+        <span class="nav-icon">📊</span>
+        <span>Employee Dashboard</span>
+      </button>
+
+      <button class="nav-item" (click)="goToRegisterEmployee()">
+        <span class="nav-icon">👤</span>
+        <span>Register Employee</span>
+      </button>
+
+      <button class="nav-item" (click)="goToAppointments()">
+        <span class="nav-icon">📅</span>
+        <span>View Appointments</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <span class="nav-icon">🚪</span>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="welcome-header">
+      <h1>Welcome, Admin 👋</h1>
+      <p>Select an option from the sidebar to get started.</p>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card" (click)="goToDashboard()">
+        <div class="card-icon">📊</div>
+        <div class="card-info">
+          <h3>Employee Dashboard</h3>
+          <p>View, filter and edit employee records</p>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+
+      <div class="card" (click)="goToRegisterEmployee()">
+        <div class="card-icon">👤</div>
+        <div class="card-info">
+          <h3>Register Employee</h3>
+          <p>Add a new employee to the system</p>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+
+      <div class="card" (click)="goToAppointments()">
+        <div class="card-icon">📅</div>
+        <div class="card-info">
+          <h3>View Appointments</h3>
+          <p>Manage and track patient appointments</p>
+        </div>
+        <span class="card-arrow">→</span>
+      </div>
+
+    </div>
+  </main>
+
+</div>
