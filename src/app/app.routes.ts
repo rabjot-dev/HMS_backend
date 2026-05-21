@@ -7,6 +7,9 @@ import { Profile } from './profile/profile';
 import { ResetPasswordComponent } from './reset-password/reset-password';    
 import { AdminHome } from './admin-home/admin-home';
 import { AdminDashboard } from './admin-dashboard/admin-dashboard';
+import { Home } from './home/home';
+
+
 export const routes: Routes = [
     {path:'login', component:Login},
     {path:'signup', component:Signup},
@@ -14,6 +17,8 @@ export const routes: Routes = [
     { path: 'profile', component: Profile },
     { path: 'reset-password', component: ResetPasswordComponent},
     { path: 'admin', component: AdminHome },
-     { path: 'admin-dashboard', component: AdminDashboard }
+    { path: 'admin-dashboard', component: AdminDashboard },
+    { path: '', component: Home },
+    { path: 'home', component: Home },
 
 ];

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-signup',
@@ -23,7 +23,7 @@ export class Signup {
   medical_reg_number = '';
   status = 'Active';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router:Router) {}
 
     signup() {
 
@@ -55,6 +55,7 @@ export class Signup {
         next: (res: any) => {
           console.log('SIGNUP SUCCESS', res);
           alert('Employee Created Successfully');
+          this.router.navigate(['/login']);
         },
 
         error: (err) => {
