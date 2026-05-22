@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const Counter = require("./Counter");
 const employeeSchema = new mongoose.Schema({
-    employeeCode: { type: String, unique: true, lowercase: true, trim: true },
+    employeeCode: { type: String, unique: true, trim: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     phone: { type: String, trim: true },

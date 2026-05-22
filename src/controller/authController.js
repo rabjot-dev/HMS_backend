@@ -19,7 +19,7 @@ exports.signup = async (req, res) => {
       role,
     } = req.body;
 
-    console.log("STEP 1");
+    
 
     const existingUser = await User.findOne({ email });
 
@@ -72,7 +72,6 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check user existence
     const duplicate = await User.findOne({ email });
 
     if (!duplicate) {
@@ -101,15 +100,17 @@ exports.login = async (req, res) => {
     );
 
     // First login check
-    if (duplicate.isFirstLogin) {
-      return res.status(200).json({
-        message: "First login detected. Please reset your password.",
-        isFirstLogin: true,
-        token,
-      });
-    }
+   if (duplicate.isFirstLogin) {
 
-    // Successful login
+  return res.status(200).json({
+    message: "First login detected",
+    isFirstLogin: true,
+    token,
+    role: duplicate.role,
+    email: duplicate.email
+  });
+}
+
     return res.status(200).json({
       message: "User logged in successfully",
       token,
@@ -127,23 +128,43 @@ exports.login = async (req, res) => {
 };
 
 //get all users
-
 exports.getAllUsers = async (req, res) => {
   try {
-    const getAll = await User.find();
+    const users = await User.find().select("-password_hash -__v");
+
+    const data = await Promise.all(
+      users.map(async (user) => {
+
+        const employee = await Employee.findOne({
+          email: user.email,
+        });
+
+        return {
+          id: user._id,
+          employeeCode: employee?.employeeCode || user.employeeId || "N/A",
+          name: employee?.name || "N/A",
+          email: user.email,
+          phone: employee?.phone || "N/A",
+          role: user.role,
+          designation: employee?.designation || "N/A",
+          status: user.status,
+        };
+      })
+    );
+
     return res.status(200).json({
       success: true,
-      message: "all records fetched succesfully",
-      count: getAll.length,
-      data: getAll,
+      count: data.length,
+      data,
     });
+
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ error: "error during fetching all records" });
+    return res.status(500).json({
+      message: "Error fetching users",
+      error: error.message,
+    });
   }
 };
-
-// get profile
 // get profile
 
 exports.currUser = async (req, res) => {
@@ -188,33 +209,49 @@ exports.currUser = async (req, res) => {
 };
 
 //  change password
-
 exports.resetPassword = async (req, res) => {
   try {
+
     const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user.id); // ← add this line
+
+    const user = await User.findById(req.user.id);
+
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      user.password_hash
+    );
+
     if (!isMatch) {
-      return res.status(400).json({ message: "Current password is incorrect" });
+      return res.status(400).json({
+        message: "Current password is incorrect",
+      });
     }
 
-    const password_hash = await bcrypt.hash(newPassword, 12);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-    await User.findByIdAndUpdate(req.user.id, {
-      password_hash,
-      isFirstLogin: false, // ← add this
+    user.password_hash = hashedPassword;
+
+    user.isFirstLogin = false;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Password updated successfully",
     });
-    return res
-      .status(200)
-      .json({ message: "Password reset successfully. Please login again." }); // ← add this
+
   } catch (e) {
-    console.error("FULL ERROR:", e);
-    return res
-      .status(500)
-      .json({ message: "Internal Server Error", error: e.message });
+
+    console.error(e);
+
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: e.message,
+    });
   }
 };
