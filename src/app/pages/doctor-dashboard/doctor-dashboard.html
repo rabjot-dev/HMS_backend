@@ -1,0 +1,88 @@
+<app-page-header title="Doctor Dashboard"></app-page-header>
+
+<div class="doctor-container">
+
+  @if (doctor) {
+
+    <div class="profile-card">
+
+      <h2>Doctor Profile</h2>
+
+      <p><strong>Employee Code:</strong> {{ doctor.employeeCode }}</p>
+      <p><strong>Name:</strong> Dr. {{ doctor.name }}</p>
+      <p><strong>Email:</strong> {{ doctor.email }}</p>
+      <p><strong>Department:</strong> {{ doctor.department }}</p>
+      <p><strong>Designation:</strong> {{ doctor.designation }}</p>
+      <p><strong>Status:</strong> {{ doctor.status }}</p>
+
+    </div>
+
+  }
+
+  <div class="appointment-section">
+
+    <h2>My Appointments</h2>
+
+    @if (appointments.length > 0) {
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Appointment Code</th>
+            <th>Token</th>
+            <th>Patient</th>
+            <th>Phone</th>
+            <th>Gender</th>
+            <th>Allergy</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Reason</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          @for (app of appointments; track app._id) {
+
+            <tr>
+              <td>{{ app.appointmentCode }}</td>
+
+              <td>{{ app.tokenNo }}</td>
+
+              <td>
+                {{ app.patientId?.patientCode }} -
+                {{ app.patientId?.name }}
+              </td>
+
+              <td>{{ app.patientId?.phone }}</td>
+
+              <td>{{ app.patientId?.gender }}</td>
+
+              <td>{{ app.patientId?.allergy }}</td>
+
+              <td>{{ app.appointmentDate | date:'yyyy-MM-dd' }}</td>
+
+              <td>{{ app.timeSlot }}</td>
+
+              <td>{{ app.reason }}</td>
+
+              <td>{{ app.status }}</td>
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    } @else {
+
+      <p>No appointments assigned to you.</p>
+
+    }
+
+  </div>
+
+</div>

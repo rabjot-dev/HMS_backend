@@ -1,0 +1,69 @@
+<app-page-header></app-page-header>
+
+<div class="patient-container">
+
+  <h1>Register Patient</h1>
+
+  <form (ngSubmit)="registerPatient()">
+
+    <input
+      type="text"
+      placeholder="Patient Name"
+      [(ngModel)]="name"
+      name="name"
+    />
+
+    <input
+      type="number"
+      placeholder="Age"
+      [(ngModel)]="age"
+      name="age"
+    />
+
+    <select
+      [(ngModel)]="gender"
+      name="gender"
+    >
+
+      <option value="">Select Gender</option>
+
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+
+    </select>
+
+    <input
+      type="text"
+      placeholder="Phone Number"
+      [(ngModel)]="phone"
+      name="phone"
+    />
+
+    <textarea
+      placeholder="Address"
+      [(ngModel)]="address"
+      name="address"
+    ></textarea>
+
+    <input
+      type="text"
+      placeholder="Blood Group"
+      [(ngModel)]="bloodGroup"
+      name="bloodGroup"
+    />
+
+    <input
+      type="text"
+      placeholder="Allergy"
+      [(ngModel)]="allergy"
+      name="allergy"
+    />
+
+    <button type="submit">
+      Register Patient
+    </button>
+
+  </form>
+
+</div>

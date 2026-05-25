@@ -1,0 +1,87 @@
+<app-page-header></app-page-header>
+
+<div class="appointment-container">
+
+  <h1>Book Appointment</h1>
+
+  <form (ngSubmit)="bookAppointment()">
+
+    <input
+      type="text"
+      placeholder="Search patient by name, phone, or patient code"
+      [(ngModel)]="patientSearch"
+      name="patientSearch"
+      (input)="filterPatients()"
+    />
+
+    <select
+      [(ngModel)]="patientId"
+      name="patientId"
+    >
+      <option value="">Select Patient</option>
+
+      <option
+        *ngFor="let patient of filteredPatients"
+        [value]="patient._id"
+      >
+        {{ patient.patientCode }} - {{ patient.name }} - {{ patient.phone }}
+      </option>
+    </select>
+
+    <input
+      type="text"
+      placeholder="Search doctor by name, code, or department"
+      [(ngModel)]="doctorSearch"
+      name="doctorSearch"
+      (input)="filterDoctors()"
+    />
+
+    <select
+      [(ngModel)]="doctorId"
+      name="doctorId"
+      (change)="getAvailableSlots()"
+    >
+      <option value="">Select Doctor</option>
+
+      <option
+        *ngFor="let doctor of filteredDoctors"
+        [value]="doctor._id"
+      >
+        {{ doctor.employeeCode }} - Dr. {{ doctor.name }} - {{ doctor.department }}
+      </option>
+    </select>
+
+    <input
+      type="date"
+      [(ngModel)]="appointmentDate"
+      name="appointmentDate"
+      (change)="getAvailableSlots()"
+    />
+
+    <select
+      [(ngModel)]="timeSlot"
+      name="timeSlot"
+    >
+      <option value="">Select Available Time Slot</option>
+
+      <option
+        *ngFor="let slot of availableSlots"
+        [value]="slot"
+      >
+        {{ slot }}
+      </option>
+    </select>
+
+    <textarea
+      placeholder="Reason for visit"
+      [(ngModel)]="reason"
+      name="reason"
+    ></textarea>
+
+    <button type="submit">
+      Book Appointment
+    </button>
+
+  </form>
+
+</div>

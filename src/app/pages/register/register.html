@@ -1,0 +1,97 @@
+<div class="register-container">
+
+  <div class="register-card">
+
+    <h1>Employee Registration</h1>
+
+    <form (ngSubmit)="registerEmployee()">
+
+      <input
+        type="text"
+        placeholder="Enter Full Name"
+        [(ngModel)]="name"
+        name="name"
+      />
+
+      <input
+        type="email"
+        placeholder="Enter Email"
+        [(ngModel)]="email"
+        name="email"
+      />
+
+      <input
+        type="text"
+        placeholder="Enter Phone Number"
+        [(ngModel)]="phone"
+        name="phone"
+      />
+
+      <input
+        type="password"
+        placeholder="Create Password"
+        [(ngModel)]="password"
+        name="password"
+      />
+
+      <select
+        [(ngModel)]="department"
+        name="department"
+      >
+
+        <option value="">Select Department</option>
+
+        <option value="OPD">OPD</option>
+        <option value="IPD">IPD</option>
+        <option value="Lab">Lab</option>
+        <option value="Pharmacy">Pharmacy</option>
+        <option value="Admin">Admin</option>
+
+      </select>
+<select [(ngModel)]="role" name="role">
+
+  <option value="">Select Role</option>
+
+  <option value="EMPLOYEE">Employee</option>
+  <option value="DOCTOR">Doctor</option>
+  <option value="PHARMACY">Pharmacy</option>
+  <option value="HR">HR</option>
+  <option value="DESK">Desk</option>
+
+</select>
+
+      <input
+        type="text"
+        placeholder="Designation"
+        [(ngModel)]="designation"
+        name="designation"
+      />
+
+      <input
+        type="text"
+        placeholder="Experience"
+        [(ngModel)]="experience"
+        name="experience"
+      />
+
+      <input
+        type="text"
+        placeholder="Qualification"
+        [(ngModel)]="qualification"
+        name="qualification"
+      />
+
+      <button type="submit">
+        Register
+      </button>
+
+    </form>
+
+    <p>
+      Already have account?
+      <a routerLink="/">Login</a>
+    </p>
+
+  </div>
+
+</div>

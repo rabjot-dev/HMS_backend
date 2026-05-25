@@ -1,0 +1,46 @@
+<div class="container">
+
+  <div class="card">
+<app-page-header
+  title="Create Employee">
+</app-page-header>
+
+    <form (ngSubmit)="createEmployee()">
+
+      <input type="text" placeholder="Name" [(ngModel)]="name" name="name">
+
+      <input type="email" placeholder="Email" [(ngModel)]="email" name="email">
+
+      <input type="text" placeholder="Phone" [(ngModel)]="phone" name="phone">
+
+      <input type="text" placeholder="Department" [(ngModel)]="department" name="department">
+
+      <input type="text" placeholder="Designation" [(ngModel)]="designation" name="designation">
+
+      <select [(ngModel)]="role" name="role">
+        <option value="EMPLOYEE">Employee</option>
+        <option value="DOCTOR">Doctor</option>
+        <option value="DESK">Desk</option>
+        <option value="PHARMACY">Pharmacy</option>
+        <option value="HR">HR</option>
+      </select>
+
+      <button type="submit">Create Employee</button>
+
+    </form>
+
+   <div *ngIf="temporaryPassword && temporaryPassword.length > 0" class="password-box">
+  <h3>Temporary Password</h3>
+
+  <p class="temp-pass">
+    {{ temporaryPassword }}
+  </p>
+
+  <small>
+    Give this password to the employee. Employee must reset it after first login.
+  </small>
+</div>
+
+  </div>
+
+</div>

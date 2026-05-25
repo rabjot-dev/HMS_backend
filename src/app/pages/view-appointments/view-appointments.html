@@ -1,0 +1,146 @@
+<app-page-header title="View Appointments"></app-page-header>
+
+<div class="appointments-container">
+
+  <h1>All Appointments</h1>
+
+  @if (appointments && appointments.length > 0) {
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Token</th>
+          <th>Status</th>
+          <th>Reason</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        @for (app of appointments; track app._id) {
+
+          <tr>
+
+            @if (editingId === app._id) {
+
+              <td>{{ app.appointmentCode }}</td>
+
+              <td>
+                {{ app.patientId?.patientCode }} - {{ app.patientId?.name }}
+              </td>
+
+              <td>
+                {{ app.doctorId?.employeeCode }} - {{ app.doctorId?.name }}
+              </td>
+
+              <td>
+                <input
+                  type="date"
+                  [(ngModel)]="editData.appointmentDate"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  [(ngModel)]="editData.timeSlot"
+                />
+              </td>
+
+              <td>{{ app.tokenNo }}</td>
+
+              <td>
+                <select [(ngModel)]="editData.status">
+                  <option value="BOOKED">BOOKED</option>
+                  <option value="COMPLETED">COMPLETED</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                </select>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  [(ngModel)]="editData.reason"
+                />
+              </td>
+
+              <td>
+                <button
+                  class="save-btn"
+                  (click)="updateAppointment(app._id)"
+                >
+                  Save
+                </button>
+
+                <button
+                  class="cancel-btn"
+                  (click)="cancelEdit()"
+                >
+                  Cancel
+                </button>
+              </td>
+
+            } @else {
+
+              <td>{{ app.appointmentCode }}</td>
+
+              <td>
+                {{ app.patientId?.patientCode }} - {{ app.patientId?.name }}
+              </td>
+
+              <td>
+                {{ app.doctorId?.employeeCode }} - {{ app.doctorId?.name }}
+              </td>
+
+              <td>
+                {{ app.appointmentDate | date:'yyyy-MM-dd' }}
+              </td>
+
+              <td>{{ app.timeSlot }}</td>
+
+              <td>{{ app.tokenNo }}</td>
+
+              <td>{{ app.status }}</td>
+
+              <td>{{ app.reason }}</td>
+
+              <td>
+                <button
+                  class="edit-btn"
+                  (click)="startEdit(app)"
+                >
+                  Edit
+                </button>
+
+                <button
+                  class="delete-btn"
+                  (click)="deleteAppointment(app._id)"
+                >
+                  Delete
+                </button>
+              </td>
+
+            }
+
+          </tr>
+
+        }
+
+      </tbody>
+
+    </table>
+
+  } @else {
+
+    <p>No appointments found.</p>
+
+  }
+
+</div>

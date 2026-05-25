@@ -1,0 +1,153 @@
+<div class="admin-page">
+
+  <div class="top-navbar">
+    <div class="logo">HMS</div>
+  </div>
+
+  <div class="dashboard-content">
+
+    <app-page-header
+  [title]="currentView === 'employees' ? 'Employees List' : 'Pending Employees'">
+</app-page-header>
+
+    <div class="button-row">
+
+        <div
+  class="filter-section"
+  *ngIf="currentView === 'employees'"
+>
+
+  <input
+    type="text"
+    placeholder="Search employee..."
+    [(ngModel)]="searchText"
+    (input)="filterEmployees()"
+  >
+
+  <select
+    [(ngModel)]="selectedRole"
+    (change)="filterEmployees()"
+  >
+
+    <option value="">All Roles</option>
+
+    <option value="EMPLOYEE">Employee</option>
+    <option value="DOCTOR">Doctor</option>
+    <option value="HR">HR</option>
+    <option value="PHARMACY">Pharmacy</option>
+    <option value="DESK">Desk</option>
+
+  </select>
+
+</div>
+
+      <button routerLink="/create-employee" class="create-btn">
+        Create Employee +
+      </button>
+      <button routerLink="/register-patient" class="pending-btn">
+  Register Patient
+</button>
+
+<button routerLink="/book-appointment" class="pending-btn">
+  Book Appointment
+</button>
+<button routerLink="/view-appointments" class="pending-btn">
+  View Appointments
+</button>
+
+      <button class="pending-btn" (click)="getAllEmployees()">
+        View All Employees
+      </button>
+
+      <button class="pending-btn" (click)="getPendingRequests()">
+        Pending Employees
+      </button>
+
+    </div>
+
+    <table *ngIf="currentView === 'employees' && employees.length > 0">
+
+      <thead>
+        <tr>
+            <th>Employee Code</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Department</th>
+          <th>Designation</th>
+          <th>Role</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+<tr *ngFor="let emp of filteredEmployees">            <td>{{ emp.employeeCode }}</td>
+          <td>{{ emp.name }}</td>
+          <td>{{ emp.email }}</td>
+          <td>{{ emp.phone }}</td>
+          <td>{{ emp.department }}</td>
+          <td>{{ emp.designation }}</td>
+          <td>{{ emp.role }}</td>
+          <td>{{ emp.status }}</td>
+        </tr>
+      </tbody>
+
+    </table>
+
+    <p
+      *ngIf="currentView === 'employees' && employees.length === 0"
+      class="empty-text"
+    >
+      No employees found.
+    </p>
+
+    <table *ngIf="currentView === 'pending' && requests.length > 0">
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Department</th>
+          <th>Designation</th>
+          <th>Status</th>
+          <th>Approve</th>
+          <th>Reject</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let request of requests">
+          <td>{{ request.name }}</td>
+          <td>{{ request.email }}</td>
+          <td>{{ request.phone }}</td>
+          <td>{{ request.department }}</td>
+          <td>{{ request.designation }}</td>
+          <td>{{ request.status }}</td>
+
+          <td>
+            <button class="edit-btn" (click)="approveRequest(request._id)">
+              Approve
+            </button>
+          </td>
+
+          <td>
+            <button class="delete-btn" (click)="rejectRequest(request._id)">
+              Reject
+            </button>
+          </td>
+        </tr>
+      </tbody>
+
+    </table>
+
+    <p
+      *ngIf="currentView === 'pending' && requests.length === 0"
+      class="empty-text"
+    >
+      No pending employee requests found.
+    </p>
+
+  </div>
+
+</div>

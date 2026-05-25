@@ -1,0 +1,26 @@
+.header-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: #1976d2;
+  color: white;
+  font-size: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.back-btn:hover {
+  background: #1259a7;
+}
+
+h2 {
+  margin: 0;
+  color: #222;
+}

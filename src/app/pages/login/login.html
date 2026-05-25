@@ -1,0 +1,38 @@
+<div class="login-container">
+
+  <div class="login-card">
+
+    <h1>HMS Login</h1>
+
+    <form (ngSubmit)="login()">
+
+      <input
+        type="email"
+        placeholder="Enter Email"
+        [(ngModel)]="email"
+        name="email"
+      />
+
+      <input
+        type="password"
+        placeholder="Enter Password"
+        [(ngModel)]="password"
+        name="password"
+      />
+
+      <button type="submit">
+        Login
+      </button>
+
+    </form>
+
+    <p>
+      New Employee?
+      <a routerLink="/register">
+        Register Here
+      </a>
+    </p>
+
+  </div>
+
+</div>

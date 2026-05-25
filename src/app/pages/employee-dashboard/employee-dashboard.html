@@ -1,0 +1,61 @@
+<div class="dashboard-container">
+
+  <app-page-header
+    title="Employee Profile">
+  </app-page-header>
+
+  <div class="profile-card" *ngIf="employee">
+
+    <div class="profile-header">
+
+      <div class="avatar">
+        {{ employee.name?.charAt(0) }}
+      </div>
+
+      <div>
+
+        <h2>{{ employee.name }}</h2>
+
+        <p>{{ employee.designation }}</p>
+
+      </div>
+
+    </div>
+
+    <div class="profile-details">
+
+      <div class="detail-box">
+        <label>Employee Code</label>
+        <p>{{ employee.employeeCode }}</p>
+      </div>
+
+      <div class="detail-box">
+        <label>Email</label>
+        <p>{{ employee.email }}</p>
+      </div>
+
+      <div class="detail-box">
+        <label>Phone</label>
+        <p>{{ employee.phone }}</p>
+      </div>
+
+      <div class="detail-box">
+        <label>Department</label>
+        <p>{{ employee.department }}</p>
+      </div>
+
+      <div class="detail-box">
+        <label>Role</label>
+        <p>{{ employee.role }}</p>
+      </div>
+
+      <div class="detail-box">
+        <label>Status</label>
+        <p>{{ employee.status }}</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
