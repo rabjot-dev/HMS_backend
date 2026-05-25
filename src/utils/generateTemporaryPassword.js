@@ -1,13 +1,35 @@
-const crypto = require("node:crypto");
+const generateTemporaryPassword =
+() => {
 
-const generateTemporaryPassword = () => {
-  const randomPassword = crypto
-    .randomBytes(6)
-    .toString("base64")
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .slice(0, 8);
+    const chars =
 
-  return `@${randomPassword}1A`;
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#";
+
+    let password = "";
+
+    for (
+        let i = 0;
+        i < 10;
+        i++
+    ) {
+
+        password +=
+
+            chars.charAt(
+
+                Math.floor(
+
+                    Math.random()
+
+                    *
+
+                    chars.length
+                ),
+            );
+    }
+
+    return password;
 };
 
-module.exports = generateTemporaryPassword;
+module.exports =
+    generateTemporaryPassword;

@@ -1,5 +1,5 @@
 const express = require("express");
-
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 const authRoutes = require(
   "./routes/auth.routes",
 );
@@ -7,8 +7,27 @@ const authRoutes = require(
 const employeeRoutes = require(
   "./routes/employee.routes",
 );
+const appointmentRoutes =
+require(
+
+    './routes/appointment.routes',
+);
+const dashboardRoutes =
+require(
+    "./routes/dashboard.routes",
+);
+const consultationRoutes =
+require(
+
+    './routes/consultation.routes',
+);
+const patientRoutes =
+require(
+    "./routes/patient.routes",
+);
 
 const cors = require("cors");
+const app = express();
 
 app.use(cors());
 
@@ -34,6 +53,31 @@ app.use("/api/auth", authRoutes);
 app.use(
   "/api/employees",
   employeeRoutes,
+);
+app.use(
+
+    "/api/dashboard",
+
+    dashboardRoutes,
+);
+app.use(
+
+    "/api/appointments",
+
+    appointmentRoutes,
+);
+
+app.use(
+
+    "/api/patients",
+
+    patientRoutes,
+);
+app.use(
+
+    "/api/consultations",
+
+    consultationRoutes,
 );
 
 app.use(

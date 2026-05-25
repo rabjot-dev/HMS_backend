@@ -29,9 +29,74 @@ const createPasswordValidation = [
     .withMessage(
       "New password must be at least 8 characters long",
     ),
+
+];
+/*
+|--------------------------------------------------------------------------
+| Forgot Password Validation
+|--------------------------------------------------------------------------
+*/
+const forgotPasswordValidation = [
+
+  body(
+
+    'email',
+  )
+
+  .isEmail()
+
+  .withMessage(
+    'Valid email is required',
+  ),
+];
+
+/*
+|--------------------------------------------------------------------------
+| Reset Password Validation
+|--------------------------------------------------------------------------
+*/
+const resetPasswordValidation = [
+
+  body(
+
+    'email',
+  )
+
+  .isEmail()
+
+  .withMessage(
+    'Valid email is required',
+  ),
+
+  body(
+
+    'securityAnswer',
+  )
+
+  .notEmpty()
+
+  .withMessage(
+    'Security answer is required',
+  ),
+
+  body(
+
+    'newPassword',
+  )
+
+  .isLength({
+
+    min: 6,
+  })
+
+  .withMessage(
+    'Password must be at least 6 characters',
+  ),
 ];
 
 module.exports = {
   loginValidation,
   createPasswordValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation,
 };

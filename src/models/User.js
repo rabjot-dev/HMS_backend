@@ -6,11 +6,35 @@ const userSchema = new mongoose.Schema(
   {
     email: {type: String, required: true, unique: true, trim: true, lowercase: true,},
     passwordHash: { type: String, default: null, },
+    temporaryPasswordHash: { type: String, default: null, },
     roles: { type: [String], enum: Object.values(ROLES),required: true, },
     employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", default: null, },
     isFirstLogin: { type: Boolean, default: true, },
-    status: { type: String, enum: [STATUS.ACTIVE, STATUS.INACTIVE], default: STATUS.ACTIVE,},
+    status: { type: String, enum: Object.values(STATUS), default: STATUS.PENDING,},
     lastLoginAt: { type: Date, default: null, },
+    /*
+|--------------------------------------------------------------------------
+| Security Question
+|--------------------------------------------------------------------------
+*/
+securityQuestion: {
+
+    type: String,
+
+    default: null,
+},
+
+/*
+|--------------------------------------------------------------------------
+| Security Answer
+|--------------------------------------------------------------------------
+*/
+securityAnswer: {
+
+    type: String,
+
+    default: null,
+},
   },
   {
     timestamps: true,

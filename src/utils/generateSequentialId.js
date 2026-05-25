@@ -1,5 +1,4 @@
-const Counter = require(
-    "../models/Counter",
+const Counter = require( "../models/Counter",
 );
 
 const generateSequentialId = async (prefix,) => {
@@ -10,25 +9,18 @@ const generateSequentialId = async (prefix,) => {
             },
 
             {
-                $inc: {
-                    sequence: 1,
-                },
+                $inc: { sequence: 1 },
             },
 
             {
-                new: true,
-                upsert: true,
+                new: true, upsert: true,
             },
         );
 
     const formattedSequence =
-        String(counter.sequence).padStart(
-            6,
-            "0",
-        );
+        String(counter.sequence).padStart(6, "0");
 
     return `${prefix}-${formattedSequence}`;
 };
 
-module.exports =
-    generateSequentialId;
+module.exports = generateSequentialId;

@@ -1,20 +1,289 @@
-const mongoose = require("mongoose");
-const STATUS = require("../constants/status");
-const patientSchema = new mongoose.Schema(
-    {
-        uhid: { type: String, required: true, unique: true, trim: true, },
-        name: { type: String, required: true, trim: true, },
-        phone: { type: String, required: true, trim: true, },
-        email: { type: String, required: true, unique: true, trim: true, lowercase: true, },
-        gender: { type: String, required: true, enum: ["MALE", "FEMALE", "OTHER"], },
-        dob: { type: Date, required: true, },
-        address: { type: String, required: true, trim: true, },
-        status: { type: String, enum: [STATUS.ACTIVE, STATUS.INACTIVE], default: STATUS.ACTIVE, },
-    },
-    {
-        timestamps: true, versionKey: false,
-    },
-);
+const mongoose =
+    require(
+        "mongoose",
+    );
 
-const Patient = mongoose.model("Patient", patientSchema);
-module.exports = Patient;
+const patientSchema =
+    new mongoose.Schema(
+
+        {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Basic Information
+            |--------------------------------------------------------------------------
+            */
+            patientId: {
+
+                type: String,
+
+                required: true,
+
+                unique: true,
+            },
+
+            firstName: {
+
+                type: String,
+
+                required: true,
+            },
+
+            lastName: {
+
+                type: String,
+
+                required: true,
+            },
+
+            dateOfBirth: {
+
+                type: Date,
+
+                required: true,
+            },
+
+            gender: {
+
+                type: String,
+
+                enum: [
+
+                    "MALE",
+
+                    "FEMALE",
+
+                    "OTHER",
+                ],
+
+                required: true,
+            },
+
+            bloodGroup: {
+
+                type: String,
+            },
+
+            maritalStatus: {
+
+                type: String,
+
+                enum: [
+
+                    "SINGLE",
+
+                    "MARRIED",
+
+                    "DIVORCED",
+                ],
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | Contact Information
+            |--------------------------------------------------------------------------
+            */
+            countryCode: {
+
+                type: String,
+
+                required: true,
+
+                default: '+91',
+            },
+            phone: {
+
+                type: String,
+
+                required: true,
+
+                trim: true,
+
+                unique: true,
+
+                match: /^[0-9]{10}$/,
+            },
+
+            email: {
+
+                type: String,
+            },
+
+            address: {
+
+                type: String,
+            },
+
+            city: {
+
+                type: String,
+            },
+
+            state: {
+
+                type: String,
+            },
+
+            pincode: {
+
+                type: String,
+            },
+
+            country: {
+
+                type: String,
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | Emergency Contact
+            |--------------------------------------------------------------------------
+            */
+            emergencyContactName: {
+
+                type: String,
+            },
+
+            emergencyContactPhone: {
+
+                type: String,
+            },
+
+            relationship: {
+
+                type: String,
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | Medical Information
+            |--------------------------------------------------------------------------
+            */
+            allergies: [
+
+                {
+                    type: String,
+                },
+            ],
+
+            chronicDiseases: [
+
+                {
+                    type: String,
+                },
+            ],
+
+            currentMedications: [
+
+                {
+                    type: String,
+                },
+            ],
+
+            pastSurgeries: [
+
+                {
+                    type: String,
+                },
+            ],
+
+            medicalHistory: {
+
+                type: String,
+            },
+
+            familyMedicalHistory: {
+
+                type: String,
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | Insurance Information
+            |--------------------------------------------------------------------------
+            */
+            insuranceProvider: {
+
+                type: String,
+            },
+
+            insurancePolicyNumber: {
+
+                type: String,
+            },
+
+            insuranceExpiryDate: {
+
+                type: Date,
+            },
+
+            insuranceCoverageAmount: {
+
+                type: Number,
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | Hospital Information
+            |--------------------------------------------------------------------------
+            */
+            assignedDoctor: {
+
+                type:
+                    mongoose.Schema
+                        .Types
+                        .ObjectId,
+
+                ref: "Employee",
+            },
+
+            department: {
+
+                type: String,
+            },
+
+            patientType: {
+
+                type: String,
+
+                enum: [
+
+                    "OPD",
+
+                    "IPD",
+
+                    "EMERGENCY",
+                ],
+
+                default: "OPD",
+            },
+
+            status: {
+
+                type: String,
+
+                enum: [
+
+                    "ACTIVE",
+
+                    "DISCHARGED",
+
+                    "INACTIVE",
+                ],
+
+                default: "ACTIVE",
+            },
+        },
+
+        {
+            timestamps: true,
+        },
+    );
+
+module.exports =
+    mongoose.model(
+
+        "Patient",
+
+        patientSchema,
+    );

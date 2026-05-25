@@ -4,16 +4,10 @@ const User = require("../../models/User");
 const Employee = require("../../models/Employee");
 
 const createEmployeePassword = async (passwordData,) => {
-    const {
-        loginId,
-        temporaryPassword,
-        newPassword,
-    } = passwordData;
-
+    const { loginId, temporaryPassword, newPassword, securityQuestion, securityAnswer } = passwordData;
     let user = null;
 
-    const isEmailLogin =
-        loginId.includes("@");
+    const isEmailLogin = loginId.includes("@");
 
     if (isEmailLogin) {
         user = await User.findOne({
@@ -38,38 +32,60 @@ const createEmployeePassword = async (passwordData,) => {
     }
 
     if (!user.isFirstLogin) {
-        throw new Error(
-            "Password is already created for this account",
-        );
+        throw new Error("Password is already created for this account",);
     }
+
+
+    console.log(
+        typeof user.passwordHash,
+    );
+
+    console.log(
+        user.passwordHash,
+    );
 
     const isTemporaryPasswordValid =
         await bcrypt.compare(
+
             temporaryPassword,
-            user.passwordHash,
+
+            user
+                .temporaryPasswordHash,
         );
 
-    if (!isTemporaryPasswordValid) {
+    if (
+        !isTemporaryPasswordValid
+    ) {
+
         throw new Error(
             "Invalid temporary password",
         );
     }
 
     const hashedNewPassword =
-        await bcrypt.hash(newPassword, 10);
+        await bcrypt.hash(
+            newPassword,
+            10,
+        );
 
     user.passwordHash =
         hashedNewPassword;
 
-    user.isFirstLogin = false;
+    user.temporaryPasswordHash =
+        null;
+
+    user.isFirstLogin =
+        false;
+    user.securityQuestion =
+        securityQuestion;
+
+    user.securityAnswer =
+        securityAnswer;
 
     await user.save();
-
     return {
-        message:
-            "Password created successfully",
+        message: "Password created successfully"
     };
 };
 
-module.exports =
-    createEmployeePassword;
+module.exports = createEmployeePassword;
