@@ -15,7 +15,22 @@ body {
   background: #0a0f1e;
   min-height: 100vh;
 }
+.register-btn {
+  padding: 10px 24px;
+  background: transparent;
+  color: #60a5fa;
+  border: 2px solid #60a5fa;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
+.register-btn:hover {
+  background: #60a5fa;
+  color: white;
+}
 /* Navbar */
 .navbar {
   display: flex;

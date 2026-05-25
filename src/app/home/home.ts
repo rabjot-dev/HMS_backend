@@ -14,5 +14,8 @@ export class Home {
   goToLogin() {
     this.router.navigate(['/login']);
   }
-
+  goToRegister() {
+  this.router.navigate(['/signup'],{ queryParams: { mode: 'self' } });
+};
 }
+

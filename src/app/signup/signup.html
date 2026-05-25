@@ -1,97 +1,90 @@
 <div class="signup-container">
 
-  <h1>Create Employee</h1>
+  <h1>{{ isAdmin ? 'Create Employee' : 'Register as Employee' }}</h1>
+  <p class="subtitle">
+    {{ isAdmin ? 'Fill in the details to create a new employee account.' : 'Submit your details. Admin will review and approve your request.' }}
+  </p>
+  @if (!isAdmin) {
+  <input type="password" placeholder="Set your password" [(ngModel)]="password" name="password" />
+}
 
   <form (ngSubmit)="signup()">
 
-    <input
-      type="text"
-      placeholder="Enter Name"
-      [(ngModel)]="name"
-      name="name"
-    />
+    <input type="text" placeholder="Enter Name" [(ngModel)]="name" name="name" />
 
-    <input
-      type="email"
-      placeholder="Enter Email"
-      [(ngModel)]="email"
-      name="email"
-    />
+    <input type="email" placeholder="Enter Email" [(ngModel)]="email" name="email" />
 
-    <input
-      type="password"
-      placeholder="Enter Password"
-      [(ngModel)]="password"
-      name="password"
-    />
-
-    <input
-      type="text"
-      placeholder="Enter Phone Number"
-      [(ngModel)]="phone"
-      name="phone"
-    />
+    <input type="text" placeholder="Enter Phone Number" [(ngModel)]="phone" name="phone" />
 
     <!-- Department -->
     <select [(ngModel)]="department" name="department">
-
       <option value="">Select Department</option>
-
       <option value="OPD">OPD</option>
-      <option value="IPD">IPD</option>
-      <option value="Lab">Lab</option>
+      <option value="IPD">IPD </option>
+      <option value="Emergency">Emergency</option>
+      <option value="Lab">Laboratory</option>
       <option value="Pharmacy">Pharmacy</option>
-      <option value="Admin">Admin</option>
-
+      <option value="Radiology">Radiology</option>
+      <option value="Admin">Administration</option>
+      <option value="Reception">Reception</option>
+      <option value="Accounts">Accounts</option>
     </select>
-
-    <!-- Designation -->
-    <input
-      type="text"
-      placeholder="Enter Designation"
-      [(ngModel)]="designation"
-      name="designation"
-    />
 
     <!-- Role -->
     <select [(ngModel)]="role" name="role">
-
       <option value="">Select Role</option>
-
       <option value="Admin">Admin</option>
       <option value="Doctor">Doctor</option>
-      <option value="Receptionist">Receptionist</option>
-      <option value="Cashier">Cashier</option>
       <option value="Nurse">Nurse</option>
-      <option value="Lab_Tech">Lab_Tech</option>
+      <option value="Receptionist">Receptionist</option>
+      <option value="Lab_Tech">Lab Technician</option>
       <option value="Pharmacist">Pharmacist</option>
-
+      <option value="Cashier">Cashier</option>
+      <option value="Radiologist">Radiologist</option>
     </select>
 
-    <input
-      type="text"
-      placeholder="Enter Specialisation"
-      [(ngModel)]="specialisation"
-      name="specialisation"
-    />
+    <!-- Designation -->
+    <select [(ngModel)]="designation" name="designation">
+      <option value="">Select Designation</option>
+      <!-- Doctors -->
+      <option value="Consultant Doctor">Consultant Doctor</option>
+      <option value="Senior Doctor">Senior Doctor</option>
+      <option value="Junior Doctor">Junior Doctor</option>
+      <option value="Resident Doctor">Resident Doctor</option>
+      <!-- Nurses -->
+      <option value="Head Nurse">Head Nurse</option>
+      <option value="Senior Nurse">Senior Nurse</option>
+      <option value="Staff Nurse">Staff Nurse</option>
+      <!-- Admin/Reception -->
+      <option value="Senior Receptionist">Senior Receptionist</option>
+      <option value="Receptionist">Receptionist</option>
+      <option value="Admin Manager">Admin Manager</option>
+      <option value="HR Manager">HR Manager</option>
+      <!-- Lab -->
+      <option value="Senior Lab Technician">Senior Lab Technician</option>
+      <option value="Lab Technician">Lab Technician</option>
+      <!-- Pharmacy -->
+      <option value="Senior Pharmacist">Senior Pharmacist</option>
+      <option value="Pharmacist">Pharmacist</option>
+      <!-- Accounts -->
+      <option value="Cashier">Cashier</option>
+      <option value="Accountant">Accountant</option>
+      <!-- Radiology -->
+      <option value="Senior Radiologist">Senior Radiologist</option>
+      <option value="Radiologist">Radiologist</option>
+    </select>
 
-    <input
-      type="text"
-      placeholder="Medical Registration Number"
-      [(ngModel)]="medical_reg_number"
-      name="medical_reg_number"
-    />
+    <input type="text" placeholder="Enter Specialisation (if applicable)" [(ngModel)]="specialisation" name="specialisation" />
 
-    <!-- Status -->
+    <input type="text" placeholder="Medical Registration Number (if applicable)" [(ngModel)]="medical_reg_number" name="medical_reg_number" />
+
     <select [(ngModel)]="status" name="status">
-
       <option value="Active">Active</option>
       <option value="Inactive">Inactive</option>
-
     </select>
 
     <button type="submit">
-      Create Employee
+      {{ isAdmin ? 'Create Employee' : 'Submit Registration Request' }}
     </button>
 
   </form>

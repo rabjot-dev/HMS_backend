@@ -30,32 +30,25 @@ export class Login {
     this.http.post('http://localhost:8000/api/login', body)
     .subscribe({
 
-      next: (res: any) => {
-
+next: (res: any) => {
   console.log("LOGIN RESPONSE:", res);
-
   localStorage.setItem('token', res.token);
 
-  // ADMIN LOGIN
-  if (res.role?.toLowerCase() === 'admin') {
-  this.router.navigate(['/admin']);
-}
-
-  // FIRST LOGIN EMPLOYEE
-  else if (res.isFirstLogin) {
-
+  if (res.isFirstLogin) {
     this.router.navigate(['/reset-password']);
-
+    return;
   }
 
-  // NORMAL EMPLOYEE
-  else {
+  const role = res.role?.toLowerCase();
 
+  if (role === 'admin') {
+    this.router.navigate(['/admin']);
+  } else if (role === 'receptionist') {
+    this.router.navigate(['/receptionist']);  // ← new
+  } else {
     this.router.navigate(['/profile']);
-
   }
-
-},
+}
 
     });
 

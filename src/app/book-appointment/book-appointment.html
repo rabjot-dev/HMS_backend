@@ -1,0 +1,85 @@
+<div class="form-container">
+  <div class="form-header">
+    <button class="back-btn" (click)="goBack()">← Back</button>
+    <h1>Book Appointment</h1>
+  </div>
+
+  <div class="form-card">
+    <form (ngSubmit)="bookAppointment()">
+
+      <h3 class="section-title">Patient</h3>
+      <div class="form-group search-group">
+        <label>Search Patient (Name, Phone or UHID) *</label>
+        <input
+          type="text"
+          placeholder="Search patient..."
+          [(ngModel)]="patientSearch"
+          name="patientSearch"
+          (input)="searchPatient()"
+          autocomplete="off"
+        />
+        @if (filteredPatients.length > 0 && patientSearch && !selectedPatient) {
+          <div class="search-dropdown">
+            @for (p of filteredPatients; track p._id) {
+              <div class="dropdown-item" (click)="selectPatient(p)">
+                <strong>{{ p.name }}</strong>
+                <span>{{ p.UHID }} | {{ p.phone }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (selectedPatient) {
+        <div class="selected-patient">
+          <span>✅ Selected: <strong>{{ selectedPatient.name }}</strong> — {{ selectedPatient.UHID }}</span>
+          <button type="button" (click)="selectedPatient = null; patientSearch = ''">✕</button>
+        </div>
+      }
+
+      <h3 class="section-title">Doctor & Schedule</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Select Doctor *</label>
+          <select [(ngModel)]="selectedDoctorId" name="doctor">
+            <option value="">Select Doctor</option>
+            @for (doc of doctors; track doc._id) {
+              <option [value]="doc._id">
+                {{ doc.name }} — {{ doc.specialisation || doc.department }}
+              </option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" [(ngModel)]="date" name="date" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="time" [(ngModel)]="startTime" name="startTime" />
+        </div>
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="time" [(ngModel)]="endTime" name="endTime" />
+        </div>
+      </div>
+
+      <h3 class="section-title">Medical Details</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Disease / Reason</label>
+          <input type="text" placeholder="e.g. Fever, Chest pain" [(ngModel)]="disease" name="disease" />
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" placeholder="Additional notes" [(ngModel)]="notes" name="notes" />
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Book Appointment</button>
+    </form>
+  </div>
+</div>

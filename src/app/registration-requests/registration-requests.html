@@ -1,0 +1,53 @@
+<div class="requests-container">
+  <div class="requests-header">
+    <button class="back-btn" (click)="goBack()">← Back</button>
+    <h1>Registration Requests</h1>
+  </div>
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  @if (requests.length === 0) {
+    <div class="empty-state">
+      <span>📭</span>
+      <p>No pending registration requests</p>
+    </div>
+  }
+
+  @if (requests.length > 0) {
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Department</th>
+            <th>Role</th>
+            <th>Designation</th>
+            <th>Submitted</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (req of requests; track req._id) {
+            <tr>
+              <td>{{ req.name }}</td>
+              <td>{{ req.email }}</td>
+              <td>{{ req.phone }}</td>
+              <td>{{ req.department }}</td>
+              <td>{{ req.role }}</td>
+              <td>{{ req.designation }}</td>
+              <td>{{ req.createdAt | date: 'dd MMM yyyy' }}</td>
+              <td class="actions">
+                <button class="approve-btn" (click)="approve(req._id)">✅ Approve</button>
+                <button class="reject-btn" (click)="reject(req._id)">❌ Reject</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -17,6 +17,19 @@
         <span class="nav-icon">👤</span>
         <span>Register Employee</span>
       </button>
+      <button class="nav-item" (click)="goToRequests()">
+  <span class="nav-icon">📋</span>
+  <span>Registration Requests</span>
+</button>
+<button class="nav-item" (click)="goToAddPatient()">
+  <span class="nav-icon">🏥</span>
+  <span>Add Patient</span>
+</button>
+
+<button class="nav-item" (click)="goToPatientDashboard()">
+  <span class="nav-icon">👥</span>
+  <span>Patient Dashboard</span>
+</button>
 
       <button class="nav-item" (click)="goToAppointments()">
         <span class="nav-icon">📅</span>
@@ -59,6 +72,32 @@
         <span class="card-arrow">→</span>
       </div>
 
+      <div class="card" (click)="goToRequests()">
+  <div class="card-icon">📋</div>
+  <div class="card-info">
+    <h3>Registration Requests</h3>
+    <p>Review and approve employee registration requests</p>
+  </div>
+  <span class="card-arrow">→</span>
+</div>
+<!-- Add in cards-grid -->
+<div class="card" (click)="goToAddPatient()">
+  <div class="card-icon">🏥</div>
+  <div class="card-info">
+    <h3>Add Patient</h3>
+    <p>Register a new patient in the system</p>
+  </div>
+  <span class="card-arrow">→</span>
+</div>
+
+<div class="card" (click)="goToPatientDashboard()">
+  <div class="card-icon">👥</div>
+  <div class="card-info">
+    <h3>Patient Dashboard</h3>
+    <p>View and manage all patient records</p>
+  </div>
+  <span class="card-arrow">→</span>
+</div>
       <div class="card" (click)="goToAppointments()">
         <div class="card-icon">📅</div>
         <div class="card-info">

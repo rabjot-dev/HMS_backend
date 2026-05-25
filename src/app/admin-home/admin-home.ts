@@ -23,7 +23,16 @@ export class AdminHome {
   goToAppointments() {
     this.router.navigate(['/appointments']);
   }
+goToRequests() {
+  this.router.navigate(['/registration-requests']);
+}
+goToAddPatient() {
+  this.router.navigate(['/add-patient']);
+}
 
+goToPatientDashboard() {
+  this.router.navigate(['/patient-dashboard']);
+}
   logout() {
     localStorage.removeItem('token');
     this.router.navigate(['/login']);

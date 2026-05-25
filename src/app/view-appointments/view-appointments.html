@@ -1,0 +1,71 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <button class="back-btn" (click)="goBack()">← Back</button>
+    <h1>Appointments</h1>
+    <button class="add-btn" (click)="goToBookAppointment()">+ Book Appointment</button>
+  </div>
+
+  @if (error) { <div class="error">{{ error }}</div> }
+
+  <div class="filters">
+    <input
+      type="text"
+      placeholder="Search by patient, doctor or appointment ID..."
+      [(ngModel)]="searchQuery"
+      (input)="search()"
+      class="search-input"
+    />
+    <div class="status-filters">
+      @for (status of statuses; track status) {
+        <button
+          class="filter-btn"
+          [class.active]="selectedStatus === status"
+          (click)="filterByStatus(status)">
+          {{ status }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Appt ID</th>
+          <th>Patient</th>
+          <th>UHID</th>
+          <th>Doctor</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Disease</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (appt of filteredAppointments; track appt._id) {
+          <tr>
+            <td>{{ appt.appointmentId }}</td>
+            <td>{{ appt.patientId?.name }}</td>
+            <td>{{ appt.patientId?.UHID }}</td>
+            <td>{{ appt.doctorEmployeeId?.name }}</td>
+            <td>{{ appt.date | date: 'dd MMM yyyy' }}</td>
+            <td>{{ appt.timeSlot?.startTime }} - {{ appt.timeSlot?.endTime }}</td>
+            <td>{{ appt.disease || '—' }}</td>
+            <td>
+              <span [class]="'badge ' + appt.status?.toLowerCase()">
+                {{ appt.status }}
+              </span>
+            </td>
+            <td class="actions">
+              @if (appt.status === 'BOOKED') {
+                <button class="complete-btn" (click)="updateStatus(appt._id, 'COMPLETED')">✓ Complete</button>
+                <button class="cancel-btn" (click)="updateStatus(appt._id, 'CANCELLED')">✕ Cancel</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
