@@ -1,184 +1,166 @@
-const Patient =
-require(
-    "../../models/Patient",
-);
+const Patient = require("../../models/Patient");
 
-const generatePatientId =
-require(
-    "../../utils/generatePatientId",
-);
+const generatePatientId = require("../../utils/generatePatientId");
 
-const registerPatient =
-async (
-    patientData,
-) => {
-
-    const {
-
-        /*
+const registerPatient = async (patientData) => {
+  const {
+    /*
         |--------------------------------------------------------------------------
         | Basic Information
         |--------------------------------------------------------------------------
         */
-        firstName,
-        lastName,
-        dateOfBirth,
-        gender,
-        bloodGroup,
-        maritalStatus,
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    bloodGroup,
+    maritalStatus,
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Contact Information
         |--------------------------------------------------------------------------
         */
-        phone,
-        email,
-        address,
-        city,
-        state,
-        pincode,
-        country,
+    phone,
+    email,
+    address,
+    city,
+    state,
+    pincode,
+    country,
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Emergency Contact
         |--------------------------------------------------------------------------
         */
-        emergencyContactName,
-        emergencyContactPhone,
-        relationship,
+    emergencyContactName,
+    emergencyContactPhone,
+    relationship,
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Medical Information
         |--------------------------------------------------------------------------
         */
-        allergies,
-        chronicDiseases,
-        currentMedications,
-        pastSurgeries,
-        medicalHistory,
-        familyMedicalHistory,
+    allergies,
+    chronicDiseases,
+    currentMedications,
+    pastSurgeries,
+    medicalHistory,
+    familyMedicalHistory,
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Insurance Information
         |--------------------------------------------------------------------------
         */
-        insuranceProvider,
-        insurancePolicyNumber,
-        insuranceExpiryDate,
-        insuranceCoverageAmount,
+    insuranceProvider,
+    insurancePolicyNumber,
+    insuranceExpiryDate,
+    insuranceCoverageAmount,
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Hospital Information
         |--------------------------------------------------------------------------
         */
-        assignedDoctor,
-        department,
-        patientType,
-    } = patientData;
+    assignedDoctor,
+    department,
+    patientType,
+  } = patientData;
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Generate Patient ID
     |--------------------------------------------------------------------------
     */
-    const patientId =
+  const patientId = await generatePatientId();
 
-        await generatePatientId();
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Create Patient
     |--------------------------------------------------------------------------
     */
-    const patient =
-        await Patient.create({
+  const patient = await Patient.create({
+    patientId,
 
-            patientId,
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Basic Information
             |--------------------------------------------------------------------------
             */
-            firstName,
-            lastName,
-            dateOfBirth,
-            gender,
-            bloodGroup,
-            maritalStatus,
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    bloodGroup,
+    maritalStatus,
 
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Contact Information
             |--------------------------------------------------------------------------
             */
-            phone,
-            email,
-            address,
-            city,
-            state,
-            pincode,
-            country,
+    phone,
+    email,
+    address,
+    city,
+    state,
+    pincode,
+    country,
 
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Emergency Contact
             |--------------------------------------------------------------------------
             */
-            emergencyContactName,
-            emergencyContactPhone,
-            relationship,
+    emergencyContactName,
+    emergencyContactPhone,
+    relationship,
 
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Medical Information
             |--------------------------------------------------------------------------
             */
-            allergies,
-            chronicDiseases,
-            currentMedications,
-            pastSurgeries,
-            medicalHistory,
-            familyMedicalHistory,
+    allergies,
+    chronicDiseases,
+    currentMedications,
+    pastSurgeries,
+    medicalHistory,
+    familyMedicalHistory,
 
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Insurance Information
             |--------------------------------------------------------------------------
             */
-            insuranceProvider,
-            insurancePolicyNumber,
-            insuranceExpiryDate,
-            insuranceCoverageAmount,
+    insuranceProvider,
+    insurancePolicyNumber,
+    insuranceExpiryDate,
+    insuranceCoverageAmount,
 
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Hospital Information
             |--------------------------------------------------------------------------
             */
-            assignedDoctor,
-            department,
-            patientType,
-        });
+    assignedDoctor,
+    department,
+    patientType,
+  });
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Final Response
     |--------------------------------------------------------------------------
     */
-    return {
+  return {
+    message: "Patient registered successfully",
 
-        message:
-            "Patient registered successfully",
-
-        patient,
-    };
+    patient,
+  };
 };
 
-module.exports =
-registerPatient;
+module.exports = registerPatient;

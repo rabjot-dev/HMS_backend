@@ -1,154 +1,81 @@
 const generateSlots = (
+  startTime,
 
-    startTime,
+  endTime,
 
-    endTime,
+  slotDuration,
 
-    slotDuration,
+  breakStartTime,
 
-    breakStartTime,
-
-    breakEndTime,
+  breakEndTime,
 ) => {
+  const slots = [];
 
-    const slots = [];
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Convert Time To Minutes
     |--------------------------------------------------------------------------
     */
-    const convertToMinutes = (
-        time,
-    ) => {
+  const convertToMinutes = (time) => {
+    const [hours, minutes] = time.split(":");
 
-        const [
-            hours,
-            minutes,
-        ] = time.split(':');
+    return parseInt(hours) * 60 + parseInt(minutes);
+  };
 
-        return (
-
-            parseInt(hours) * 60
-
-            +
-
-            parseInt(minutes)
-        );
-    };
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Convert Minutes To Time
     |--------------------------------------------------------------------------
     */
-    const convertToTime = (
-        minutes,
-    ) => {
+  const convertToTime = (minutes) => {
+    const hrs = Math.floor(minutes / 60);
 
-        const hrs = Math.floor(
-            minutes / 60,
-        );
+    const mins = minutes % 60;
 
-        const mins =
-            minutes % 60;
+    return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+  };
 
-        return `${
-
-            String(hrs)
-                .padStart(2, '0')
-
-        }:${
-
-            String(mins)
-                .padStart(2, '0')
-
-        }`;
-    };
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Time Values
     |--------------------------------------------------------------------------
     */
-    let currentTime =
+  let currentTime = convertToMinutes(startTime);
 
-        convertToMinutes(
-            startTime,
-        );
+  const end = convertToMinutes(endTime);
 
-    const end =
+  const breakStart = breakStartTime ? convertToMinutes(breakStartTime) : null;
 
-        convertToMinutes(
-            endTime,
-        );
+  const breakEnd = breakEndTime ? convertToMinutes(breakEndTime) : null;
 
-    const breakStart =
-
-        breakStartTime
-            ? convertToMinutes(
-                breakStartTime,
-            )
-            : null;
-
-    const breakEnd =
-
-        breakEndTime
-            ? convertToMinutes(
-                breakEndTime,
-            )
-            : null;
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Generate Slots
     |--------------------------------------------------------------------------
     */
-    while (
-        currentTime < end
-    ) {
-
-        /*
+  while (currentTime < end) {
+    /*
         |--------------------------------------------------------------------------
         | Skip Break Time
         |--------------------------------------------------------------------------
         */
-        if (
+    if (
+      breakStart !== null &&
+      breakEnd !== null &&
+      currentTime >= breakStart &&
+      currentTime < breakEnd
+    ) {
+      currentTime = breakEnd;
 
-            breakStart !== null
-
-            &&
-
-            breakEnd !== null
-
-            &&
-
-            currentTime >= breakStart
-
-            &&
-
-            currentTime < breakEnd
-        ) {
-
-            currentTime =
-                breakEnd;
-
-            continue;
-        }
-
-        slots.push(
-
-            convertToTime(
-                currentTime,
-            ),
-        );
-
-        currentTime +=
-            slotDuration;
+      continue;
     }
 
-    return slots;
+    slots.push(convertToTime(currentTime));
+
+    currentTime += slotDuration;
+  }
+
+  return slots;
 };
 
-module.exports =
-generateSlots;
+module.exports = generateSlots;

@@ -1,603 +1,382 @@
-const Consultation =
-    require(
+const Consultation = require("../models/consultation");
 
-        '../models/consultation',
-    );
+const Appointment = require("../models/appointment");
 
-const Appointment =
-    require(
-
-        '../models/appointment',
-    );
-
-const generatePrescriptionPdf =
-    require(
-
-        '../utils/generatePrescriptionPdf',
-    );
+const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
 
 /*
 |--------------------------------------------------------------------------
 | Create Consultation
 |--------------------------------------------------------------------------
 */
-const createConsultation =
-    async (req, res) => {
+const createConsultation = async (req, res) => {
+  try {
+    const {
+      appointmentId,
 
-        try {
+      diagnosis,
 
-            const {
+      symptoms,
 
-                appointmentId,
+      doctorNotes,
 
-                diagnosis,
+      vitals,
 
-                symptoms,
+      prescriptions,
+    } = req.body;
 
-                doctorNotes,
-
-                vitals,
-
-                prescriptions,
-
-            } = req.body;
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Check Existing Consultation
             |--------------------------------------------------------------------------
             */
-            const existingConsultation =
+    const existingConsultation = await Consultation.findOne({
+      appointmentId,
+    });
 
-                await Consultation
-                    .findOne({
+    if (existingConsultation) {
+      return res.status(400).json({
+        success: false,
 
-                        appointmentId,
-                    });
+        message: "Consultation already exists",
+      });
+    }
 
-            if (
-                existingConsultation
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-
-                        success: false,
-
-                        message:
-                            'Consultation already exists',
-                    });
-            }
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Find Appointment
             |--------------------------------------------------------------------------
             */
-            const appointment =
+    const appointment = await Appointment.findById(appointmentId);
 
-                await Appointment
-                    .findById(
-                        appointmentId,
-                    );
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Appointment Not Found
             |--------------------------------------------------------------------------
             */
-            if (
-                !appointment
-            ) {
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
 
-                return res
-                    .status(404)
-                    .json({
+        message: "Appointment not found",
+      });
+    }
 
-                        success: false,
-
-                        message:
-                            'Appointment not found',
-                    });
-            }
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Create Consultation
             |--------------------------------------------------------------------------
             */
-            const consultation =
+    const consultation = await Consultation.create({
+      appointmentId,
 
-                await Consultation
-                    .create({
+      patientId: appointment.patientId,
 
-                        appointmentId,
+      doctorEmployeeId: appointment.doctorEmployeeId,
 
-                        patientId:
-                            appointment.patientId,
+      diagnosis,
 
-                        doctorEmployeeId:
-                            appointment.doctorEmployeeId,
+      symptoms,
 
-                        diagnosis,
+      doctorNotes,
 
-                        symptoms,
+      vitals,
 
-                        doctorNotes,
+      prescriptions,
+    });
 
-                        vitals,
-
-                        prescriptions,
-                    });
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Update Appointment Status
             |--------------------------------------------------------------------------
             */
-            await Appointment
-                .findByIdAndUpdate(
+    await Appointment.findByIdAndUpdate(
+      appointmentId,
 
-                    appointmentId,
+      {
+        status: "COMPLETED",
+      },
+    );
 
-                    {
-
-                        status:
-                            'COMPLETED',
-                    },
-                );
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Response
             |--------------------------------------------------------------------------
             */
-            return res
-                .status(201)
-                .json({
+    return res.status(201).json({
+      success: true,
 
-                    success: true,
+      message: "Consultation created successfully",
 
-                    message:
-                        'Consultation created successfully',
+      data: consultation,
+    });
+  } catch (error) {
+    console.log(error);
 
-                    data:
-                        consultation,
-                });
+    return res.status(500).json({
+      success: false,
 
-        } catch (error) {
-
-            console.log(
-                error,
-            );
-
-            return res
-                .status(500)
-                .json({
-
-                    success: false,
-
-                    message:
-                        'Internal Server Error',
-                });
-        }
-    };
+      message: "Internal Server Error",
+    });
+  }
+};
 
 /*
 |--------------------------------------------------------------------------
 | Get Consultation By Appointment
 |--------------------------------------------------------------------------
 */
-const getConsultationByAppointment =
-    async (req, res) => {
+const getConsultationByAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
 
-        try {
-
-            const {
-                appointmentId,
-            } = req.params;
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Find Consultation
             |--------------------------------------------------------------------------
             */
-            const consultation =
+    const consultation = await Consultation.findOne({
+      appointmentId,
+    })
 
-                await Consultation
-                    .findOne({
+      .populate("patientId")
 
-                        appointmentId,
-                    })
+      .populate("doctorEmployeeId")
 
-                    .populate(
-                        'patientId',
-                    )
+      .populate("appointmentId");
 
-                    .populate(
-                        'doctorEmployeeId',
-                    )
-
-                    .populate(
-                        'appointmentId',
-                    );
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Not Found
             |--------------------------------------------------------------------------
             */
-            if (
-                !consultation
-            ) {
+    if (!consultation) {
+      return res.status(404).json({
+        success: false,
 
-                return res
-                    .status(404)
-                    .json({
+        message: "Consultation not found",
+      });
+    }
 
-                        success: false,
-
-                        message:
-                            'Consultation not found',
-                    });
-            }
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Response
             |--------------------------------------------------------------------------
             */
-            return res
-                .status(200)
-                .json({
+    return res.status(200).json({
+      success: true,
 
-                    success: true,
+      data: consultation,
+    });
+  } catch (error) {
+    console.log(error);
 
-                    data:
-                        consultation,
-                });
+    return res.status(500).json({
+      success: false,
 
-        } catch (error) {
-
-            console.log(
-                error,
-            );
-
-            return res
-                .status(500)
-                .json({
-
-                    success: false,
-
-                    message:
-                        'Internal Server Error',
-                });
-        }
-    };
+      message: "Internal Server Error",
+    });
+  }
+};
 
 /*
 |--------------------------------------------------------------------------
 | Update Consultation
 |--------------------------------------------------------------------------
 */
-const updateConsultation =
-    async (req, res) => {
+const updateConsultation = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-        try {
-
-            const {
-                id,
-            } = req.params;
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Update
             |--------------------------------------------------------------------------
             */
-            const consultation =
+    const consultation = await Consultation.findByIdAndUpdate(
+      id,
 
-                await Consultation
-                    .findByIdAndUpdate(
+      req.body,
 
-                        id,
+      {
+        new: true,
+      },
+    );
 
-                        req.body,
-
-                        {
-
-                            new: true,
-                        },
-                    );
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Not Found
             |--------------------------------------------------------------------------
             */
-            if (
-                !consultation
-            ) {
+    if (!consultation) {
+      return res.status(404).json({
+        success: false,
 
-                return res
-                    .status(404)
-                    .json({
+        message: "Consultation not found",
+      });
+    }
 
-                        success: false,
-
-                        message:
-                            'Consultation not found',
-                    });
-            }
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Response
             |--------------------------------------------------------------------------
             */
-            return res
-                .status(200)
-                .json({
+    return res.status(200).json({
+      success: true,
 
-                    success: true,
+      message: "Consultation updated successfully",
 
-                    message:
-                        'Consultation updated successfully',
+      data: consultation,
+    });
+  } catch (error) {
+    console.log(error);
 
-                    data:
-                        consultation,
-                });
+    return res.status(500).json({
+      success: false,
 
-        } catch (error) {
-
-            console.log(
-                error,
-            );
-
-            return res
-                .status(500)
-                .json({
-
-                    success: false,
-
-                    message:
-                        'Internal Server Error',
-                });
-        }
-    };
+      message: "Internal Server Error",
+    });
+  }
+};
 
 /*
 |--------------------------------------------------------------------------
 | Get All Consultations
 |--------------------------------------------------------------------------
 */
-const getConsultations =
-    async (req, res) => {
+const getConsultations = async (req, res) => {
+  try {
+    const consultations = await Consultation.find()
 
-        try {
+      .populate("patientId")
 
-            const consultations =
+      .populate("doctorEmployeeId")
 
-                await Consultation
-                    .find()
+      .populate("appointmentId")
 
-                    .populate(
-                        'patientId',
-                    )
+      .sort({
+        createdAt: -1,
+      });
 
-                    .populate(
-                        'doctorEmployeeId',
-                    )
+    return res.status(200).json({
+      success: true,
 
-                    .populate(
-                        'appointmentId',
-                    )
+      data: consultations,
+    });
+  } catch (error) {
+    console.log(error);
 
-                    .sort({
+    return res.status(500).json({
+      success: false,
 
-                        createdAt:
-                            -1,
-                    });
-
-            return res
-                .status(200)
-                .json({
-
-                    success: true,
-
-                    data:
-                        consultations,
-                });
-
-        } catch (error) {
-
-            console.log(
-                error,
-            );
-
-            return res
-                .status(500)
-                .json({
-
-                    success: false,
-
-                    message:
-                        'Internal Server Error',
-                });
-        }
-    };
+      message: "Internal Server Error",
+    });
+  }
+};
 
 /*
 |--------------------------------------------------------------------------
 | Download Prescription PDF
 |--------------------------------------------------------------------------
 */
-const downloadPrescriptionPdf =
-    async (req, res) => {
+const downloadPrescriptionPdf = async (req, res) => {
+  try {
+    const { consultationId } = req.params;
 
-        try {
-
-            const {
-                consultationId,
-            } = req.params;
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Find Consultation
             |--------------------------------------------------------------------------
             */
-            const consultation =
+    const consultation = await Consultation.findById(consultationId)
 
-                await Consultation
-                    .findById(
+      .populate("patientId")
 
-                        consultationId,
-                    )
+      .populate("doctorEmployeeId")
 
-                    .populate(
-                        'patientId',
-                    )
+      .populate("appointmentId");
 
-                    .populate(
-                        'doctorEmployeeId',
-                    )
-
-                    .populate(
-                        'appointmentId',
-                    );
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Not Found
             |--------------------------------------------------------------------------
             */
-            if (
-                !consultation
-            ) {
+    if (!consultation) {
+      return res.status(404).json({
+        success: false,
 
-                return res
-                    .status(404)
-                    .json({
+        message: "Consultation not found",
+      });
+    }
 
-                        success: false,
-
-                        message:
-                            'Consultation not found',
-                    });
-            }
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Generate PDF
             |--------------------------------------------------------------------------
             */
-            generatePrescriptionPdf(
+    generatePrescriptionPdf(
+      consultation,
 
-                consultation,
+      res,
+    );
+  } catch (error) {
+    console.log(error);
 
-                res,
-            );
+    return res.status(500).json({
+      success: false,
 
-        } catch (error) {
-
-            console.log(
-                error,
-            );
-
-            return res
-                .status(500)
-                .json({
-
-                    success: false,
-
-                    message:
-                        'Internal Server Error',
-                });
-        }
-    };
-    /*
+      message: "Internal Server Error",
+    });
+  }
+};
+/*
 |--------------------------------------------------------------------------
 | Get Consultation By Id
 |--------------------------------------------------------------------------
 */
-const getConsultationById =
-async (req, res) => {
+const getConsultationById = async (req, res) => {
+  try {
+    const consultation = await Consultation.findById(req.params.id)
 
-    try {
+      .populate("patientId")
 
-        const consultation =
+      .populate("doctorEmployeeId")
 
-            await Consultation
-                .findById(
+      .populate("appointmentId");
 
-                    req.params.id,
-                )
+    if (!consultation) {
+      return res.status(404).json({
+        success: false,
 
-                .populate(
-                    'patientId',
-                )
-
-                .populate(
-                    'doctorEmployeeId',
-                )
-
-                .populate(
-                    'appointmentId',
-                );
-
-        if (
-            !consultation
-        ) {
-
-            return res
-                .status(404)
-                .json({
-
-                    success: false,
-
-                    message:
-                        'Consultation not found',
-                });
-        }
-
-        return res
-            .status(200)
-            .json({
-
-                success: true,
-
-                data:
-                    consultation,
-            });
-
-    } catch (error) {
-
-        console.log(
-            error,
-        );
-
-        return res
-            .status(500)
-            .json({
-
-                success: false,
-
-                message:
-                    'Internal Server Error',
-            });
+        message: "Consultation not found",
+      });
     }
+
+    return res.status(200).json({
+      success: true,
+
+      data: consultation,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+
+      message: "Internal Server Error",
+    });
+  }
 };
 
 module.exports = {
+  createConsultation,
+  getConsultationById,
 
-    createConsultation,
-    getConsultationById,
+  getConsultationByAppointment,
 
-    getConsultationByAppointment,
+  updateConsultation,
 
-    updateConsultation,
+  getConsultations,
 
-    getConsultations,
-
-    downloadPrescriptionPdf,
+  downloadPrescriptionPdf,
 };

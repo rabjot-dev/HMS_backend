@@ -1,12 +1,5 @@
-const pendingApprovalTemplate =
-({
-    name,
-    email,
-    designation,
-    department,
-}) => {
-
-    return `
+const pendingApprovalTemplate = ({ name, email, designation, department }) => {
+  return `
 
     <div
         style="
@@ -90,5 +83,4 @@ const pendingApprovalTemplate =
     `;
 };
 
-module.exports =
-    pendingApprovalTemplate;
+module.exports = pendingApprovalTemplate;

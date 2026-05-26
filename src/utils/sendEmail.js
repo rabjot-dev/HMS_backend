@@ -1,101 +1,51 @@
+const SibApiV3Sdk = require("sib-api-v3-sdk");
 
-const SibApiV3Sdk =
-require(
-    "sib-api-v3-sdk",
-);
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
 
-const defaultClient =
-    SibApiV3Sdk
-        .ApiClient
-        .instance;
+const apiKey = defaultClient.authentications["api-key"];
 
-const apiKey =
-    defaultClient
-        .authentications[
-            "api-key"
-        ];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
-apiKey.apiKey =
-    process.env
-        .BREVO_API_KEY;
+const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
-const tranEmailApi =
-    new SibApiV3Sdk
-        .TransactionalEmailsApi();
+const sendEmail = async ({ to, subject, htmlContent }) => {
+  try {
+    console.log("Sending Email...");
 
-const sendEmail =
-async ({
-    to,
-    subject,
-    htmlContent,
-}) => {
+    const sender = {
+      email: process.env.SENDER_EMAIL,
 
-    try {
+      name: "HMS System",
+    };
 
-        console.log(
-            "Sending Email...",
-        );
+    const receivers = [
+      {
+        email: to,
+      },
+    ];
 
-        const sender = {
+    const response = await tranEmailApi.sendTransacEmail({
+      sender,
 
-            email:
-                process.env
-                    .SENDER_EMAIL,
+      to: receivers,
 
-            name:
-                "HMS System",
-        };
+      subject,
 
-        const receivers = [
+      htmlContent,
+    });
 
-            {
-                email: to,
-            },
-        ];
+    console.log("Email sent successfully");
 
-        const response =
+    console.log(response);
+  } catch (error) {
+    console.log("Email Error");
 
-            await tranEmailApi
-                .sendTransacEmail({
+    console.log(error);
 
-                    sender,
-
-                    to: receivers,
-
-                    subject,
-
-                    htmlContent,
-                });
-
-        console.log(
-            "Email sent successfully",
-        );
-
-        console.log(
-            response,
-        );
+    if (error.response) {
+      console.log(error.response.body);
     }
-    catch (error) {
-
-        console.log(
-            "Email Error",
-        );
-
-        console.log(
-            error,
-        );
-
-        if (
-            error.response
-        ) {
-
-            console.log(
-
-                error.response.body,
-            );
-        }
-    }
+  }
 };
 
-module.exports =
-    sendEmail;
+module.exports = sendEmail;

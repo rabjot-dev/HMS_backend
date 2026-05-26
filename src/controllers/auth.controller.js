@@ -1,308 +1,222 @@
 const loginUser = require("../services/auth/login.service");
-const getCurrentLoggedInUser = require(  "../services/auth/get-current-user.service");
+const getCurrentLoggedInUser = require("../services/auth/get-current-user.service");
 const createEmployeePassword = require("../services/auth/create-password.service");
-const registerEmployeeSelf =require("../services/auth/registerEmployeeSelf.service");
+const registerEmployeeSelf = require("../services/auth/registerEmployeeSelf.service");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const Employee = require("../models/Employee");
 
 //login
 const login = async (req, res) => {
-    try {
-        const loginResponse = await loginUser(req.body);
+  try {
+    const loginResponse = await loginUser(req.body);
 
-        return res.status(200).json({
-            success: true,
-            message: "Login successful",
-            data: loginResponse,
-        });
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-    }
+    return res.status(200).json({
+      success: true,
+      message: "Login successful",
+      data: loginResponse,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
-
 //create password
-const createPassword = async (req, res,) => {
-    try {
-        const serviceResponse = await createEmployeePassword(req.body,); 
+const createPassword = async (req, res) => {
+  try {
+    const serviceResponse = await createEmployeePassword(req.body);
 
-        return res.status(200).json({
-            success: true,
-            message: serviceResponse.message,
-        });
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-    }
+    return res.status(200).json({
+      success: true,
+      message: serviceResponse.message,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 //get current logged in user
 
 const getCurrentUser = async (req, res) => {
-    try {
-        const user =
-            await getCurrentLoggedInUser(req.user.userId);
+  try {
+    const user = await getCurrentLoggedInUser(req.user.userId);
 
-        return res.status(200).json({
-            success: true,
-            data: user,
-        });
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-    }
+    return res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 //self register
-const register = async (
-    req,
-    res,
-) => {
+const register = async (req, res) => {
+  const result = await registerEmployeeSelf(req.body);
 
-    const result =
-        await registerEmployeeSelf(
-            req.body,
-        );
+  return res.status(201).json({
+    success: true,
 
-    return res.status(201)
-        .json({
-
-            success: true,
-
-            message:
-                result.message,
-        });
-        
+    message: result.message,
+  });
 };
 /*
 |--------------------------------------------------------------------------
 | Forgot Password
 |--------------------------------------------------------------------------
 */
-const forgotPassword =
-async (req, res) => {
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-    try {
-
-        const {
-            email,
-        } = req.body;
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Find User
         |--------------------------------------------------------------------------
         */
-        const user =
+    const user = await User.findOne({
+      email,
+    });
 
-            await User
-                .findOne({
-
-                    email,
-                });
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | User Not Found
         |--------------------------------------------------------------------------
         */
-        if (
-            !user
-        ) {
+    if (!user) {
+      return res.status(404).json({
+        success: false,
 
-            return res
-                .status(404)
-                .json({
+        message: "User not found",
+      });
+    }
 
-                    success: false,
-
-                    message:
-                    'User not found',
-                });
-        }
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Return Security Question
         |--------------------------------------------------------------------------
         */
-        return res
-            .status(200)
-            .json({
+    return res.status(200).json({
+      success: true,
 
-                success: true,
+      securityQuestion: user?.securityQuestion,
+    });
+  } catch (error) {
+    console.log(error);
+    console.log("FORGOT PASSWORD ERROR:", error);
 
-                securityQuestion:
+    return res.status(500).json({
+      success: false,
 
-                    user
-                    ?.securityQuestion,
-            });
-
-    } catch (error) {
-
-        console.log(
-            error,
-        );console.log(
-  'FORGOT PASSWORD ERROR:',
-  error,
-);
-
-        return res
-            .status(500)
-            .json({
-
-                success: false,
-
-                message:
-                'Internal Server Error',
-            });
-    }
+      message: "Internal Server Error",
+    });
+  }
 };
 /*
 |--------------------------------------------------------------------------
 | Reset Password
 |--------------------------------------------------------------------------
 */
-const resetPassword =
-async (req, res) => {
+const resetPassword = async (req, res) => {
+  try {
+    const {
+      email,
 
-    try {
+      securityAnswer,
 
-        const {
+      newPassword,
+    } = req.body;
 
-            email,
-
-            securityAnswer,
-
-            newPassword,
-        } = req.body;
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Find User
         |--------------------------------------------------------------------------
         */
-        const user =
+    const user = await User.findOne({
+      email,
+    });
 
-            await User
-                .findOne({
-
-                    email,
-                });
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | User Not Found
         |--------------------------------------------------------------------------
         */
-        if (
-            !user
-        ) {
+    if (!user) {
+      return res.status(404).json({
+        success: false,
 
-            return res
-                .status(404)
-                .json({
+        message: "User not found",
+      });
+    }
 
-                    success: false,
-
-                    message:
-                    'User not found',
-                });
-        }
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Verify Security Answer
         |--------------------------------------------------------------------------
         */
-        if (
+    if (user?.securityAnswer?.toLowerCase() !== securityAnswer?.toLowerCase()) {
+      return res.status(400).json({
+        success: false,
 
-            user
-            ?.securityAnswer
-            ?.toLowerCase()
+        message: "Invalid security answer",
+      });
+    }
 
-            !==
-
-            securityAnswer
-            ?.toLowerCase()
-        ) {
-
-            return res
-                .status(400)
-                .json({
-
-                    success: false,
-
-                    message:
-                    'Invalid security answer',
-                });
-        }
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Hash Password
         |--------------------------------------------------------------------------
         */
-        const bcrypt =
-        require('bcryptjs');
+    const bcrypt = require("bcryptjs");
 
-        const hashedPassword =
+    const hashedPassword = await bcrypt.hash(
+      newPassword,
 
-            await bcrypt
-                .hash(
+      10,
+    );
 
-                    newPassword,
-
-                    10,
-                );
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Update Password
         |--------------------------------------------------------------------------
         */
-        user.passwordHash =
-            hashedPassword;
+    user.passwordHash = hashedPassword;
 
-        await user.save();
+    await user.save();
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Response
         |--------------------------------------------------------------------------
         */
-        return res
-            .status(200)
-            .json({
+    return res.status(200).json({
+      success: true,
 
-                success: true,
+      message: "Password reset successful",
+    });
+  } catch (error) {
+    console.log(error);
 
-                message:
-                'Password reset successful',
-            });
+    return res.status(500).json({
+      success: false,
 
-    } catch (error) {
-
-        console.log(
-            error,
-        );
-
-        return res
-            .status(500)
-            .json({
-
-                success: false,
-
-                message:
-                'Internal Server Error',
-            });
-    }
+      message: "Internal Server Error",
+    });
+  }
 };
-module.exports = { login, createPassword, getCurrentUser, register, forgotPassword, resetPassword };
+module.exports = {
+  login,
+  createPassword,
+  getCurrentUser,
+  register,
+  forgotPassword,
+  resetPassword,
+};

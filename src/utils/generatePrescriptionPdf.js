@@ -1,395 +1,196 @@
-const PDFDocument =
-require(
-    'pdfkit',
-);
+const PDFDocument = require("pdfkit");
 
 /*
 |--------------------------------------------------------------------------
 | Generate Prescription PDF
 |--------------------------------------------------------------------------
 */
-const generatePrescriptionPdf =
-(
-    consultation,
-    res,
-) => {
-
-    /*
+const generatePrescriptionPdf = (consultation, res) => {
+  /*
     |--------------------------------------------------------------------------
     | Create Document
     |--------------------------------------------------------------------------
     */
-    const doc =
-    new PDFDocument({
+  const doc = new PDFDocument({
+    margin: 50,
+  });
 
-        margin: 50,
-    });
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Response Headers
     |--------------------------------------------------------------------------
     */
-    res.setHeader(
+  res.setHeader(
+    "Content-Type",
 
-        'Content-Type',
+    "application/pdf",
+  );
 
-        'application/pdf',
-    );
+  res.setHeader(
+    "Content-Disposition",
 
-    res.setHeader(
+    `inline; filename=prescription.pdf`,
+  );
 
-        'Content-Disposition',
-
-        `inline; filename=prescription.pdf`,
-    );
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Pipe
     |--------------------------------------------------------------------------
     */
-    doc.pipe(res);
+  doc.pipe(res);
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Hospital Header
     |--------------------------------------------------------------------------
     */
-    doc
-        .fontSize(24)
-        .text(
+  doc.fontSize(24).text(
+    "Visionary Health HMS",
 
-            'Visionary Health HMS',
+    {
+      align: "center",
+    },
+  );
 
-            {
+  doc.moveDown();
 
-                align:
-                'center',
-            },
-        );
+  doc.fontSize(18).text(
+    "Medical Prescription",
 
-    doc.moveDown();
+    {
+      align: "center",
+    },
+  );
 
-    doc
-        .fontSize(18)
-        .text(
+  doc.moveDown(2);
 
-            'Medical Prescription',
-
-            {
-
-                align:
-                'center',
-            },
-        );
-
-    doc.moveDown(2);
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Patient Details
     |--------------------------------------------------------------------------
     */
-    doc
-        .fontSize(16)
-        .text(
-            'Patient Details',
-        );
+  doc.fontSize(16).text("Patient Details");
 
-    doc.moveDown(0.5);
+  doc.moveDown(0.5);
 
-    doc
-        .fontSize(12)
-        .text(
-
-            `Patient Name: ${
-
-                consultation
-                ?.patientId
-                ?.firstName
-
-            } ${
-
-                consultation
-                ?.patientId
-                ?.lastName
-            }`,
-        );
-
-    doc.text(
-
-        `Patient ID: ${
-
-            consultation
-            ?.patientId
-            ?.patientId
-        }`,
+  doc
+    .fontSize(12)
+    .text(
+      `Patient Name: ${consultation?.patientId?.firstName} ${
+        consultation?.patientId?.lastName
+      }`,
     );
 
-    doc.text(
+  doc.text(`Patient ID: ${consultation?.patientId?.patientId}`);
 
-        `Gender: ${
+  doc.text(`Gender: ${consultation?.patientId?.gender}`);
 
-            consultation
-            ?.patientId
-            ?.gender
-        }`,
-    );
+  doc.moveDown();
 
-    doc.moveDown();
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Doctor Details
     |--------------------------------------------------------------------------
     */
-    doc
-        .fontSize(16)
-        .text(
-            'Doctor Details',
-        );
+  doc.fontSize(16).text("Doctor Details");
 
-    doc.moveDown(0.5);
+  doc.moveDown(0.5);
 
-    doc
-        .fontSize(12)
-        .text(
+  doc.fontSize(12).text(`Doctor Name: ${consultation?.doctorEmployeeId?.name}`);
 
-            `Doctor Name: ${
+  doc.text(`Specialization: ${consultation?.doctorEmployeeId?.specialization}`);
 
-                consultation
-                ?.doctorEmployeeId
-                ?.name
-            }`,
-        );
+  doc.moveDown();
 
-    doc.text(
-
-        `Specialization: ${
-
-            consultation
-            ?.doctorEmployeeId
-            ?.specialization
-        }`,
-    );
-
-    doc.moveDown();
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Diagnosis
     |--------------------------------------------------------------------------
     */
-    doc
-        .fontSize(16)
-        .text(
-            'Diagnosis',
-        );
+  doc.fontSize(16).text("Diagnosis");
 
-    doc.moveDown(0.5);
+  doc.moveDown(0.5);
 
-    doc
-        .fontSize(12)
-        .text(
+  doc.fontSize(12).text(consultation?.diagnosis || "N/A");
 
-            consultation
-            ?.diagnosis
-            || 'N/A',
-        );
+  doc.moveDown();
 
-    doc.moveDown();
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Vitals
     |--------------------------------------------------------------------------
     */
-    doc
-        .fontSize(16)
-        .text(
-            'Vitals',
-        );
+  doc.fontSize(16).text("Vitals");
 
-    doc.moveDown(0.5);
+  doc.moveDown(0.5);
 
-    doc
-        .fontSize(12)
-        .text(
+  doc
+    .fontSize(12)
+    .text(`Blood Pressure: ${consultation?.vitals?.bloodPressure || "N/A"}`);
 
-            `Blood Pressure: ${
+  doc.text(`Pulse Rate: ${consultation?.vitals?.pulseRate || "N/A"}`);
 
-                consultation
-                ?.vitals
-                ?.bloodPressure
-                || 'N/A'
-            }`,
-        );
+  doc.text(`Oxygen Level: ${consultation?.vitals?.oxygenLevel || "N/A"}`);
 
-    doc.text(
+  doc.text(`Temperature: ${consultation?.vitals?.temperature || "N/A"}`);
 
-        `Pulse Rate: ${
+  doc.text(`Weight: ${consultation?.vitals?.weight || "N/A"}`);
 
-            consultation
-            ?.vitals
-            ?.pulseRate
-            || 'N/A'
-        }`,
-    );
+  doc.moveDown();
 
-    doc.text(
-
-        `Oxygen Level: ${
-
-            consultation
-            ?.vitals
-            ?.oxygenLevel
-            || 'N/A'
-        }`,
-    );
-
-    doc.text(
-
-        `Temperature: ${
-
-            consultation
-            ?.vitals
-            ?.temperature
-            || 'N/A'
-        }`,
-    );
-
-    doc.text(
-
-        `Weight: ${
-
-            consultation
-            ?.vitals
-            ?.weight
-            || 'N/A'
-        }`,
-    );
-
-    doc.moveDown();
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Prescription
     |--------------------------------------------------------------------------
     */
-    doc
-        .fontSize(16)
-        .text(
-            'Prescriptions',
-        );
+  doc.fontSize(16).text("Prescriptions");
 
-    doc.moveDown(0.5);
+  doc.moveDown(0.5);
 
-    consultation
-        ?.prescriptions
+  consultation?.prescriptions?.forEach((medicine, index) => {
+    doc.fontSize(12).text(`${index + 1}. ${medicine?.medicineName}`);
 
-        ?.forEach(
+    doc.text(`Dosage: ${medicine?.dosage}`);
 
-            (
-                medicine,
-                index,
-            ) => {
+    doc.text(`Frequency: ${medicine?.frequency}`);
 
-                doc
-                    .fontSize(12)
-                    .text(
+    doc.text(`Duration: ${medicine?.duration}`);
 
-                        `${
+    doc.moveDown();
+  });
 
-                            index + 1
-
-                        }. ${
-
-                            medicine
-                            ?.medicineName
-                        }`,
-                    );
-
-                doc.text(
-
-                    `Dosage: ${
-
-                        medicine
-                        ?.dosage
-                    }`,
-                );
-
-                doc.text(
-
-                    `Frequency: ${
-
-                        medicine
-                        ?.frequency
-                    }`,
-                );
-
-                doc.text(
-
-                    `Duration: ${
-
-                        medicine
-                        ?.duration
-                    }`,
-                );
-
-                doc.moveDown();
-            },
-        );
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Doctor Notes
     |--------------------------------------------------------------------------
     */
-    doc
-        .fontSize(16)
-        .text(
-            'Doctor Notes',
-        );
+  doc.fontSize(16).text("Doctor Notes");
 
-    doc.moveDown(0.5);
+  doc.moveDown(0.5);
 
-    doc
-        .fontSize(12)
-        .text(
+  doc.fontSize(12).text(consultation?.doctorNotes || "N/A");
 
-            consultation
-            ?.doctorNotes
-            || 'N/A',
-        );
+  doc.moveDown(3);
 
-    doc.moveDown(3);
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Footer
     |--------------------------------------------------------------------------
     */
-    doc
-        .fontSize(12)
-        .text(
+  doc.fontSize(12).text(
+    "Get Well Soon",
 
-            'Get Well Soon',
+    {
+      align: "center",
+    },
+  );
 
-            {
-
-                align:
-                'center',
-            },
-        );
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | End PDF
     |--------------------------------------------------------------------------
     */
-    doc.end();
+  doc.end();
 };
 
-module.exports =
-generatePrescriptionPdf;
+module.exports = generatePrescriptionPdf;

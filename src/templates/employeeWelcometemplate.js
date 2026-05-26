@@ -1,17 +1,15 @@
-const employeeWelcomeTemplate =
-({
-    name,
+const employeeWelcomeTemplate = ({
+  name,
 
-    email,
+  email,
 
-    employeeCode,
+  employeeCode,
 
-    temporaryPassword,
+  temporaryPassword,
 
-    loginLink,
+  loginLink,
 }) => {
-
-    return `
+  return `
 
     <div
         style="
@@ -110,10 +108,7 @@ const employeeWelcomeTemplate =
     `;
 };
 
-module.exports =
-    employeeWelcomeTemplate;
-
-
+module.exports = employeeWelcomeTemplate;
 
 // const employeeWelcomeTemplate =
 // ({

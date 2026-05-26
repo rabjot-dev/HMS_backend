@@ -1,77 +1,40 @@
-const express =
-require(
-    'express',
-);
+const express = require("express");
 
-const router =
-express.Router();
+const router = express.Router();
 
 const {
+  createPatient,
 
-    createPatient,
+  getPatients,
 
-    getPatients,
+  getPatientById,
 
-    getPatientById,
+  updatePatient,
+} = require("../controllers/patient.controller");
 
-    updatePatient,
-
-} = require(
-
-    '../controllers/patient.controller',
-);
-
-const authMiddleware =
-require(
-
-    '../middleware/auth.middleware',
-);
+const authMiddleware = require("../middleware/auth.middleware");
 
 /*
 |--------------------------------------------------------------------------
 | Role Middleware
 |--------------------------------------------------------------------------
 */
-const authorizeRoles =
-(...roles) => {
+const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    const userRoles = req.user.roles;
 
-    return (
-        req,
-        res,
-        next,
-    ) => {
+    const hasAccess = userRoles.some((role) => roles.includes(role));
 
-        const userRoles =
-            req.user.roles;
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
 
-        const hasAccess =
+        message: "Access Denied",
+      });
+    }
 
-            userRoles.some(
-
-                (
-                    role,
-                ) =>
-
-                    roles.includes(
-                        role,
-                    ),
-            );
-
-        if (!hasAccess) {
-
-            return res
-                .status(403)
-                .json({
-
-                    success: false,
-
-                    message:
-                        'Access Denied',
-                });
-        }
-
-        next();
-    };
+    next();
+  };
 };
 
 /*
@@ -80,19 +43,17 @@ const authorizeRoles =
 |--------------------------------------------------------------------------
 */
 router.post(
+  "/",
 
-    '/',
+  authMiddleware,
 
-    authMiddleware,
+  authorizeRoles(
+    "ADMIN",
 
-    authorizeRoles(
+    "RECEPTIONIST",
+  ),
 
-        'ADMIN',
-
-        'RECEPTIONIST',
-    ),
-
-    createPatient,
+  createPatient,
 );
 
 /*
@@ -101,12 +62,11 @@ router.post(
 |--------------------------------------------------------------------------
 */
 router.get(
+  "/",
 
-    '/',
+  authMiddleware,
 
-    authMiddleware,
-
-    getPatients,
+  getPatients,
 );
 
 /*
@@ -115,12 +75,11 @@ router.get(
 |--------------------------------------------------------------------------
 */
 router.get(
+  "/:id",
 
-    '/:id',
+  authMiddleware,
 
-    authMiddleware,
-
-    getPatientById,
+  getPatientById,
 );
 
 /*
@@ -129,20 +88,17 @@ router.get(
 |--------------------------------------------------------------------------
 */
 router.put(
+  "/:id",
 
-    '/:id',
+  authMiddleware,
 
-    authMiddleware,
+  authorizeRoles(
+    "ADMIN",
 
-    authorizeRoles(
+    "RECEPTIONIST",
+  ),
 
-        'ADMIN',
-
-        'RECEPTIONIST',
-    ),
-
-    updatePatient,
+  updatePatient,
 );
 
-module.exports =
-router;
+module.exports = router;

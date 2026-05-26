@@ -1,35 +1,14 @@
-const generateTemporaryPassword =
-() => {
+const generateTemporaryPassword = () => {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#";
 
-    const chars =
+  let password = "";
 
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#";
+  for (let i = 0; i < 10; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
 
-    let password = "";
-
-    for (
-        let i = 0;
-        i < 10;
-        i++
-    ) {
-
-        password +=
-
-            chars.charAt(
-
-                Math.floor(
-
-                    Math.random()
-
-                    *
-
-                    chars.length
-                ),
-            );
-    }
-
-    return password;
+  return password;
 };
 
-module.exports =
-    generateTemporaryPassword;
+module.exports = generateTemporaryPassword;

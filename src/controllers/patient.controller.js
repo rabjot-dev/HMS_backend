@@ -1,78 +1,45 @@
-const Patient =
-require(
-    "../models/Patient",
-);
+const Patient = require("../models/Patient");
 
-const registerPatient =
-require(
-    "../services/patient/register-patient.service",
-);
+const registerPatient = require("../services/patient/register-patient.service");
 
 /*
 |--------------------------------------------------------------------------|
 | Register Patient
 |--------------------------------------------------------------------------|
 */
-const createPatient =
-async (req, res) => {
+const createPatient = async (req, res) => {
+  try {
+    const serviceResponse = await registerPatient(req.body);
 
-    try {
+    return res.status(201).json({
+      success: true,
 
-        const serviceResponse =
+      message: "Patient registered successfully",
 
-            await registerPatient(
-                req.body,
-            );
+      data: serviceResponse,
+    });
+  } catch (error) {
+    console.log(error);
 
-        return res
-            .status(201)
-            .json({
-
-                success: true,
-
-                message:
-                    "Patient registered successfully",
-
-                data:
-                    serviceResponse,
-            });
-
-    } catch (error) {
-
-        console.log(
-            error,
-        );
-
-        /*
+    /*
         |------------------------------------------------------------------|
         | Duplicate Phone
         |------------------------------------------------------------------|
         */
-        if (
-            error.code === 11000
-        ) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
 
-            return res
-                .status(400)
-                .json({
-
-                    success: false,
-
-                    message:
-                        "Phone number already exists",
-                });
-        }
-
-        return res
-            .status(400)
-            .json({
-
-                success: false,
-
-                message:
-                    error.message,
-            });
+        message: "Phone number already exists",
+      });
     }
+
+    return res.status(400).json({
+      success: false,
+
+      message: error.message,
+    });
+  }
 };
 
 /*
@@ -80,51 +47,30 @@ async (req, res) => {
 | Get All Patients
 |--------------------------------------------------------------------------|
 */
-const getPatients =
-async (req, res) => {
+const getPatients = async (req, res) => {
+  try {
+    const patients = await Patient.find()
 
-    try {
+      .populate("assignedDoctor")
 
-        const patients =
+      .sort({
+        createdAt: -1,
+      });
 
-            await Patient
-                .find()
+    return res.status(200).json({
+      success: true,
 
-                .populate(
-                    "assignedDoctor",
-                )
+      data: patients,
+    });
+  } catch (error) {
+    console.log(error);
 
-                .sort({
+    return res.status(500).json({
+      success: false,
 
-                    createdAt: -1,
-                });
-
-        return res
-            .status(200)
-            .json({
-
-                success: true,
-
-                data:
-                    patients,
-            });
-
-    } catch (error) {
-
-        console.log(
-            error,
-        );
-
-        return res
-            .status(500)
-            .json({
-
-                success: false,
-
-                message:
-                    "Internal Server Error",
-            });
-    }
+      message: "Internal Server Error",
+    });
+  }
 };
 
 /*
@@ -132,69 +78,39 @@ async (req, res) => {
 | Get Patient By ID
 |--------------------------------------------------------------------------|
 */
-const getPatientById =
-async (req, res) => {
+const getPatientById = async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.id)
 
-    try {
+      .populate("assignedDoctor");
 
-        const patient =
-
-            await Patient
-                .findById(
-
-                    req.params.id,
-                )
-
-                .populate(
-                    "assignedDoctor",
-                );
-
-        /*
+    /*
         |------------------------------------------------------------------|
         | Not Found
         |------------------------------------------------------------------|
         */
-        if (
-            !patient
-        ) {
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
 
-            return res
-                .status(404)
-                .json({
-
-                    success: false,
-
-                    message:
-                        "Patient not found",
-                });
-        }
-
-        return res
-            .status(200)
-            .json({
-
-                success: true,
-
-                data:
-                    patient,
-            });
-
-    } catch (error) {
-
-        console.log(
-            error,
-        );
-
-        return res
-            .status(500)
-            .json({
-
-                success: false,
-
-                message:
-                    "Internal Server Error",
-            });
+        message: "Patient not found",
+      });
     }
+
+    return res.status(200).json({
+      success: true,
+
+      data: patient,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+
+      message: "Internal Server Error",
+    });
+  }
 };
 
 /*
@@ -202,105 +118,68 @@ async (req, res) => {
 | Update Patient
 |--------------------------------------------------------------------------|
 */
-const updatePatient =
-async (req, res) => {
+const updatePatient = async (req, res) => {
+  try {
+    const patient = await Patient.findByIdAndUpdate(
+      req.params.id,
 
-    try {
+      req.body,
 
-        const patient =
+      {
+        returnDocument: "after",
+      },
+    );
 
-            await Patient
-                .findByIdAndUpdate(
-
-                    req.params.id,
-
-                    req.body,
-
-                    {
-
-                        returnDocument:
-                            "after",
-                    },
-                );
-
-        /*
+    /*
         |------------------------------------------------------------------|
         | Not Found
         |------------------------------------------------------------------|
         */
-        if (
-            !patient
-        ) {
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
 
-            return res
-                .status(404)
-                .json({
+        message: "Patient not found",
+      });
+    }
 
-                    success: false,
+    return res.status(200).json({
+      success: true,
 
-                    message:
-                        "Patient not found",
-                });
-        }
+      message: "Patient updated successfully",
 
-        return res
-            .status(200)
-            .json({
+      data: patient,
+    });
+  } catch (error) {
+    console.log(error);
 
-                success: true,
-
-                message:
-                    "Patient updated successfully",
-
-                data:
-                    patient,
-            });
-
-    } catch (error) {
-
-        console.log(
-            error,
-        );
-
-        /*
+    /*
         |------------------------------------------------------------------|
         | Duplicate Phone
         |------------------------------------------------------------------|
         */
-        if (
-            error.code === 11000
-        ) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
 
-            return res
-                .status(400)
-                .json({
-
-                    success: false,
-
-                    message:
-                        "Phone number already exists",
-                });
-        }
-
-        return res
-            .status(500)
-            .json({
-
-                success: false,
-
-                message:
-                    "Internal Server Error",
-            });
+        message: "Phone number already exists",
+      });
     }
+
+    return res.status(500).json({
+      success: false,
+
+      message: "Internal Server Error",
+    });
+  }
 };
 
 module.exports = {
+  createPatient,
 
-    createPatient,
+  getPatients,
 
-    getPatients,
+  getPatientById,
 
-    getPatientById,
-
-    updatePatient,
+  updatePatient,
 };

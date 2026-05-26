@@ -1,79 +1,42 @@
-const express =
-require(
-    'express',
-);
+const express = require("express");
 
-const router =
-express.Router();
+const router = express.Router();
 
 const {
+  createConsultation,
 
-    createConsultation,
+  getConsultationByAppointment,
 
-    getConsultationByAppointment,
+  updateConsultation,
 
-    updateConsultation,
+  getConsultations,
+  downloadPrescriptionPdf,
+  getConsultationById,
+} = require("../controllers/consultation.controller");
 
-    getConsultations,
-    downloadPrescriptionPdf,
-    getConsultationById,
-
-} = require(
-
-    '../controllers/consultation.controller',
-);
-
-const authMiddleware =
-require(
-
-    '../middleware/auth.middleware',
-);
+const authMiddleware = require("../middleware/auth.middleware");
 
 /*
 |--------------------------------------------------------------------------
 | Role Middleware
 |--------------------------------------------------------------------------
 */
-const authorizeRoles =
-(...roles) => {
+const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    const userRoles = req.user.roles;
 
-    return (
-        req,
-        res,
-        next,
-    ) => {
+    const hasAccess = userRoles.some((role) => roles.includes(role));
 
-        const userRoles =
-            req.user.roles;
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
 
-        const hasAccess =
+        message: "Access Denied",
+      });
+    }
 
-            userRoles.some(
-
-                (
-                    role,
-                ) =>
-
-                    roles.includes(
-                        role,
-                    ),
-            );
-
-        if (!hasAccess) {
-
-            return res
-                .status(403)
-                .json({
-
-                    success: false,
-
-                    message:
-                    'Access Denied',
-                });
-        }
-
-        next();
-    };
+    next();
+  };
 };
 
 /*
@@ -82,16 +45,13 @@ const authorizeRoles =
 |--------------------------------------------------------------------------
 */
 router.post(
+  "/",
 
-    '/',
+  authMiddleware,
 
-    authMiddleware,
+  authorizeRoles("DOCTOR"),
 
-    authorizeRoles(
-        'DOCTOR',
-    ),
-
-    createConsultation,
+  createConsultation,
 );
 
 /*
@@ -100,12 +60,11 @@ router.post(
 |--------------------------------------------------------------------------
 */
 router.get(
+  "/",
 
-    '/',
+  authMiddleware,
 
-    authMiddleware,
-
-    getConsultations,
+  getConsultations,
 );
 /*
 |--------------------------------------------------------------------------
@@ -113,12 +72,11 @@ router.get(
 |--------------------------------------------------------------------------
 */
 router.get(
+  "/pdf/:consultationId",
 
-    '/pdf/:consultationId',
+  authMiddleware,
 
-    authMiddleware,
-
-    downloadPrescriptionPdf,
+  downloadPrescriptionPdf,
 );
 
 /*
@@ -127,14 +85,12 @@ router.get(
 |--------------------------------------------------------------------------
 */
 router.get(
+  "/appointment/:appointmentId",
 
-    '/appointment/:appointmentId',
+  authMiddleware,
 
-    authMiddleware,
-
-    getConsultationByAppointment,
+  getConsultationByAppointment,
 );
-
 
 /*
 |--------------------------------------------------------------------------
@@ -142,27 +98,19 @@ router.get(
 |--------------------------------------------------------------------------
 */
 router.put(
+  "/:id",
 
-    '/:id',
+  authMiddleware,
 
-    authMiddleware,
+  authorizeRoles("DOCTOR"),
 
-    authorizeRoles(
-        'DOCTOR',
-    ),
-
-    updateConsultation,
+  updateConsultation,
 );
 router.get(
+  "/prescription/:consultationId",
 
-    '/prescription/:consultationId',
-
-    downloadPrescriptionPdf,
+  downloadPrescriptionPdf,
 );
-router.get(
-    '/:id',
-    getConsultationById,
-);
+router.get("/:id", getConsultationById);
 
-module.exports =
-router;
+module.exports = router;

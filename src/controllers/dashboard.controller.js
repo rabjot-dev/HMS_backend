@@ -1,75 +1,44 @@
-const Employee =
-require(
-    "../models/Employee",
-);
+const Employee = require("../models/Employee");
 
-const Appointment =
-require(
-    "../models/Appointment",
-);
+const Appointment = require("../models/Appointment");
 
-const Patient =
-require(
-    "../models/Patient",
-);
+const Patient = require("../models/Patient");
 
-const STATUS =
-require(
-    "../constants/status",
-);
+const STATUS = require("../constants/status");
 
 /*
 |--------------------------------------------------------------------------
 | Admin Stats
 |--------------------------------------------------------------------------
 */
-const getAdminStats =
-async (req, res) => {
+const getAdminStats = async (req, res) => {
+  const totalEmployees = await Employee.countDocuments();
 
-    const totalEmployees =
+  const totalDoctors = await Employee.countDocuments({
+    designation: "DOCTOR",
+  });
 
-        await Employee.countDocuments();
+  const totalNurses = await Employee.countDocuments({
+    designation: "NURSE",
+  });
 
-    const totalDoctors =
+  const pendingRequests = await Employee.countDocuments({
+    status: STATUS.PENDING,
+  });
 
-        await Employee.countDocuments({
+  return res.status(200).json({
+    success: true,
 
-            designation:
-                "DOCTOR",
-        });
+    data: {
+      totalEmployees,
 
-    const totalNurses =
+      totalDoctors,
 
-        await Employee.countDocuments({
+      totalNurses,
 
-            designation:
-                "NURSE",
-        });
-
-    const pendingRequests =
-
-        await Employee.countDocuments({
-
-            status:
-                STATUS.PENDING,
-        });
-
-    return res.status(200)
-        .json({
-
-            success: true,
-
-            data: {
-
-                totalEmployees,
-
-                totalDoctors,
-
-                totalNurses,
-
-                pendingRequests,
-            },
-        });
+      pendingRequests,
+    },
+  });
 };
 
 /*
@@ -77,27 +46,20 @@ async (req, res) => {
 | Recent Employees
 |--------------------------------------------------------------------------
 */
-const getRecentEmployees =
-async (req, res) => {
+const getRecentEmployees = async (req, res) => {
+  const employees = await Employee.find()
 
-    const employees =
+    .sort({
+      createdAt: -1,
+    })
 
-        await Employee.find()
+    .limit(5);
 
-            .sort({
+  return res.status(200).json({
+    success: true,
 
-                createdAt: -1,
-            })
-
-            .limit(5);
-
-    return res.status(200)
-        .json({
-
-            success: true,
-
-            data: employees,
-        });
+    data: employees,
+  });
 };
 
 /*
@@ -105,49 +67,32 @@ async (req, res) => {
 | Doctor Stats
 |--------------------------------------------------------------------------
 */
-const getDoctorStats =
-async (req, res) => {
+const getDoctorStats = async (req, res) => {
+  const totalAppointments = await Appointment.countDocuments();
 
-    const totalAppointments =
+  const completedAppointments = await Appointment.countDocuments({
+    status: "COMPLETED",
+  });
 
-        await Appointment.countDocuments();
+  const pendingAppointments = await Appointment.countDocuments({
+    status: "BOOKED",
+  });
 
-    const completedAppointments =
+  const totalPatients = await Patient.countDocuments();
 
-        await Appointment.countDocuments({
+  return res.status(200).json({
+    success: true,
 
-            status:
-                "COMPLETED",
-        });
+    data: {
+      totalAppointments,
 
-    const pendingAppointments =
+      completedAppointments,
 
-        await Appointment.countDocuments({
+      pendingAppointments,
 
-            status:
-                "BOOKED",
-        });
-
-    const totalPatients =
-
-        await Patient.countDocuments();
-
-    return res.status(200)
-        .json({
-
-            success: true,
-
-            data: {
-
-                totalAppointments,
-
-                completedAppointments,
-
-                pendingAppointments,
-
-                totalPatients,
-            },
-        });
+      totalPatients,
+    },
+  });
 };
 
 /*
@@ -155,49 +100,32 @@ async (req, res) => {
 | Receptionist Stats
 |--------------------------------------------------------------------------
 */
-const getReceptionistStats =
-async (req, res) => {
+const getReceptionistStats = async (req, res) => {
+  const todayAppointments = await Appointment.countDocuments();
 
-    const todayAppointments =
+  const totalPatients = await Patient.countDocuments();
 
-        await Appointment.countDocuments();
+  const checkedInPatients = await Appointment.countDocuments({
+    status: "IN_CONSULTATION",
+  });
 
-    const totalPatients =
+  const pendingAppointments = await Appointment.countDocuments({
+    status: "BOOKED",
+  });
 
-        await Patient.countDocuments();
+  return res.status(200).json({
+    success: true,
 
-    const checkedInPatients =
+    data: {
+      todayAppointments,
 
-        await Appointment.countDocuments({
+      totalPatients,
 
-            status:
-                "IN_CONSULTATION",
-        });
+      checkedInPatients,
 
-    const pendingAppointments =
-
-        await Appointment.countDocuments({
-
-            status:
-                "BOOKED",
-        });
-
-    return res.status(200)
-        .json({
-
-            success: true,
-
-            data: {
-
-                todayAppointments,
-
-                totalPatients,
-
-                checkedInPatients,
-
-                pendingAppointments,
-            },
-        });
+      pendingAppointments,
+    },
+  });
 };
 
 /*
@@ -205,42 +133,32 @@ async (req, res) => {
 | Today Appointments
 |--------------------------------------------------------------------------
 */
-const getTodayAppointments =
-async (req, res) => {
+const getTodayAppointments = async (req, res) => {
+  const appointments = await Appointment.find()
 
-    const appointments =
+    .populate("patientId")
 
-        await Appointment.find()
+    .sort({
+      createdAt: -1,
+    })
 
-            .populate(
-                "patientId",
-            )
+    .limit(5);
 
-            .sort({
+  return res.status(200).json({
+    success: true,
 
-                createdAt: -1,
-            })
-
-            .limit(5);
-
-    return res.status(200)
-        .json({
-
-            success: true,
-
-            data: appointments,
-        });
+    data: appointments,
+  });
 };
 
 module.exports = {
+  getAdminStats,
 
-    getAdminStats,
+  getRecentEmployees,
 
-    getRecentEmployees,
+  getDoctorStats,
 
-    getDoctorStats,
+  getReceptionistStats,
 
-    getReceptionistStats,
-
-    getTodayAppointments,
+  getTodayAppointments,
 };

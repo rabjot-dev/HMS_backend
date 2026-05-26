@@ -1,104 +1,58 @@
-const Appointment =
-require(
+const Appointment = require("../models/Appointment");
 
-    '../models/Appointment',
-);
-
-const generateAppointmentId =
-async () => {
-
-    /*
+const generateAppointmentId = async () => {
+  /*
     |--------------------------------------------------------------------------
     | Current Date
     |--------------------------------------------------------------------------
     */
-    const now =
-        new Date();
+  const now = new Date();
 
-    const year =
+  const year = String(now.getFullYear()).slice(-2);
 
-        String(
-            now.getFullYear(),
-        ).slice(-2);
+  const month = String(now.getMonth() + 1).padStart(2, "0");
 
-    const month =
-
-        String(
-            now.getMonth() + 1,
-        ).padStart(2, '0');
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Prefix
     |--------------------------------------------------------------------------
     */
-    const prefix =
-        `APT-${year}${month}`;
+  const prefix = `APT-${year}${month}`;
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Latest Appointment
     |--------------------------------------------------------------------------
     */
-    const latestAppointment =
+  const latestAppointment = await Appointment.findOne({
+    appointmentId: {
+      $regex: `^${prefix}`,
+    },
+  })
 
-        await Appointment
-            .findOne({
+    .sort({
+      appointmentId: -1,
+    });
 
-                appointmentId: {
+  let sequence = 1;
 
-                    $regex:
-                        `^${prefix}`,
-                },
-            })
-
-            .sort({
-
-                appointmentId:
-                    -1,
-            });
-
-    let sequence =
-        1;
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Increment Sequence
     |--------------------------------------------------------------------------
     */
-    if (
-        latestAppointment
-    ) {
+  if (latestAppointment) {
+    const lastSequence = parseInt(latestAppointment.appointmentId.slice(-5));
 
-        const lastSequence =
+    sequence = lastSequence + 1;
+  }
 
-            parseInt(
-
-                latestAppointment
-                    .appointmentId
-                    .slice(-5),
-            );
-
-        sequence =
-            lastSequence + 1;
-    }
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Final Appointment ID
     |--------------------------------------------------------------------------
     */
-    return `${
-
-        prefix
-
-    }${
-
-        String(sequence)
-            .padStart(5, '0')
-
-    }`;
+  return `${prefix}${String(sequence).padStart(5, "0")}`;
 };
 
-module.exports =
-generateAppointmentId;
+module.exports = generateAppointmentId;

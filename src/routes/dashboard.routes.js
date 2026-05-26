@@ -1,26 +1,18 @@
-const express =
-require(
-    "express",
-);
+const express = require("express");
 
-const router =
-    express.Router();
+const router = express.Router();
 
 const {
+  getAdminStats,
 
-    getAdminStats,
+  getRecentEmployees,
 
-    getRecentEmployees,
+  getDoctorStats,
 
-    getDoctorStats,
+  getReceptionistStats,
 
-    getReceptionistStats,
-
-    getTodayAppointments,
-
-} = require(
-    "../controllers/dashboard.controller",
-);
+  getTodayAppointments,
+} = require("../controllers/dashboard.controller");
 
 /*
 |--------------------------------------------------------------------------
@@ -28,17 +20,15 @@ const {
 |--------------------------------------------------------------------------
 */
 router.get(
+  "/admin-stats",
 
-    "/admin-stats",
-
-    getAdminStats,
+  getAdminStats,
 );
 
 router.get(
+  "/recent-employees",
 
-    "/recent-employees",
-
-    getRecentEmployees,
+  getRecentEmployees,
 );
 
 /*
@@ -47,10 +37,9 @@ router.get(
 |--------------------------------------------------------------------------
 */
 router.get(
+  "/doctor-stats",
 
-    "/doctor-stats",
-
-    getDoctorStats,
+  getDoctorStats,
 );
 
 /*
@@ -59,18 +48,15 @@ router.get(
 |--------------------------------------------------------------------------
 */
 router.get(
+  "/receptionist-stats",
 
-    "/receptionist-stats",
-
-    getReceptionistStats,
+  getReceptionistStats,
 );
 
 router.get(
+  "/today-appointments",
 
-    "/today-appointments",
-
-    getTodayAppointments,
+  getTodayAppointments,
 );
 
-module.exports =
-    router;
+module.exports = router;

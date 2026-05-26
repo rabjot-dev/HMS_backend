@@ -1,43 +1,34 @@
-const mongoose =
-require(
-    'mongoose',
-);
+const mongoose = require("mongoose");
 
 /*
 |--------------------------------------------------------------------------
 | Prescription Schema
 |--------------------------------------------------------------------------
 */
-const prescriptionSchema =
-new mongoose.Schema({
+const prescriptionSchema = new mongoose.Schema({
+  medicineName: {
+    type: String,
 
-    medicineName: {
+    required: true,
+  },
 
-        type: String,
+  dosage: {
+    type: String,
 
-        required: true,
-    },
+    required: true,
+  },
 
-    dosage: {
+  frequency: {
+    type: String,
 
-        type: String,
+    required: true,
+  },
 
-        required: true,
-    },
+  duration: {
+    type: String,
 
-    frequency: {
-
-        type: String,
-
-        required: true,
-    },
-
-    duration: {
-
-        type: String,
-
-        required: true,
-    },
+    required: true,
+  },
 });
 
 /*
@@ -45,193 +36,139 @@ new mongoose.Schema({
 | Consultation Schema
 |--------------------------------------------------------------------------
 */
-const consultationSchema =
-new mongoose.Schema(
-
-    {
-
-        /*
+const consultationSchema = new mongoose.Schema(
+  {
+    /*
         |--------------------------------------------------------------------------
         | Appointment
         |--------------------------------------------------------------------------
         */
-        appointmentId: {
+    appointmentId: {
+      type: mongoose.Schema.Types.ObjectId,
 
-            type:
-            mongoose.Schema
-            .Types.ObjectId,
+      ref: "Appointment",
 
-            ref:
-            'Appointment',
+      required: true,
+    },
 
-            required:
-            true,
-        },
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Patient
         |--------------------------------------------------------------------------
         */
-        patientId: {
+    patientId: {
+      type: mongoose.Schema.Types.ObjectId,
 
-            type:
-            mongoose.Schema
-            .Types.ObjectId,
+      ref: "Patient",
 
-            ref:
-            'Patient',
+      required: true,
+    },
 
-            required:
-            true,
-        },
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Doctor
         |--------------------------------------------------------------------------
         */
-        doctorEmployeeId: {
+    doctorEmployeeId: {
+      type: mongoose.Schema.Types.ObjectId,
 
-            type:
-            mongoose.Schema
-            .Types.ObjectId,
+      ref: "Employee",
 
-            ref:
-            'Employee',
+      required: true,
+    },
 
-            required:
-            true,
-        },
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Diagnosis
         |--------------------------------------------------------------------------
         */
-        diagnosis: {
+    diagnosis: {
+      type: String,
 
-            type:
-            String,
+      trim: true,
+    },
 
-            trim:
-            true,
-        },
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Symptoms
         |--------------------------------------------------------------------------
         */
-        symptoms: [
+    symptoms: [
+      {
+        type: String,
+      },
+    ],
 
-            {
-                type:
-                String,
-            },
-        ],
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Doctor Notes
         |--------------------------------------------------------------------------
         */
-        doctorNotes: {
+    doctorNotes: {
+      type: String,
 
-            type:
-            String,
+      trim: true,
+    },
 
-            trim:
-            true,
-        },
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Vitals
         |--------------------------------------------------------------------------
         */
-        vitals: {
+    vitals: {
+      bloodPressure: {
+        type: String,
+      },
 
-            bloodPressure: {
+      pulseRate: {
+        type: Number,
+      },
 
-                type:
-                String,
-            },
+      oxygenLevel: {
+        type: Number,
+      },
 
-            pulseRate: {
+      temperature: {
+        type: Number,
+      },
 
-                type:
-                Number,
-            },
+      weight: {
+        type: Number,
+      },
+    },
 
-            oxygenLevel: {
-
-                type:
-                Number,
-            },
-
-            temperature: {
-
-                type:
-                Number,
-            },
-
-            weight: {
-
-                type:
-                Number,
-            },
-        },
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Prescription
         |--------------------------------------------------------------------------
         */
-        prescriptions: [
+    prescriptions: [prescriptionSchema],
 
-            prescriptionSchema,
-        ],
-
-        /*
+    /*
         |--------------------------------------------------------------------------
         | Consultation Status
         |--------------------------------------------------------------------------
         */
-        status: {
+    status: {
+      type: String,
 
-            type:
-            String,
+      enum: ["IN_PROGRESS", "COMPLETED"],
 
-            enum: [
-
-                'IN_PROGRESS',
-
-                'COMPLETED',
-            ],
-
-            default:
-            'IN_PROGRESS',
-        },
+      default: "IN_PROGRESS",
     },
+  },
 
-    {
+  {
+    timestamps: true,
 
-        timestamps:
-        true,
-
-        versionKey:
-        false,
-    },
+    versionKey: false,
+  },
 );
 
-const Consultation =
-mongoose.model(
+const Consultation = mongoose.model(
+  "Consultation",
 
-    'Consultation',
-
-    consultationSchema,
+  consultationSchema,
 );
 
-module.exports =
-Consultation;
+module.exports = Consultation;

@@ -1,289 +1,218 @@
-const mongoose =
-    require(
-        "mongoose",
-    );
+const mongoose = require("mongoose");
 
-const patientSchema =
-    new mongoose.Schema(
-
-        {
-
-            /*
+const patientSchema = new mongoose.Schema(
+  {
+    /*
             |--------------------------------------------------------------------------
             | Basic Information
             |--------------------------------------------------------------------------
             */
-            patientId: {
+    patientId: {
+      type: String,
 
-                type: String,
+      required: true,
 
-                required: true,
+      unique: true,
+    },
 
-                unique: true,
-            },
+    firstName: {
+      type: String,
 
-            firstName: {
+      required: true,
+    },
 
-                type: String,
+    lastName: {
+      type: String,
 
-                required: true,
-            },
+      required: true,
+    },
 
-            lastName: {
+    dateOfBirth: {
+      type: Date,
 
-                type: String,
+      required: true,
+    },
 
-                required: true,
-            },
+    gender: {
+      type: String,
 
-            dateOfBirth: {
+      enum: ["MALE", "FEMALE", "OTHER"],
 
-                type: Date,
+      required: true,
+    },
 
-                required: true,
-            },
+    bloodGroup: {
+      type: String,
+    },
 
-            gender: {
+    maritalStatus: {
+      type: String,
 
-                type: String,
+      enum: ["SINGLE", "MARRIED", "DIVORCED"],
+    },
 
-                enum: [
-
-                    "MALE",
-
-                    "FEMALE",
-
-                    "OTHER",
-                ],
-
-                required: true,
-            },
-
-            bloodGroup: {
-
-                type: String,
-            },
-
-            maritalStatus: {
-
-                type: String,
-
-                enum: [
-
-                    "SINGLE",
-
-                    "MARRIED",
-
-                    "DIVORCED",
-                ],
-            },
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Contact Information
             |--------------------------------------------------------------------------
             */
-            countryCode: {
+    countryCode: {
+      type: String,
 
-                type: String,
+      required: true,
 
-                required: true,
+      default: "+91",
+    },
+    phone: {
+      type: String,
 
-                default: '+91',
-            },
-            phone: {
+      required: true,
 
-                type: String,
+      trim: true,
 
-                required: true,
+      unique: true,
 
-                trim: true,
+      match: /^[0-9]{10}$/,
+    },
 
-                unique: true,
+    email: {
+      type: String,
+    },
 
-                match: /^[0-9]{10}$/,
-            },
+    address: {
+      type: String,
+    },
 
-            email: {
+    city: {
+      type: String,
+    },
 
-                type: String,
-            },
+    state: {
+      type: String,
+    },
 
-            address: {
+    pincode: {
+      type: String,
+    },
 
-                type: String,
-            },
+    country: {
+      type: String,
+    },
 
-            city: {
-
-                type: String,
-            },
-
-            state: {
-
-                type: String,
-            },
-
-            pincode: {
-
-                type: String,
-            },
-
-            country: {
-
-                type: String,
-            },
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Emergency Contact
             |--------------------------------------------------------------------------
             */
-            emergencyContactName: {
+    emergencyContactName: {
+      type: String,
+    },
 
-                type: String,
-            },
+    emergencyContactPhone: {
+      type: String,
+    },
 
-            emergencyContactPhone: {
+    relationship: {
+      type: String,
+    },
 
-                type: String,
-            },
-
-            relationship: {
-
-                type: String,
-            },
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Medical Information
             |--------------------------------------------------------------------------
             */
-            allergies: [
+    allergies: [
+      {
+        type: String,
+      },
+    ],
 
-                {
-                    type: String,
-                },
-            ],
+    chronicDiseases: [
+      {
+        type: String,
+      },
+    ],
 
-            chronicDiseases: [
+    currentMedications: [
+      {
+        type: String,
+      },
+    ],
 
-                {
-                    type: String,
-                },
-            ],
+    pastSurgeries: [
+      {
+        type: String,
+      },
+    ],
 
-            currentMedications: [
+    medicalHistory: {
+      type: String,
+    },
 
-                {
-                    type: String,
-                },
-            ],
+    familyMedicalHistory: {
+      type: String,
+    },
 
-            pastSurgeries: [
-
-                {
-                    type: String,
-                },
-            ],
-
-            medicalHistory: {
-
-                type: String,
-            },
-
-            familyMedicalHistory: {
-
-                type: String,
-            },
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Insurance Information
             |--------------------------------------------------------------------------
             */
-            insuranceProvider: {
+    insuranceProvider: {
+      type: String,
+    },
 
-                type: String,
-            },
+    insurancePolicyNumber: {
+      type: String,
+    },
 
-            insurancePolicyNumber: {
+    insuranceExpiryDate: {
+      type: Date,
+    },
 
-                type: String,
-            },
+    insuranceCoverageAmount: {
+      type: Number,
+    },
 
-            insuranceExpiryDate: {
-
-                type: Date,
-            },
-
-            insuranceCoverageAmount: {
-
-                type: Number,
-            },
-
-            /*
+    /*
             |--------------------------------------------------------------------------
             | Hospital Information
             |--------------------------------------------------------------------------
             */
-            assignedDoctor: {
+    assignedDoctor: {
+      type: mongoose.Schema.Types.ObjectId,
 
-                type:
-                    mongoose.Schema
-                        .Types
-                        .ObjectId,
+      ref: "Employee",
+    },
 
-                ref: "Employee",
-            },
+    department: {
+      type: String,
+    },
 
-            department: {
+    patientType: {
+      type: String,
 
-                type: String,
-            },
+      enum: ["OPD", "IPD", "EMERGENCY"],
 
-            patientType: {
+      default: "OPD",
+    },
 
-                type: String,
+    status: {
+      type: String,
 
-                enum: [
+      enum: ["ACTIVE", "DISCHARGED", "INACTIVE"],
 
-                    "OPD",
+      default: "ACTIVE",
+    },
+  },
 
-                    "IPD",
+  {
+    timestamps: true,
+  },
+);
 
-                    "EMERGENCY",
-                ],
+module.exports = mongoose.model(
+  "Patient",
 
-                default: "OPD",
-            },
-
-            status: {
-
-                type: String,
-
-                enum: [
-
-                    "ACTIVE",
-
-                    "DISCHARGED",
-
-                    "INACTIVE",
-                ],
-
-                default: "ACTIVE",
-            },
-        },
-
-        {
-            timestamps: true,
-        },
-    );
-
-module.exports =
-    mongoose.model(
-
-        "Patient",
-
-        patientSchema,
-    );
+  patientSchema,
+);

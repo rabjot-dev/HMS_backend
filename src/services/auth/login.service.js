@@ -1,224 +1,149 @@
 const bcrypt = require("bcryptjs");
 
-const User =
-    require("../../models/User");
+const User = require("../../models/User");
 
-const Employee =
-    require("../../models/Employee");
+const Employee = require("../../models/Employee");
 
-const generateToken =
-    require("../../utils/generateToken");
+const generateToken = require("../../utils/generateToken");
 
-const loginUser = async (
-    loginData,
-) => {
+const loginUser = async (loginData) => {
+  const { loginId, password } = loginData;
 
-    const {
-        loginId,
-        password,
-    } = loginData;
+  let user = null;
 
-    let user = null;
+  const isEmailLogin = loginId.includes("@");
 
-    const isEmailLogin =
-        loginId.includes("@");
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Login Using Email
     |--------------------------------------------------------------------------
     */
-    if (isEmailLogin) {
+  if (isEmailLogin) {
+    user = await User.findOne({
+      email: loginId.toLowerCase(),
+    });
+  } else {
 
-        user =
-            await User.findOne({
-
-                email:
-                    loginId.toLowerCase(),
-            });
-    }
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Login Using Employee Code
     |--------------------------------------------------------------------------
     */
-    else {
+    const employee = await Employee.findOne({
+      employeeCode: loginId,
+    });
 
-        const employee =
-            await Employee.findOne({
-
-                employeeCode:
-                    loginId,
-            });
-
-        if (!employee) {
-
-            throw new Error(
-                "Invalid credentials",
-            );
-        }
-
-        user =
-            await User.findOne({
-
-                employeeId:
-                    employee._id,
-            });
+    if (!employee) {
+      throw new Error("Invalid credentials");
     }
 
-    /*
+    user = await User.findOne({
+      employeeId: employee._id,
+    });
+  }
+
+  /*
     |--------------------------------------------------------------------------
     | User Not Found
     |--------------------------------------------------------------------------
     */
-    if (!user) {
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
 
-        throw new Error(
-            "Invalid credentials",
-        );
-    }
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Account Status Checks
     |--------------------------------------------------------------------------
     */
-    if (
-        user.status ===
-        "PENDING"
-    ) {
+  if (user.status === "PENDING") {
+    throw new Error("Your account is pending admin approval");
+  }
 
-        throw new Error(
-            "Your account is pending admin approval",
-        );
-    }
+  if (user.status === "REJECTED") {
+    throw new Error("Your registration was rejected");
+  }
 
-    if (
-        user.status ===
-        "REJECTED"
-    ) {
+  if (user.status === "INACTIVE") {
+    throw new Error("Account is inactive");
+  }
 
-        throw new Error(
-            "Your registration was rejected",
-        );
-    }
+  let isPasswordValid = false;
 
-    if (
-        user.status ===
-        "INACTIVE"
-    ) {
-
-        throw new Error(
-            "Account is inactive",
-        );
-    }
-
-    let isPasswordValid =
-        false;
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | First Login
     |--------------------------------------------------------------------------
     */
-    if (user.isFirstLogin) {
+  if (user.isFirstLogin) {
+    console.log("FIRST LOGIN");
 
-        console.log(
-            "FIRST LOGIN",
-        );
+    console.log(user.temporaryPasswordHash);
 
-        console.log(
-            user.temporaryPasswordHash,
-        );
+    isPasswordValid = await bcrypt.compare(
+      password,
 
-        isPasswordValid =
-            await bcrypt.compare(
+      user.temporaryPasswordHash,
+    );
+  } else {
 
-                password,
-
-                user
-                    .temporaryPasswordHash,
-            );
-    }
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Normal Login
     |--------------------------------------------------------------------------
     */
-    else {
+    console.log("NORMAL LOGIN");
 
-        console.log(
-            "NORMAL LOGIN",
-        );
+    console.log(user.passwordHash);
 
-        console.log(
-            user.passwordHash,
-        );
+    isPasswordValid = await bcrypt.compare(
+      password,
 
-        isPasswordValid =
-            await bcrypt.compare(
+      user.passwordHash,
+    );
+  }
 
-                password,
-
-                user.passwordHash,
-            );
-    }
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Invalid Password
     |--------------------------------------------------------------------------
     */
-    if (!isPasswordValid) {
+  if (!isPasswordValid) {
+    throw new Error("Invalid credentials");
+  }
 
-        throw new Error(
-            "Invalid credentials",
-        );
-    }
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Generate JWT Token
     |--------------------------------------------------------------------------
     */
-    const tokenPayload = {
+  const tokenPayload = {
+    userId: user._id,
 
-        userId:
-            user._id,
+    roles: user.roles,
+  };
 
-        roles:
-            user.roles,
-    };
+  const token = generateToken(tokenPayload);
 
-    const token =
-        generateToken(
-            tokenPayload,
-        );
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Update Last Login
     |--------------------------------------------------------------------------
     */
-    user.lastLoginAt =
-        new Date();
+  user.lastLoginAt = new Date();
 
-    await user.save();
+  await user.save();
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Final Response
     |--------------------------------------------------------------------------
     */
-    return {
+  return {
+    token,
 
-        token,
-
-        user,
-    };
+    user,
+  };
 };
 
-module.exports =
-    loginUser;
+module.exports = loginUser;

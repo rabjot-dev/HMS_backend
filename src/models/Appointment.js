@@ -1,129 +1,116 @@
 const mongoose = require("mongoose");
 const STATUS = require("../constants/status");
 const appointmentSchema = new mongoose.Schema(
-    {
-        appointmentId: { type: String, required: true, unique: true, trim: true, },
-        patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true, },
-        doctorEmployeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", required: true, },
-        appointmentDate: { type: Date, required: true, },
-        timeSlot: { type: String, required: true, trim: true, },
-        tokenNumber: {type: Number,},
-        status: { type: String, enum: [STATUS.BOOKED, STATUS.CANCELLED, STATUS.COMPLETED,STATUS.IN_CONSULTATION,STATUS.NO_SHOW], default: STATUS.BOOKED, },
-        createdByEmployeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", required: true, },
-appointmentType: {
+  {
+    appointmentId: { type: String, required: true, unique: true, trim: true },
+    patientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Patient",
+      required: true,
+    },
+    doctorEmployeeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+      required: true,
+    },
+    appointmentDate: { type: Date, required: true },
+    timeSlot: { type: String, required: true, trim: true },
+    tokenNumber: { type: Number },
+    status: {
+      type: String,
+      enum: [
+        STATUS.BOOKED,
+        STATUS.CANCELLED,
+        STATUS.COMPLETED,
+        STATUS.IN_CONSULTATION,
+        STATUS.NO_SHOW,
+      ],
+      default: STATUS.BOOKED,
+    },
+    createdByEmployeeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+      required: true,
+    },
+    appointmentType: {
+      type: String,
 
-    type: String,
+      enum: [
+        "CONSULTATION",
 
-    enum: [
+        "FOLLOW_UP",
 
-        'CONSULTATION',
+        "EMERGENCY",
 
-        'FOLLOW_UP',
+        "VIDEO_CONSULTATION",
 
-        'EMERGENCY',
+        "ROUTINE_CHECKUP",
+      ],
 
-        'VIDEO_CONSULTATION',
+      default: "CONSULTATION",
+    },
 
-        'ROUTINE_CHECKUP',
-    ],
-
-    default:
-        'CONSULTATION',
-},
-
-/*
+    /*
 |--------------------------------------------------------------------------
 | Priority
 |--------------------------------------------------------------------------
 */
-priority: {
+    priority: {
+      type: String,
 
-    type: String,
+      enum: ["NORMAL", "URGENT", "CRITICAL"],
 
-    enum: [
+      default: "NORMAL",
+    },
 
-        'NORMAL',
-
-        'URGENT',
-
-        'CRITICAL',
-    ],
-
-    default:
-        'NORMAL',
-},
-
-/*
+    /*
 |--------------------------------------------------------------------------
 | Payment Status
 |--------------------------------------------------------------------------
 */
-paymentStatus: {
+    paymentStatus: {
+      type: String,
 
-    type: String,
+      enum: ["PENDING", "PAID", "INSURANCE"],
 
-    enum: [
+      default: "PENDING",
+    },
 
-        'PENDING',
-
-        'PAID',
-
-        'INSURANCE',
-    ],
-
-    default:
-        'PENDING',
-},
-
-/*
+    /*
 |--------------------------------------------------------------------------
 | Visit Mode
 |--------------------------------------------------------------------------
 */
-visitMode: {
+    visitMode: {
+      type: String,
 
-    type: String,
+      enum: ["OFFLINE", "ONLINE", "HOME_VISIT"],
 
-    enum: [
+      default: "OFFLINE",
+    },
 
-        'OFFLINE',
-
-        'ONLINE',
-
-        'HOME_VISIT',
-    ],
-
-    default:
-        'OFFLINE',
-},
-
-/*
+    /*
 |--------------------------------------------------------------------------
 | Symptoms
 |--------------------------------------------------------------------------
 */
-symptoms: [
-
-    {
+    symptoms: [
+      {
         type: String,
-    },
-],
-    },
-    {
-        timestamps: true, versionKey: false,
-    },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  },
 );
 
 const Appointment =
-
-mongoose.models.Appointment
-
-||
-
-mongoose.model(
-
-    'Appointment',
+  mongoose.models.Appointment ||
+  mongoose.model(
+    "Appointment",
 
     appointmentSchema,
-);
+  );
 module.exports = Appointment;

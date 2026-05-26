@@ -1,220 +1,165 @@
-const bcrypt =
-    require("bcryptjs");
+const bcrypt = require("bcryptjs");
 
-const User =
-    require("../../models/User");
+const User = require("../../models/User");
 
-const Employee =
-    require("../../models/Employee");
+const Employee = require("../../models/Employee");
 
-const STATUS =
-    require("../../constants/status");
+const STATUS = require("../../constants/status");
 
-const EMPLOYEE_PREFIX =
-    require("../../constants/employee-prefix");
+const EMPLOYEE_PREFIX = require("../../constants/employee-prefix");
 
-const generateSequentialId =
-require(
-    "../../utils/generateSequentialId",
-);
+const generateSequentialId = require("../../utils/generateSequentialId");
 
 /*
 |--------------------------------------------------------------------------
 | Email Utils
 |--------------------------------------------------------------------------
 */
-const sendEmail =
-require(
-    "../../utils/sendEmail",
-);
+const sendEmail = require("../../utils/sendEmail");
 
-const pendingApprovalTemplate =
-require(
-    "../../templates/pendingApprovalTemplate",
-);
+const pendingApprovalTemplate = require("../../templates/pendingApprovalTemplate");
 
-const registerEmployeeSelf =
-async (employeeData) => {
+const registerEmployeeSelf = async (employeeData) => {
+  const {
+    name,
+    email,
+    gender,
+    phone,
+    department,
+    designation,
+    joiningDate,
+    qualification,
+    specialization,
+    medicalRegistrationNo,
+    consultationFee,
+    password,
+  } = employeeData;
 
-    const {
-
-        name,
-        email,
-        gender,
-        phone,
-        department,
-        designation,
-        joiningDate,
-        qualification,
-        specialization,
-        medicalRegistrationNo,
-        consultationFee,
-        password,
-    } = employeeData;
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Existing User Check
     |--------------------------------------------------------------------------
     */
-    const existingUser =
-        await User.findOne({
+  const existingUser = await User.findOne({
+    email: email.toLowerCase(),
+  });
 
-            email:
-                email.toLowerCase(),
-        });
+  if (existingUser) {
+    throw new Error("User already exists");
+  }
 
-    if (existingUser) {
-
-        throw new Error(
-            "User already exists",
-        );
-    }
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Employee Prefix
     |--------------------------------------------------------------------------
     */
-    const prefix =
-        EMPLOYEE_PREFIX[
-            designation
-        ];
+  const prefix = EMPLOYEE_PREFIX[designation];
 
-    if (!prefix) {
+  if (!prefix) {
+    throw new Error("Invalid designation");
+  }
 
-        throw new Error(
-            "Invalid designation",
-        );
-    }
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Employee Code
     |--------------------------------------------------------------------------
     */
-    const employeeCode =
-        await generateSequentialId(
-            prefix,
-        );
+  const employeeCode = await generateSequentialId(prefix);
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Hash Password
     |--------------------------------------------------------------------------
     */
-    const hashedPassword =
-        await bcrypt.hash(
+  const hashedPassword = await bcrypt.hash(
+    password,
 
-            password,
+    10,
+  );
 
-            10,
-        );
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Create Employee
     |--------------------------------------------------------------------------
     */
-    const employee =
-        await Employee.create({
+  const employee = await Employee.create({
+    employeeCode,
 
-            employeeCode,
+    name,
 
-            name,
+    email: email.toLowerCase(),
 
-            email:
-                email.toLowerCase(),
+    phone,
 
-            phone,
+    gender,
 
-            gender,
+    department,
 
-            department,
+    designation,
 
-            designation,
+    joiningDate,
 
-            joiningDate,
+    qualification,
 
-            qualification,
+    specialization,
 
-            specialization,
+    medicalRegistrationNo,
 
-            medicalRegistrationNo,
+    consultationFee,
 
-            consultationFee,
+    status: STATUS.PENDING,
+  });
 
-            status:
-                STATUS.PENDING,
-        });
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Create User
     |--------------------------------------------------------------------------
     */
-    await User.create({
+  await User.create({
+    email: email.toLowerCase(),
 
-        email:
-            email.toLowerCase(),
+    passwordHash: hashedPassword,
 
-        passwordHash:
-            hashedPassword,
+    roles: [designation],
 
-        roles: [
-            designation,
-        ],
+    employeeId: employee._id,
 
-        employeeId:
-            employee._id,
+    status: STATUS.PENDING,
 
-        status:
-            STATUS.PENDING,
+    isFirstLogin: false,
+  });
 
-        isFirstLogin:
-            false,
-    });
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Send Admin Notification Email
     |--------------------------------------------------------------------------
     */
-    const htmlContent =
+  const htmlContent = pendingApprovalTemplate({
+    name,
 
-        pendingApprovalTemplate({
+    email,
 
-            name,
+    designation,
 
-            email,
+    department,
+  });
 
-            designation,
+  await sendEmail({
+    to: process.env.ADMIN_EMAIL,
 
-            department,
-        });
+    subject: "New Employee Registration Pending Approval",
 
-    await sendEmail({
+    htmlContent,
+  });
 
-        to:
-            process.env.ADMIN_EMAIL,
-
-        subject:
-            "New Employee Registration Pending Approval",
-
-        htmlContent,
-    });
-
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Final Response
     |--------------------------------------------------------------------------
     */
-    return {
-
-        message:
-            "Registration submitted successfully. Wait for admin approval.",
-    };
+  return {
+    message: "Registration submitted successfully. Wait for admin approval.",
+  };
 };
 
-module.exports =
-    registerEmployeeSelf;
+module.exports = registerEmployeeSelf;
