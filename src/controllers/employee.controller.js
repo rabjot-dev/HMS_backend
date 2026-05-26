@@ -283,7 +283,7 @@ const getDoctors = async (req, res) => {
       designation: "DOCTOR",
     })
 
-      .select("name department specialization availability")
+      .select("name department specialization availability consultationFee")
 
       .sort({
         name: 1,
