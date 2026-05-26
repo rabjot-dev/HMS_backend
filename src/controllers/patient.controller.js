@@ -9,9 +9,9 @@ require(
 );
 
 /*
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 | Register Patient
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 */
 const createPatient =
 async (req, res) => {
@@ -24,7 +24,8 @@ async (req, res) => {
                 req.body,
             );
 
-        return res.status(201)
+        return res
+            .status(201)
             .json({
 
                 success: true,
@@ -35,24 +36,35 @@ async (req, res) => {
                 data:
                     serviceResponse,
             });
-    }
-    catch (error) {
+
+    } catch (error) {
+
+        console.log(
+            error,
+        );
+
+        /*
+        |------------------------------------------------------------------|
+        | Duplicate Phone
+        |------------------------------------------------------------------|
+        */
         if (
-    error.code === 11000
-) {
+            error.code === 11000
+        ) {
 
-    return res
-        .status(400)
-        .json({
+            return res
+                .status(400)
+                .json({
 
-            success: false,
+                    success: false,
 
-            message:
-            'Phone number already exists',
-        });
-}
+                    message:
+                        "Phone number already exists",
+                });
+        }
 
-        return res.status(400)
+        return res
+            .status(400)
             .json({
 
                 success: false,
@@ -64,95 +76,222 @@ async (req, res) => {
 };
 
 /*
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 | Get All Patients
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 */
 const getPatients =
 async (req, res) => {
 
-    const patients =
+    try {
 
-        await Patient.find()
+        const patients =
 
-            .populate(
-                "assignedDoctor",
-            )
+            await Patient
+                .find()
 
-            .sort({
+                .populate(
+                    "assignedDoctor",
+                )
 
-                createdAt: -1,
+                .sort({
+
+                    createdAt: -1,
+                });
+
+        return res
+            .status(200)
+            .json({
+
+                success: true,
+
+                data:
+                    patients,
             });
 
-    return res.status(200)
-        .json({
+    } catch (error) {
 
-            success: true,
+        console.log(
+            error,
+        );
 
-            data: patients,
-        });
+        return res
+            .status(500)
+            .json({
+
+                success: false,
+
+                message:
+                    "Internal Server Error",
+            });
+    }
 };
 
 /*
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 | Get Patient By ID
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 */
 const getPatientById =
 async (req, res) => {
 
-    const patient =
+    try {
 
-        await Patient.findById(
+        const patient =
 
-            req.params.id,
-        )
+            await Patient
+                .findById(
 
-            .populate(
-                "assignedDoctor",
-            );
+                    req.params.id,
+                )
 
-    return res.status(200)
-        .json({
+                .populate(
+                    "assignedDoctor",
+                );
 
-            success: true,
+        /*
+        |------------------------------------------------------------------|
+        | Not Found
+        |------------------------------------------------------------------|
+        */
+        if (
+            !patient
+        ) {
 
-            data: patient,
-        });
+            return res
+                .status(404)
+                .json({
+
+                    success: false,
+
+                    message:
+                        "Patient not found",
+                });
+        }
+
+        return res
+            .status(200)
+            .json({
+
+                success: true,
+
+                data:
+                    patient,
+            });
+
+    } catch (error) {
+
+        console.log(
+            error,
+        );
+
+        return res
+            .status(500)
+            .json({
+
+                success: false,
+
+                message:
+                    "Internal Server Error",
+            });
+    }
 };
 
 /*
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 | Update Patient
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 */
 const updatePatient =
 async (req, res) => {
 
-    const patient =
+    try {
 
-        await Patient.findByIdAndUpdate(
+        const patient =
 
-            req.params.id,
+            await Patient
+                .findByIdAndUpdate(
 
-            req.body,
+                    req.params.id,
 
-            {
-                returnDocument:
-                    "after",
-            },
+                    req.body,
+
+                    {
+
+                        returnDocument:
+                            "after",
+                    },
+                );
+
+        /*
+        |------------------------------------------------------------------|
+        | Not Found
+        |------------------------------------------------------------------|
+        */
+        if (
+            !patient
+        ) {
+
+            return res
+                .status(404)
+                .json({
+
+                    success: false,
+
+                    message:
+                        "Patient not found",
+                });
+        }
+
+        return res
+            .status(200)
+            .json({
+
+                success: true,
+
+                message:
+                    "Patient updated successfully",
+
+                data:
+                    patient,
+            });
+
+    } catch (error) {
+
+        console.log(
+            error,
         );
 
-    return res.status(200)
-        .json({
+        /*
+        |------------------------------------------------------------------|
+        | Duplicate Phone
+        |------------------------------------------------------------------|
+        */
+        if (
+            error.code === 11000
+        ) {
 
-            success: true,
+            return res
+                .status(400)
+                .json({
 
-            message:
-                "Patient updated successfully",
+                    success: false,
 
-            data: patient,
-        });
+                    message:
+                        "Phone number already exists",
+                });
+        }
+
+        return res
+            .status(500)
+            .json({
+
+                success: false,
+
+                message:
+                    "Internal Server Error",
+            });
+    }
 };
 
 module.exports = {

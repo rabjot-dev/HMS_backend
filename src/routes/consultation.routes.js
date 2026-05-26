@@ -16,6 +16,7 @@ const {
 
     getConsultations,
     downloadPrescriptionPdf,
+    getConsultationById,
 
 } = require(
 
@@ -151,6 +152,16 @@ router.put(
     ),
 
     updateConsultation,
+);
+router.get(
+
+    '/prescription/:consultationId',
+
+    downloadPrescriptionPdf,
+);
+router.get(
+    '/:id',
+    getConsultationById,
 );
 
 module.exports =

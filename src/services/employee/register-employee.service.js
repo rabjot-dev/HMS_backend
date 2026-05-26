@@ -271,6 +271,8 @@ const registerEmployee =
                 name,
 
                 email,
+                
+                employeeCode,
 
                 temporaryPassword,
 

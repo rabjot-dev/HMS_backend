@@ -36,27 +36,7 @@ const registerEmployeeValidation = [
     .withMessage("Role is required")
     .isIn(Object.values(ROLES))
     .withMessage("Invalid employee role"),
-    body(
-
-    'securityQuestion',
-)
-
-.notEmpty()
-
-.withMessage(
-    'Security question is required',
-),
-
-body(
-
-    'securityAnswer',
-)
-
-.notEmpty()
-
-.withMessage(
-    'Security answer is required',
-),
+ 
 ];
 
 module.exports = {

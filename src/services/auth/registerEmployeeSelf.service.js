@@ -40,6 +40,7 @@ async (employeeData) => {
 
         name,
         email,
+        gender,
         phone,
         department,
         designation,
@@ -126,6 +127,8 @@ async (employeeData) => {
                 email.toLowerCase(),
 
             phone,
+
+            gender,
 
             department,
 
