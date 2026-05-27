@@ -174,53 +174,7 @@
             return res.status(500).json({ message: "Internal Server Error", error: e.message });
         }
     };    
-exports.updateEmployee = async (req, res) => {
-   
-    try {
-        const { employeeCode } = req.params;
 
-       const updateData = req.body || {};
-
-        // 1. Update Employee collection
-        const updatedEmployee = await Employee.findOneAndUpdate(
-            { employeeCode: employeeCode },
-            updateData,
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedEmployee) {
-            return res.status(404).json({
-                success: false,
-                message: "Employee not found"
-            });
-        }
-
-       
-        const updatedUser = await User.findOneAndUpdate(
-            { employeeId: employeeCode },
-            {
-                email: updateData.email,
-                role: updateData.role,
-                status: updateData.status
-            },
-            { new: true, runValidators: true }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message: "Employee updated successfully",
-            employee: updatedEmployee,
-            user: updatedUser
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message
-        });
-    }
-};
 
 
 
