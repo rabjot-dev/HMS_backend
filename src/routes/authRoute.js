@@ -10,6 +10,5 @@ router.post("/employee/signup", verifyToken, verifyAdmin, validateSignup, signup
 router.post("/login", validateLogin, login);
 router.post("/reset-password", verifyToken, validateResetPassword, resetPassword);
 router.get("/getAllEmployees",getAllEmployees);
-router.put("/employee/:employeeCode", updateEmployee);
 router.get("/employee/:employeeCode", getEmployeeById);
 module.exports = router;
