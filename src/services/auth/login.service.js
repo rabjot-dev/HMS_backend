@@ -110,17 +110,18 @@ const loginUser = async (loginData) => {
     throw new Error("Invalid credentials");
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Generate JWT Token
-    |--------------------------------------------------------------------------
-    */
-  const tokenPayload = {
-    userId: user._id,
+  //Generate Token
+ const tokenPayload = {
 
-    roles: user.roles,
-  };
+  userId:
+    user._id,
 
+  employeeId:
+    user.employeeId,
+
+  roles:
+    user.roles,
+};
   const token = generateToken(tokenPayload);
 
   /*
