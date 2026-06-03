@@ -38,9 +38,7 @@ const registerEmployee = async (employeeData) => {
     consultationFee,
     availabilitySlots,
     workingDays,
-
     startTime,
-
     endTime,
 
     slotDuration,

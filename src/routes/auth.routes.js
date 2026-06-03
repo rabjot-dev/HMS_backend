@@ -4,15 +4,11 @@ const validateMiddleware = require("../middleware/validate.middleware");
 const {
   loginValidation,
   createPasswordValidation,
-  forgotPasswordValidation,
-  resetPasswordValidation,
 } = require("../validations/auth.validation");
 const {
   login,
   createPassword,
   getCurrentUser,
-  forgotPassword,
-  resetPassword,
 } = require("../controllers/auth.controller");
 const { register } = require("../controllers/auth.controller");
 
@@ -26,17 +22,5 @@ router.post(
   createPassword,
 );
 router.get("/me", authMiddleware, getCurrentUser);
-router.post("/register", register);
-router.post(
-  "/forgot-password",
-  forgotPasswordValidation,
-  validateMiddleware,
-  forgotPassword,
-);
-router.post(
-  "/reset-password",
-  resetPasswordValidation,
-  validateMiddleware,
-  resetPassword,
-);
+
 module.exports = router;
