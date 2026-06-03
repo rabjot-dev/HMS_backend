@@ -6,31 +6,15 @@ const employeeSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     gender: { type: String, enum: ["MALE", "FEMALE", "OTHER"], required: true },
     countryCode: { type: String, required: true, default: "+91" },
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-      unique: true,
-      match: /^[0-9]{10}$/,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-    },
+    phone: {  type: String,  required: true,  trim: true,  unique: true,  match: /^[0-9]{10}$/,},
+    email: {type: String, required: true, unique: true, trim: true, lowercase: true,},
     department: { type: String, required: true, trim: true },
     designation: { type: String, required: true, trim: true },
     joiningDate: { type: Date, required: true },
     medicalRegistrationNo: { type: String, trim: true, default: null },
     specialization: { type: String, trim: true, default: null },
     qualification: { type: [String], default: [] },
-    status: {
-      type: String,
-      enum: [STATUS.ACTIVE, STATUS.INACTIVE, STATUS.PENDING, STATUS.REJECTED],
-      default: STATUS.PENDING,
-    },
+    status: {type: String,enum: [STATUS.ACTIVE, STATUS.INACTIVE, STATUS.PENDING, STATUS.REJECTED],default: STATUS.PENDING,},
     availabilitySlots: { type: [String], default: [] },
     consultationFee: { type: Number, default: 0 },
     availability: {
@@ -75,8 +59,7 @@ const employeeSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true,
-    versionKey: false,
+    timestamps: true, versionKey: false,
   },
 );
 const Employee = mongoose.model("Employee", employeeSchema);

@@ -4,7 +4,6 @@ const app = require("./app");
 const seedAdmin = require("./seeds/seed-admin");
 const mongoose = require("mongoose");
 const PORT = process.env.PORT || 5000;
-
 const startServer = async () => {
   try {
     await connnectDB();

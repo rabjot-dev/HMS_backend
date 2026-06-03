@@ -16,9 +16,7 @@ const createEmployeePassword = async (passwordData) => {
   const isEmailLogin = loginId.includes("@");
 
   if (isEmailLogin) {
-    user = await User.findOne({
-      email: loginId.toLowerCase(),
-    });
+    user = await User.findOne({ email: loginId.toLowerCase()});
   } else {
     const employee = await Employee.findOne({
       employeeCode: loginId,
@@ -42,14 +40,9 @@ const createEmployeePassword = async (passwordData) => {
   }
 
   console.log(typeof user.passwordHash);
-
   console.log(user.passwordHash);
 
-  const isTemporaryPasswordValid = await bcrypt.compare(
-    temporaryPassword,
-
-    user.temporaryPasswordHash,
-  );
+  const isTemporaryPasswordValid = await bcrypt.compare(temporaryPassword,user.temporaryPasswordHash);
 
   if (!isTemporaryPasswordValid) {
     throw new Error("Invalid temporary password");
@@ -58,12 +51,9 @@ const createEmployeePassword = async (passwordData) => {
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
   user.passwordHash = hashedNewPassword;
-
   user.temporaryPasswordHash = null;
-
   user.isFirstLogin = false;
   user.securityQuestion = securityQuestion;
-
   user.securityAnswer = securityAnswer;
 
   await user.save();

@@ -1,33 +1,21 @@
 const bcrypt = require("bcryptjs");
-
 const User = require("../../models/User");
-
 const Employee = require("../../models/Employee");
-
 const generateToken = require("../../utils/generateToken");
-
 const loginUser = async (loginData) => {
-  const { loginId, password } = loginData;
+const { loginId, password } = loginData;
 
   let user = null;
 
   const isEmailLogin = loginId.includes("@");
-
-  /*
-    |--------------------------------------------------------------------------
-    | Login Using Email
-    |--------------------------------------------------------------------------
-    */
+// Login using email
   if (isEmailLogin) {
     user = await User.findOne({
       email: loginId.toLowerCase(),
     });
   } else {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Using Employee Code
-    |--------------------------------------------------------------------------
-    */
+   
+// Login using employee code
     const employee = await Employee.findOne({
       employeeCode: loginId,
     });
@@ -40,40 +28,14 @@ const loginUser = async (loginData) => {
       employeeId: employee._id,
     });
   }
-
-  /*
-    |--------------------------------------------------------------------------
-    | User Not Found
-    |--------------------------------------------------------------------------
-    */
   if (!user) {
     throw new Error("Invalid credentials");
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Account Status Checks
-    |--------------------------------------------------------------------------
-    */
-  if (user.status === "PENDING") {
-    throw new Error("Your account is pending admin approval");
-  }
-
-  if (user.status === "REJECTED") {
-    throw new Error("Your registration was rejected");
-  }
-
-  if (user.status === "INACTIVE") {
-    throw new Error("Account is inactive");
-  }
 
   let isPasswordValid = false;
 
-  /*
-    |--------------------------------------------------------------------------
-    | First Login
-    |--------------------------------------------------------------------------
-    */
+ // First login
   if (user.isFirstLogin) {
     console.log("FIRST LOGIN");
 
@@ -85,11 +47,8 @@ const loginUser = async (loginData) => {
       user.temporaryPasswordHash,
     );
   } else {
-    /*
-    |--------------------------------------------------------------------------
-    | Normal Login
-    |--------------------------------------------------------------------------
-    */
+
+    // Normal login
     console.log("NORMAL LOGIN");
 
     console.log(user.passwordHash);
@@ -101,11 +60,7 @@ const loginUser = async (loginData) => {
     );
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Invalid Password
-    |--------------------------------------------------------------------------
-    */
+// invalid password
   if (!isPasswordValid) {
     throw new Error("Invalid credentials");
   }
@@ -113,32 +68,16 @@ const loginUser = async (loginData) => {
   //Generate Token
   const tokenPayload = {
     userId: user._id,
-
     employeeId: user.employeeId,
-
     roles: user.roles,
   };
   const token = generateToken(tokenPayload);
 
-  /*
-    |--------------------------------------------------------------------------
-    | Update Last Login
-    |--------------------------------------------------------------------------
-    */
+  // last login
   user.lastLoginAt = new Date();
-
   await user.save();
 
-  /*
-    |--------------------------------------------------------------------------
-    | Final Response
-    |--------------------------------------------------------------------------
-    */
-  return {
-    token,
-
-    user,
-  };
+  return {token,user: { email: user.email, roles: user.roles, employeeId: user.employeeId }};
 };
 
 module.exports = loginUser;

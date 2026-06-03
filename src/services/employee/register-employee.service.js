@@ -1,24 +1,13 @@
 const Employee = require("../../models/Employee");
-
 const User = require("../../models/User");
-
 const EMPLOYEE_PREFIX = require("../../constants/employee-prefix");
-
 const bcrypt = require("bcryptjs");
-
 const ROLES = require("../../constants/roles");
-
 const STATUS = require("../../constants/status");
-
 const generateTemporaryPassword = require("../../utils/generateTemporaryPassword");
-
 const generateSequentialId = require("../../utils/generateSequentialId");
 
-/*
-|--------------------------------------------------------------------------
-| Email Utils
-|--------------------------------------------------------------------------
-*/
+// email 
 const sendEmail = require("../../utils/sendEmail");
 
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
@@ -40,25 +29,16 @@ const registerEmployee = async (employeeData) => {
     workingDays,
     startTime,
     endTime,
-
     slotDuration,
-
     breakStartTime,
-
     breakEndTime,
-
     maxPatientsPerDay,
     securityQuestion,
-
     securityAnswer,
     role,
   } = employeeData;
 
-  /*
-        |--------------------------------------------------------------------------
-        | Existing User Check
-        |--------------------------------------------------------------------------
-        */
+ // existing user check
   const existingUser = await User.findOne({
     email: email.toLowerCase(),
   });
@@ -67,151 +47,76 @@ const registerEmployee = async (employeeData) => {
     throw new Error("Employee already exists with this email");
   }
 
-  /*
-        |--------------------------------------------------------------------------
-        | Employee Prefix
-        |--------------------------------------------------------------------------
-        */
+
   const prefix = EMPLOYEE_PREFIX[designation];
 
   if (!prefix) {
     throw new Error("Invalid employee designation");
   }
 
-  /*
-        |--------------------------------------------------------------------------
-        | Employee Code
-        |--------------------------------------------------------------------------
-        */
-  const employeeCode = await generateSequentialId(prefix);
 
-  /*
-        |--------------------------------------------------------------------------
-        | Create Employee
-        |--------------------------------------------------------------------------
-        */
+  const employeeCode = await generateSequentialId(prefix);
   const employee = await Employee.create({
     employeeCode,
-
     name,
-
     email: email.toLowerCase(),
-
     phone,
-
     department,
     gender,
-
     designation,
-
     joiningDate,
-
     medicalRegistrationNo,
-
     specialization,
-
     qualification,
-
     consultationFee,
-
     availabilitySlots,
     availability: {
       workingDays: workingDays || [],
-
       startTime,
-
       endTime,
-
       slotDuration: slotDuration || 15,
-
       breakStartTime,
-
       breakEndTime,
-
       maxPatientsPerDay: maxPatientsPerDay || 40,
     },
 
     status: STATUS.ACTIVE,
   });
 
-  /*
-        |--------------------------------------------------------------------------
-        | Generate Temporary Password
-        |--------------------------------------------------------------------------
-        */
+// generate temporary password
   const temporaryPassword = generateTemporaryPassword();
-
   console.log(temporaryPassword);
+  const hashedTemporaryPassword = await bcrypt.hash(  temporaryPassword,  10);
 
-  const hashedTemporaryPassword = await bcrypt.hash(
-    temporaryPassword,
-
-    10,
-  );
-
-  /*
-        |--------------------------------------------------------------------------
-        | Create User
-        |--------------------------------------------------------------------------
-        */
+// create user account
   await User.create({
     email: email.toLowerCase(),
-
     temporaryPasswordHash: hashedTemporaryPassword,
-
     roles: [role || designation || ROLES.DOCTOR],
-
     employeeId: employee._id,
-
     isFirstLogin: true,
-
     status: STATUS.ACTIVE,
     securityQuestion,
-
     securityAnswer,
   });
-
-  /*
-        |--------------------------------------------------------------------------
-        | Send Welcome Email
-        |--------------------------------------------------------------------------
-        */
+// onboarding email
   console.log("Before Email Send");
 
   const loginLink = `${process.env.FRONTEND_URL}/login`;
-
-  const htmlContent = employeeWelcomeTemplate({
-    name,
-
-    email,
-
-    employeeCode,
-
-    temporaryPassword,
-
-    loginLink,
-  });
+  const htmlContent = employeeWelcomeTemplate({name,email,employeeCode,temporaryPassword,loginLink,});
 
   await sendEmail({
     to: email,
-
     subject: "Welcome to HMS",
-
     htmlContent,
   });
 
   console.log("After Email Send");
 
-  /*
-        |--------------------------------------------------------------------------
-        | Final Response
-        |--------------------------------------------------------------------------
-        */
+  
   return {
     message: "Employee registered successfully",
-
     employee,
-
     temporaryPassword,
   };
 };

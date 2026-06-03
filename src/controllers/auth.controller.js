@@ -46,10 +46,7 @@ const getCurrentUser = async (req, res) => {
   try {
     const user = await getCurrentLoggedInUser(req.user.userId);
 
-    return res.status(200).json({
-      success: true,
-      data: user,
-    });
+    return res.status(200).json({success: true, data: user});
   } catch (error) {
     return res.status(400).json({
       success: false,
@@ -57,11 +54,4 @@ const getCurrentUser = async (req, res) => {
     });
   }
 };
-
-
-
-module.exports = {
-  login,
-  createPassword,
-  getCurrentUser,
-};
+module.exports = { login, createPassword, getCurrentUser};
