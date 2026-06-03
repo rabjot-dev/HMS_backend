@@ -129,6 +129,8 @@ const registerEmployeeSelf = async (employeeData) => {
     isFirstLogin: false,
   });
 
+
+
   /*
     |--------------------------------------------------------------------------
     | Send Admin Notification Email

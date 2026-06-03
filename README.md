@@ -1,1 +1,1 @@
-HMS backend project using node.js, express.ja and mongoDB
+HMS backend project using node.js, express.js and mongoDB

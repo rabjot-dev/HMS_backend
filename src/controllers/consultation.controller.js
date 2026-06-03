@@ -4,11 +4,7 @@ const Appointment = require("../models/appointment");
 
 const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
 
-/*
-|--------------------------------------------------------------------------
-| Create Consultation
-|--------------------------------------------------------------------------
-*/
+//  Create Consultation
 const createConsultation = async (req, res) => {
   try {
     const {
@@ -25,11 +21,7 @@ const createConsultation = async (req, res) => {
       prescriptions,
     } = req.body;
 
-    /*
-            |--------------------------------------------------------------------------
-            | Check Existing Consultation
-            |--------------------------------------------------------------------------
-            */
+    //  Check Existing Consultation
     const existingConsultation = await Consultation.findOne({
       appointmentId,
     });
@@ -42,18 +34,10 @@ const createConsultation = async (req, res) => {
       });
     }
 
-    /*
-            |--------------------------------------------------------------------------
-            | Find Appointment
-            |--------------------------------------------------------------------------
-            */
+    //  Find Appointment
     const appointment = await Appointment.findById(appointmentId);
 
-    /*
-            |--------------------------------------------------------------------------
-            | Appointment Not Found
-            |--------------------------------------------------------------------------
-            */
+    //  Appointment Not Found
     if (!appointment) {
       return res.status(404).json({
         success: false,
@@ -62,11 +46,7 @@ const createConsultation = async (req, res) => {
       });
     }
 
-    /*
-            |--------------------------------------------------------------------------
-            | Create Consultation
-            |--------------------------------------------------------------------------
-            */
+    //  Create Consultation
     const consultation = await Consultation.create({
       appointmentId,
 
@@ -85,11 +65,7 @@ const createConsultation = async (req, res) => {
       prescriptions,
     });
 
-    /*
-            |--------------------------------------------------------------------------
-            | Update Appointment Status
-            |--------------------------------------------------------------------------
-            */
+    //  Update Appointment Status
     await Appointment.findByIdAndUpdate(
       appointmentId,
 
@@ -98,11 +74,7 @@ const createConsultation = async (req, res) => {
       },
     );
 
-    /*
-            |--------------------------------------------------------------------------
-            | Response
-            |--------------------------------------------------------------------------
-            */
+    //  Response
     return res.status(201).json({
       success: true,
 
@@ -121,20 +93,12 @@ const createConsultation = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get Consultation By Appointment
-|--------------------------------------------------------------------------
-*/
+//  Get Consultation By Appointment
 const getConsultationByAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
 
-    /*
-            |--------------------------------------------------------------------------
-            | Find Consultation
-            |--------------------------------------------------------------------------
-            */
+    //  Find Consultation
     const consultation = await Consultation.findOne({
       appointmentId,
     })
@@ -145,11 +109,7 @@ const getConsultationByAppointment = async (req, res) => {
 
       .populate("appointmentId");
 
-    /*
-            |--------------------------------------------------------------------------
-            | Not Found
-            |--------------------------------------------------------------------------
-            */
+    //  Not Found
     if (!consultation) {
       return res.status(404).json({
         success: false,
@@ -158,11 +118,7 @@ const getConsultationByAppointment = async (req, res) => {
       });
     }
 
-    /*
-            |--------------------------------------------------------------------------
-            | Response
-            |--------------------------------------------------------------------------
-            */
+    //  Response
     return res.status(200).json({
       success: true,
 
@@ -179,20 +135,12 @@ const getConsultationByAppointment = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Update Consultation
-|--------------------------------------------------------------------------
-*/
+//  Update Consultation
 const updateConsultation = async (req, res) => {
   try {
     const { id } = req.params;
 
-    /*
-            |--------------------------------------------------------------------------
-            | Update
-            |--------------------------------------------------------------------------
-            */
+    //  Update
     const consultation = await Consultation.findByIdAndUpdate(
       id,
 
@@ -203,11 +151,7 @@ const updateConsultation = async (req, res) => {
       },
     );
 
-    /*
-            |--------------------------------------------------------------------------
-            | Not Found
-            |--------------------------------------------------------------------------
-            */
+    //  Not Found
     if (!consultation) {
       return res.status(404).json({
         success: false,
@@ -216,11 +160,7 @@ const updateConsultation = async (req, res) => {
       });
     }
 
-    /*
-            |--------------------------------------------------------------------------
-            | Response
-            |--------------------------------------------------------------------------
-            */
+    //  Response
     return res.status(200).json({
       success: true,
 
@@ -239,11 +179,7 @@ const updateConsultation = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get All Consultations
-|--------------------------------------------------------------------------
-*/
+//  Get All Consultations
 const getConsultations = async (req, res) => {
   try {
     const consultations = await Consultation.find()
@@ -274,20 +210,12 @@ const getConsultations = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Download Prescription PDF
-|--------------------------------------------------------------------------
-*/
+//  Download Prescription PDF
 const downloadPrescriptionPdf = async (req, res) => {
   try {
     const { consultationId } = req.params;
 
-    /*
-            |--------------------------------------------------------------------------
-            | Find Consultation
-            |--------------------------------------------------------------------------
-            */
+    //  Find Consultation
     const consultation = await Consultation.findById(consultationId)
 
       .populate("patientId")
@@ -296,11 +224,7 @@ const downloadPrescriptionPdf = async (req, res) => {
 
       .populate("appointmentId");
 
-    /*
-            |--------------------------------------------------------------------------
-            | Not Found
-            |--------------------------------------------------------------------------
-            */
+    //  Not Found
     if (!consultation) {
       return res.status(404).json({
         success: false,
@@ -309,11 +233,7 @@ const downloadPrescriptionPdf = async (req, res) => {
       });
     }
 
-    /*
-            |--------------------------------------------------------------------------
-            | Generate PDF
-            |--------------------------------------------------------------------------
-            */
+    //  Generate PDF
     generatePrescriptionPdf(
       consultation,
 
@@ -329,11 +249,7 @@ const downloadPrescriptionPdf = async (req, res) => {
     });
   }
 };
-/*
-|--------------------------------------------------------------------------
-| Get Consultation By Id
-|--------------------------------------------------------------------------
-*/
+//  Get Consultation By Id
 const getConsultationById = async (req, res) => {
   try {
     const consultation = await Consultation.findById(req.params.id)

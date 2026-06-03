@@ -7,22 +7,22 @@ const bcrypt = require("bcryptjs");
 const Employee = require("../models/Employee");
 
 //login
-const login = async (req, res) => {
-  try {
-    const loginResponse = await loginUser(req.body);
+  const login = async (req, res) => {
+    try {
+      const loginResponse = await loginUser(req.body);
 
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      data: loginResponse,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+      return res.status(200).json({
+        success: true,
+        message: "Login successful",
+        data: loginResponse,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
 
 //create password
 const createPassword = async (req, res) => {

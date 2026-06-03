@@ -14,11 +14,7 @@ const generateTemporaryPassword = require("../../utils/generateTemporaryPassword
 
 const generateSequentialId = require("../../utils/generateSequentialId");
 
-/*
-|--------------------------------------------------------------------------
-| Email Utils
-|--------------------------------------------------------------------------
-*/
+// Email Utils
 const sendEmail = require("../../utils/sendEmail");
 
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
@@ -56,11 +52,7 @@ const registerEmployee = async (employeeData) => {
     role,
   } = employeeData;
 
-  /*
-        |--------------------------------------------------------------------------
-        | Existing User Check
-        |--------------------------------------------------------------------------
-        */
+  // Existing User Check
   const existingUser = await User.findOne({
     email: email.toLowerCase(),
   });
@@ -69,29 +61,17 @@ const registerEmployee = async (employeeData) => {
     throw new Error("Employee already exists with this email");
   }
 
-  /*
-        |--------------------------------------------------------------------------
-        | Employee Prefix
-        |--------------------------------------------------------------------------
-        */
+  //Employee Prefix
   const prefix = EMPLOYEE_PREFIX[designation];
 
   if (!prefix) {
     throw new Error("Invalid employee designation");
   }
 
-  /*
-        |--------------------------------------------------------------------------
-        | Employee Code
-        |--------------------------------------------------------------------------
-        */
+  // Employee Code
   const employeeCode = await generateSequentialId(prefix);
 
-  /*
-        |--------------------------------------------------------------------------
-        | Create Employee
-        |--------------------------------------------------------------------------
-        */
+  // Create Employee
   const employee = await Employee.create({
     employeeCode,
 
@@ -131,16 +111,14 @@ const registerEmployee = async (employeeData) => {
       breakEndTime,
 
       maxPatientsPerDay: maxPatientsPerDay || 40,
+
+      isAvailable: true,
     },
 
     status: STATUS.ACTIVE,
   });
 
-  /*
-        |--------------------------------------------------------------------------
-        | Generate Temporary Password
-        |--------------------------------------------------------------------------
-        */
+  // Generate Temporary Password
   const temporaryPassword = generateTemporaryPassword();
 
   console.log(temporaryPassword);
@@ -151,11 +129,7 @@ const registerEmployee = async (employeeData) => {
     10,
   );
 
-  /*
-        |--------------------------------------------------------------------------
-        | Create User
-        |--------------------------------------------------------------------------
-        */
+  // Create User
   await User.create({
     email: email.toLowerCase(),
 
@@ -173,11 +147,7 @@ const registerEmployee = async (employeeData) => {
     securityAnswer,
   });
 
-  /*
-        |--------------------------------------------------------------------------
-        | Send Welcome Email
-        |--------------------------------------------------------------------------
-        */
+  // Send Welcome Email
   console.log("Before Email Send");
 
   const loginLink = `${process.env.FRONTEND_URL}/login`;
@@ -204,11 +174,7 @@ const registerEmployee = async (employeeData) => {
 
   console.log("After Email Send");
 
-  /*
-        |--------------------------------------------------------------------------
-        | Final Response
-        |--------------------------------------------------------------------------
-        */
+  // Final Response
   return {
     message: "Employee registered successfully",
 

@@ -187,12 +187,37 @@ const getPendingEmployees = async (req, res) => {
 const approveEmployee = async (req, res) => {
   const employeeId = req.params.id;
 
+  const user = await User.findOne({ employeeId });
+  if (!user) throw new Error("User not found");
+
+  user.status = STATUS.ACTIVE;
+  await user.save();
+
+  // Find the employee to check designation
+  const employee = await Employee.findById(employeeId);
+
+
+const updateData = { status: STATUS.ACTIVE };
+
+if (employee?.designation === "DOCTOR") {
+  updateData["availability.isAvailable"] = true;
+}
+
+
+  await Employee.findByIdAndUpdate(employeeId, updateData);
+
+  return res.status(200).json({
+    success: true,
+    message: "Employee approved successfully",
+  });
+
+
   /*
         |--------------------------------------------------------------------------
         | Find User
         |--------------------------------------------------------------------------
         */
-  const user = await User.findOne({
+  user = await User.findOne({
     employeeId,
   });
 
@@ -281,28 +306,23 @@ const getDoctors = async (req, res) => {
   try {
     const doctors = await Employee.find({
       designation: "DOCTOR",
+      status: STATUS.ACTIVE,              // ← only active doctors
+      "availability.isAvailable": true,   // ← only available doctors
     })
-
       .select("name department specialization availability consultationFee")
-
-      .sort({
-        name: 1,
-      });
+      .sort({ name: 1 });
 
     return res.status(200).json({
       success: true,
-
       data: doctors,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-
       message: error.message,
     });
   }
 };
-
 /*
 |--------------------------------------------------------------------------
 | Update Doctor Availability
