@@ -111,18 +111,15 @@ const loginUser = async (loginData) => {
   }
 
   //Generate Token
- const tokenPayload = {
+  const tokenPayload = {
+    userId: user._id,
 
-  userId:
-    user._id,
+    employeeId: user.employeeId,
 
-  employeeId:
-    user.employeeId,
-
-  roles:
-    user.roles,
-};
+    roles: user.roles,
+  };
   const token = generateToken(tokenPayload);
+  
 
   /*
     |--------------------------------------------------------------------------

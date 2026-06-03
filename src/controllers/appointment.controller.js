@@ -1,12 +1,8 @@
 const Appointment = require("../models/Appointment");
 
-const Employee = require("../models/Employee");
+const getAvailableSlotsService = require("../services/appointment/get-available-slots.service");
 
-const Patient = require("../models/Patient");
-
-const generateSlots = require("../utils/generateSlots");
-
-const generateAppointmentId = require("../utils/generateAppointmentId");
+const bookAppointmentService = require("../services/appointment/book-appointment.service");
 
 /*
 |--------------------------------------------------------------------------
@@ -21,154 +17,12 @@ const getAvailableSlots = async (req, res) => {
       appointmentDate,
     } = req.query;
 
-    /*
-        |--------------------------------------------------------------------------
-        | Validate
-        |--------------------------------------------------------------------------
-        */
-    if (!doctorId || !appointmentDate) {
-      return res.status(400).json({
-        success: false,
+    const availableSlots = await getAvailableSlotsService(
+      doctorId,
 
-        message: "Doctor ID and appointment date are required",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Find Doctor
-        |--------------------------------------------------------------------------
-        */
-    const doctor = await Employee.findById(doctorId);
-
-    /*
-        |--------------------------------------------------------------------------
-        | Doctor Not Found
-        |--------------------------------------------------------------------------
-        */
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Doctor not found",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Doctor Availability Check
-        |--------------------------------------------------------------------------
-        */
-    if (!doctor?.availability?.isAvailable) {
-      return res.status(400).json({
-        success: false,
-
-        message: "Doctor is currently unavailable",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Working Day Validation
-        |--------------------------------------------------------------------------
-        */
-    const appointmentDay = new Date(appointmentDate)
-
-      .toLocaleDateString(
-        "en-US",
-
-        {
-          weekday: "long",
-        },
-      )
-
-      .toUpperCase();
-
-    /*
-        |--------------------------------------------------------------------------
-        | Check Working Day
-        |--------------------------------------------------------------------------
-        */
-    if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
-      return res.status(400).json({
-        success: false,
-
-        message: `Doctor is not available on ${appointmentDay}`,
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Generate All Slots
-        |--------------------------------------------------------------------------
-        */
-    const allSlots = generateSlots(
-      doctor?.availability?.startTime,
-
-      doctor?.availability?.endTime,
-
-      doctor?.availability?.slotDuration,
-
-      doctor?.availability?.breakStartTime,
-
-      doctor?.availability?.breakEndTime,
+      appointmentDate,
     );
 
-    /*
-        |--------------------------------------------------------------------------
-        | Normalize Date
-        |--------------------------------------------------------------------------
-        */
-    const normalizedDate = new Date(appointmentDate);
-
-    normalizedDate.setHours(0, 0, 0, 0);
-
-    const nextDay = new Date(normalizedDate);
-
-    nextDay.setDate(nextDay.getDate() + 1);
-
-    /*
-        |--------------------------------------------------------------------------
-        | Existing Appointments
-        |--------------------------------------------------------------------------
-        */
-    const bookedAppointments = await Appointment.find({
-      doctorEmployeeId: doctorId,
-
-      appointmentDate: {
-        $gte: normalizedDate,
-
-        $lt: nextDay,
-      },
-
-      status: {
-        $nin: ["CANCELLED", "NO_SHOW"],
-      },
-    });
-
-    /*
-        |--------------------------------------------------------------------------
-        | Extract Booked Slots
-        |--------------------------------------------------------------------------
-        */
-    const bookedSlots = bookedAppointments.map(
-      (appointment) => appointment.timeSlot,
-    );
-
-    /*
-        |--------------------------------------------------------------------------
-        | Remove Booked Slots
-        |--------------------------------------------------------------------------
-        */
-    const availableSlots = allSlots.filter(
-      (slot) => !bookedSlots.includes(slot),
-    );
-
-    /*
-        |--------------------------------------------------------------------------
-        | Response
-        |--------------------------------------------------------------------------
-        */
     return res.status(200).json({
       success: true,
 
@@ -177,10 +31,10 @@ const getAvailableSlots = async (req, res) => {
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
 
-      message: "Internal Server Error",
+      message: error.message,
     });
   }
 };
@@ -192,281 +46,12 @@ const getAvailableSlots = async (req, res) => {
 */
 const bookAppointment = async (req, res) => {
   try {
-    const {
-      patientId,
+    const appointment = await bookAppointmentService(
+      req.body,
 
-      doctorId,
+      req.user,
+    );
 
-      appointmentDate,
-
-      appointmentTime,
-
-      reason,
-
-      notes,
-
-      appointmentType,
-
-      priority,
-
-      paymentStatus,
-
-      visitMode,
-
-      symptoms,
-    } = req.body;
-
-    /*
-        |--------------------------------------------------------------------------
-        | Validate Patient
-        |--------------------------------------------------------------------------
-        */
-    const patient = await Patient.findById(patientId);
-
-    if (!patient) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Patient not found",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Validate Doctor
-        |--------------------------------------------------------------------------
-        */
-    const doctor = await Employee.findById(doctorId);
-
-    if (!doctor) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Doctor not found",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Doctor Availability Check
-        |--------------------------------------------------------------------------
-        */
-    if (!doctor?.availability?.isAvailable) {
-      return res.status(400).json({
-        success: false,
-
-        message: "Doctor is currently unavailable",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Working Day Validation
-        |--------------------------------------------------------------------------
-        */
-    const appointmentDay = new Date(appointmentDate)
-
-      .toLocaleDateString(
-        "en-US",
-
-        {
-          weekday: "long",
-        },
-      )
-
-      .toUpperCase();
-
-    if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
-      return res.status(400).json({
-        success: false,
-
-        message: `Doctor is not available on ${appointmentDay}`,
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Break Time Validation
-        |--------------------------------------------------------------------------
-        */
-    const breakStartTime = doctor?.availability?.breakStartTime;
-
-    const breakEndTime = doctor?.availability?.breakEndTime;
-
-    if (breakStartTime && breakEndTime) {
-      if (appointmentTime >= breakStartTime && appointmentTime < breakEndTime) {
-        return res.status(400).json({
-          success: false,
-
-          message: "Selected slot falls during doctor break time",
-        });
-      }
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Normalize Date
-        |--------------------------------------------------------------------------
-        */
-    const normalizedDate = new Date(appointmentDate);
-
-    normalizedDate.setHours(0, 0, 0, 0);
-
-    const nextDay = new Date(normalizedDate);
-
-    nextDay.setDate(nextDay.getDate() + 1);
-
-    /*
-        |--------------------------------------------------------------------------
-        | Max Patients Validation
-        |--------------------------------------------------------------------------
-        */
-    const totalAppointments = await Appointment.countDocuments({
-      doctorEmployeeId: doctorId,
-
-      appointmentDate: {
-        $gte: normalizedDate,
-
-        $lt: nextDay,
-      },
-
-      status: {
-        $ne: "CANCELLED",
-      },
-    });
-
-    if (totalAppointments >= doctor?.availability?.maxPatientsPerDay) {
-      return res.status(400).json({
-        success: false,
-
-        message: "Maximum patient limit reached for this doctor",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Check Doctor Slot Conflict
-        |--------------------------------------------------------------------------
-        */
-    const existingAppointment = await Appointment.findOne({
-      doctorEmployeeId: doctorId,
-
-      timeSlot: appointmentTime,
-
-      appointmentDate: {
-        $gte: normalizedDate,
-
-        $lt: nextDay,
-      },
-
-      status: {
-        $nin: ["CANCELLED", "NO_SHOW"],
-      },
-    });
-
-    if (existingAppointment) {
-      return res.status(400).json({
-        success: false,
-
-        message: "Selected slot already booked",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Prevent Duplicate Patient Booking
-        |--------------------------------------------------------------------------
-        */
-    const existingPatientAppointment = await Appointment.findOne({
-      patientId,
-
-      timeSlot: appointmentTime,
-
-      appointmentDate: {
-        $gte: normalizedDate,
-
-        $lt: nextDay,
-      },
-
-      status: {
-        $nin: ["CANCELLED", "NO_SHOW"],
-      },
-    });
-
-    if (existingPatientAppointment) {
-      return res.status(400).json({
-        success: false,
-
-        message: "Patient already has an appointment at this time",
-      });
-    }
-
-    /*
-        |--------------------------------------------------------------------------
-        | Generate Appointment ID
-        |--------------------------------------------------------------------------
-        */
-    const appointmentId = await generateAppointmentId();
-
-    /*
-        |--------------------------------------------------------------------------
-        | Generate Token Number
-        |--------------------------------------------------------------------------
-        */
-    const todayAppointmentsCount = await Appointment.countDocuments({
-      doctorEmployeeId: doctorId,
-
-      appointmentDate: {
-        $gte: normalizedDate,
-
-        $lt: nextDay,
-      },
-    });
-
-    const tokenNumber = todayAppointmentsCount + 1;
-
-    /*
-        |--------------------------------------------------------------------------
-        | Create Appointment
-        |--------------------------------------------------------------------------
-        */
-    const appointment = await Appointment.create({
-      appointmentId,
-
-      patientId,
-
-      doctorEmployeeId: doctorId,
-
-      appointmentDate: normalizedDate,
-
-      timeSlot: appointmentTime,
-
-      appointmentType,
-
-      priority,
-
-      paymentStatus,
-
-      visitMode,
-
-      symptoms,
-
-      reason,
-
-      notes,
-
-      tokenNumber,
-
-      createdByEmployeeId: req.user.userId,
-
-      status: "BOOKED",
-    });
-
-    /*
-        |--------------------------------------------------------------------------
-        | Response
-        |--------------------------------------------------------------------------
-        */
     return res.status(201).json({
       success: true,
 
@@ -477,10 +62,10 @@ const bookAppointment = async (req, res) => {
   } catch (error) {
     console.log(error);
 
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
 
-      message: "Internal Server Error",
+      message: error.message,
     });
   }
 };
