@@ -1,82 +1,42 @@
-const Appointment =
-require(
-  "../../models/Appointment",
-);
+const Appointment = require("../../models/Appointment");
 
-const Employee =
-require(
-  "../../models/Employee",
-);
+const Employee = require("../../models/Employee");
 
-const generateSlots =
-require(
-  "../../utils/generateSlots",
-);
+const generateSlots = require("../../utils/generateSlots");
 
-const getAvailableSlots =
-async (
-  doctorId,
-  appointmentDate,
-) => {
-
+const getAvailableSlots = async (doctorId, appointmentDate) => {
   /*
   |--------------------------------------------------------------------------
   | Validation
   |--------------------------------------------------------------------------
   */
-  if (
-    !doctorId ||
-    !appointmentDate
-  ) {
-
-    throw new Error(
-      "Doctor ID and appointment date are required",
-    );
+  if (!doctorId || !appointmentDate) {
+    throw new Error("Doctor ID and appointment date are required");
   }
   /*
 |--------------------------------------------------------------------------
 | Past Date Validation
 |--------------------------------------------------------------------------
 */
-const selectedDate =
-  new Date(
-    appointmentDate,
-  );
+  const selectedDate = new Date(appointmentDate);
 
-const today =
-  new Date();
+  const today = new Date();
 
-today.setHours(
-  0,
-  0,
-  0,
-  0,
-);
+  today.setHours(0, 0, 0, 0);
 
-if (
-  selectedDate < today
-) {
-
-  throw new Error(
-    "Cannot select past dates",
-  );
-}
+  if (selectedDate < today) {
+    throw new Error("Cannot select past dates");
+  }
 
   /*
   |--------------------------------------------------------------------------
   | Find Doctor
   |--------------------------------------------------------------------------
   */
-  const doctor =
-    await Employee.findById(
-      doctorId,
-    );
+  const doctor = await Employee.findById(doctorId);
 
   if (!doctor) {
-
-    throw new Error(
-      "Doctor not found",
-    );
+    throw new Error("Doctor not found");
   }
 
   /*
@@ -84,15 +44,8 @@ if (
   | Doctor Availability
   |--------------------------------------------------------------------------
   */
-  if (
-    !doctor
-      ?.availability
-      ?.isAvailable
-  ) {
-
-    throw new Error(
-      "Doctor is currently unavailable",
-    );
+  if (!doctor?.availability?.isAvailable) {
+    throw new Error("Doctor is currently unavailable");
   }
 
   /*
@@ -100,37 +53,16 @@ if (
   | Working Day Validation
   |--------------------------------------------------------------------------
   */
-  const appointmentDay =
+  const appointmentDay = new Date(appointmentDate)
 
-    new Date(
-      appointmentDate,
-    )
+    .toLocaleDateString("en-US", {
+      weekday: "long",
+    })
 
-      .toLocaleDateString(
-        "en-US",
-        {
-          weekday:
-            "long",
-        },
-      )
+    .toUpperCase();
 
-      .toUpperCase();
-
-  if (
-
-    !doctor
-      ?.availability
-      ?.workingDays
-      ?.includes(
-        appointmentDay,
-      )
-
-  ) {
-
-    throw new Error(
-
-      `Doctor is not available on ${appointmentDay}`,
-    );
+  if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
+    throw new Error(`Doctor is not available on ${appointmentDay}`);
   }
 
   /*
@@ -138,120 +70,65 @@ if (
   | Generate All Slots
   |--------------------------------------------------------------------------
   */
-  const allSlots =
+  const allSlots = generateSlots(
+    doctor?.availability?.startTime,
 
-    generateSlots(
+    doctor?.availability?.endTime,
 
-      doctor
-        ?.availability
-        ?.startTime,
+    doctor?.availability?.slotDuration,
 
-      doctor
-        ?.availability
-        ?.endTime,
+    doctor?.availability?.breakStartTime,
 
-      doctor
-        ?.availability
-        ?.slotDuration,
-
-      doctor
-        ?.availability
-        ?.breakStartTime,
-
-      doctor
-        ?.availability
-        ?.breakEndTime,
-    );
+    doctor?.availability?.breakEndTime,
+  );
 
   /*
   |--------------------------------------------------------------------------
   | Normalize Date
   |--------------------------------------------------------------------------
   */
-  const normalizedDate =
-    new Date(
-      appointmentDate,
-    );
+  const normalizedDate = new Date(appointmentDate);
 
-  normalizedDate.setHours(
-    0,
-    0,
-    0,
-    0,
-  );
+  normalizedDate.setHours(0, 0, 0, 0);
 
-  const nextDay =
-    new Date(
-      normalizedDate,
-    );
+  const nextDay = new Date(normalizedDate);
 
-  nextDay.setDate(
-    nextDay.getDate()
-      + 1,
-  );
+  nextDay.setDate(nextDay.getDate() + 1);
 
   /*
   |--------------------------------------------------------------------------
   | Existing Appointments
   |--------------------------------------------------------------------------
   */
-  const bookedAppointments =
+  const bookedAppointments = await Appointment.find({
+    doctorEmployeeId: doctorId,
 
-    await Appointment.find({
+    appointmentDate: {
+      $gte: normalizedDate,
 
-      doctorEmployeeId:
-        doctorId,
+      $lt: nextDay,
+    },
 
-      appointmentDate: {
-
-        $gte:
-          normalizedDate,
-
-        $lt:
-          nextDay,
-      },
-
-      status: {
-
-        $nin: [
-
-          "CANCELLED",
-
-          "NO_SHOW",
-        ],
-      },
-    });
+    status: {
+      $nin: ["CANCELLED", "NO_SHOW"],
+    },
+  });
 
   /*
   |--------------------------------------------------------------------------
   | Booked Slots
   |--------------------------------------------------------------------------
   */
-  const bookedSlots =
-
-    bookedAppointments.map(
-
-      (
-        appointment,
-      ) =>
-
-        appointment.timeSlot,
-    );
+  const bookedSlots = bookedAppointments.map(
+    (appointment) => appointment.timeSlot,
+  );
 
   /*
   |--------------------------------------------------------------------------
   | Available Slots
   |--------------------------------------------------------------------------
   */
-  return allSlots.filter(
-
-    (slot) =>
-
-      !bookedSlots.includes(
-        slot,
-      ),
-  );
+  return allSlots.filter((slot) => !bookedSlots.includes(slot));
 };
 
-module.exports =
-  getAvailableSlots;
+module.exports = getAvailableSlots;

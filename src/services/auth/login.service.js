@@ -119,7 +119,6 @@ const loginUser = async (loginData) => {
     roles: user.roles,
   };
   const token = generateToken(tokenPayload);
-  
 
   /*
     |--------------------------------------------------------------------------

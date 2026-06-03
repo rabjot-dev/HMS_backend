@@ -1,31 +1,13 @@
-const Appointment =
-require(
-  "../../models/Appointment",
-);
+const Appointment = require("../../models/Appointment");
 
-const Employee =
-require(
-  "../../models/Employee",
-);
+const Employee = require("../../models/Employee");
 
-const Patient =
-require(
-  "../../models/Patient",
-);
+const Patient = require("../../models/Patient");
 
-const generateAppointmentId =
-require(
-  "../../utils/generateAppointmentId",
-);
+const generateAppointmentId = require("../../utils/generateAppointmentId");
 
-const bookAppointment =
-async (
-  appointmentData,
-  user,
-) => {
-
+const bookAppointment = async (appointmentData, user) => {
   const {
-
     patientId,
 
     doctorId,
@@ -54,37 +36,16 @@ async (
   | Past Date Validation
   |--------------------------------------------------------------------------
   */
-  const selectedDate =
+  const selectedDate = new Date(appointmentDate);
 
-    new Date(
-      appointmentDate,
-    );
+  const today = new Date();
 
-  const today =
-    new Date();
+  today.setHours(0, 0, 0, 0);
 
-  today.setHours(
-    0,
-    0,
-    0,
-    0,
-  );
+  selectedDate.setHours(0, 0, 0, 0);
 
-  selectedDate.setHours(
-    0,
-    0,
-    0,
-    0,
-  );
-
-  if (
-    selectedDate <
-    today
-  ) {
-
-    throw new Error(
-      "Cannot book appointment for past dates",
-    );
+  if (selectedDate < today) {
+    throw new Error("Cannot book appointment for past dates");
   }
 
   /*
@@ -92,17 +53,10 @@ async (
   | Validate Patient
   |--------------------------------------------------------------------------
   */
-  const patient =
-
-    await Patient.findById(
-      patientId,
-    );
+  const patient = await Patient.findById(patientId);
 
   if (!patient) {
-
-    throw new Error(
-      "Patient not found",
-    );
+    throw new Error("Patient not found");
   }
 
   /*
@@ -110,17 +64,10 @@ async (
   | Validate Doctor
   |--------------------------------------------------------------------------
   */
-  const doctor =
-
-    await Employee.findById(
-      doctorId,
-    );
+  const doctor = await Employee.findById(doctorId);
 
   if (!doctor) {
-
-    throw new Error(
-      "Doctor not found",
-    );
+    throw new Error("Doctor not found");
   }
 
   /*
@@ -128,15 +75,8 @@ async (
   | Doctor Availability
   |--------------------------------------------------------------------------
   */
-  if (
-    !doctor
-      ?.availability
-      ?.isAvailable
-  ) {
-
-    throw new Error(
-      "Doctor is currently unavailable",
-    );
+  if (!doctor?.availability?.isAvailable) {
+    throw new Error("Doctor is currently unavailable");
   }
 
   /*
@@ -144,37 +84,16 @@ async (
   | Working Day Validation
   |--------------------------------------------------------------------------
   */
-  const appointmentDay =
+  const appointmentDay = new Date(appointmentDate)
 
-    new Date(
-      appointmentDate,
-    )
+    .toLocaleDateString("en-US", {
+      weekday: "long",
+    })
 
-      .toLocaleDateString(
-        "en-US",
-        {
-          weekday:
-            "long",
-        },
-      )
+    .toUpperCase();
 
-      .toUpperCase();
-
-  if (
-
-    !doctor
-      ?.availability
-      ?.workingDays
-      ?.includes(
-        appointmentDay,
-      )
-
-  ) {
-
-    throw new Error(
-
-      `Doctor is not available on ${appointmentDay}`,
-    );
+  if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
+    throw new Error(`Doctor is not available on ${appointmentDay}`);
   }
 
   /*
@@ -182,39 +101,13 @@ async (
   | Break Validation
   |--------------------------------------------------------------------------
   */
-  const breakStartTime =
+  const breakStartTime = doctor?.availability?.breakStartTime;
 
-    doctor
-      ?.availability
-      ?.breakStartTime;
+  const breakEndTime = doctor?.availability?.breakEndTime;
 
-  const breakEndTime =
-
-    doctor
-      ?.availability
-      ?.breakEndTime;
-
-  if (
-    breakStartTime &&
-    breakEndTime
-  ) {
-
-    if (
-
-      appointmentTime >=
-      breakStartTime
-
-      &&
-
-      appointmentTime <
-      breakEndTime
-
-    ) {
-
-      throw new Error(
-
-        "Selected slot falls during doctor break time",
-      );
+  if (breakStartTime && breakEndTime) {
+    if (appointmentTime >= breakStartTime && appointmentTime < breakEndTime) {
+      throw new Error("Selected slot falls during doctor break time");
     }
   }
 
@@ -223,71 +116,35 @@ async (
   | Normalize Date
   |--------------------------------------------------------------------------
   */
-  const normalizedDate =
+  const normalizedDate = new Date(appointmentDate);
 
-    new Date(
-      appointmentDate,
-    );
+  normalizedDate.setHours(0, 0, 0, 0);
 
-  normalizedDate.setHours(
-    0,
-    0,
-    0,
-    0,
-  );
+  const nextDay = new Date(normalizedDate);
 
-  const nextDay =
-    new Date(
-      normalizedDate,
-    );
-
-  nextDay.setDate(
-    nextDay.getDate()
-      + 1,
-  );
+  nextDay.setDate(nextDay.getDate() + 1);
 
   /*
   |--------------------------------------------------------------------------
   | Max Patients Validation
   |--------------------------------------------------------------------------
   */
-  const totalAppointments =
+  const totalAppointments = await Appointment.countDocuments({
+    doctorEmployeeId: doctorId,
 
-    await Appointment.countDocuments({
+    appointmentDate: {
+      $gte: normalizedDate,
 
-      doctorEmployeeId:
-        doctorId,
+      $lt: nextDay,
+    },
 
-      appointmentDate: {
+    status: {
+      $ne: "CANCELLED",
+    },
+  });
 
-        $gte:
-          normalizedDate,
-
-        $lt:
-          nextDay,
-      },
-
-      status: {
-
-        $ne:
-          "CANCELLED",
-      },
-    });
-
-  if (
-
-    totalAppointments >=
-
-    doctor
-      ?.availability
-      ?.maxPatientsPerDay
-
-  ) {
-
-    throw new Error(
-
-      "Maximum patient limit reached for this doctor",
-    );
+  if (totalAppointments >= doctor?.availability?.maxPatientsPerDay) {
+    throw new Error("Maximum patient limit reached for this doctor");
   }
 
   /*
@@ -295,43 +152,24 @@ async (
   | Doctor Slot Conflict
   |--------------------------------------------------------------------------
   */
-  const existingAppointment =
+  const existingAppointment = await Appointment.findOne({
+    doctorEmployeeId: doctorId,
 
-    await Appointment.findOne({
+    timeSlot: appointmentTime,
 
-      doctorEmployeeId:
-        doctorId,
+    appointmentDate: {
+      $gte: normalizedDate,
 
-      timeSlot:
-        appointmentTime,
+      $lt: nextDay,
+    },
 
-      appointmentDate: {
+    status: {
+      $nin: ["CANCELLED", "NO_SHOW"],
+    },
+  });
 
-        $gte:
-          normalizedDate,
-
-        $lt:
-          nextDay,
-      },
-
-      status: {
-
-        $nin: [
-
-          "CANCELLED",
-
-          "NO_SHOW",
-        ],
-      },
-    });
-
-  if (
-    existingAppointment
-  ) {
-
-    throw new Error(
-      "Selected slot already booked",
-    );
+  if (existingAppointment) {
+    throw new Error("Selected slot already booked");
   }
 
   /*
@@ -339,43 +177,24 @@ async (
   | Duplicate Patient Booking
   |--------------------------------------------------------------------------
   */
-  const existingPatientAppointment =
+  const existingPatientAppointment = await Appointment.findOne({
+    patientId,
 
-    await Appointment.findOne({
+    timeSlot: appointmentTime,
 
-      patientId,
+    appointmentDate: {
+      $gte: normalizedDate,
 
-      timeSlot:
-        appointmentTime,
+      $lt: nextDay,
+    },
 
-      appointmentDate: {
+    status: {
+      $nin: ["CANCELLED", "NO_SHOW"],
+    },
+  });
 
-        $gte:
-          normalizedDate,
-
-        $lt:
-          nextDay,
-      },
-
-      status: {
-
-        $nin: [
-
-          "CANCELLED",
-
-          "NO_SHOW",
-        ],
-      },
-    });
-
-  if (
-    existingPatientAppointment
-  ) {
-
-    throw new Error(
-
-      "Patient already has an appointment at this time",
-    );
+  if (existingPatientAppointment) {
+    throw new Error("Patient already has an appointment at this time");
   }
 
   /*
@@ -383,84 +202,63 @@ async (
   | Appointment ID
   |--------------------------------------------------------------------------
   */
-  const appointmentId =
-
-    await generateAppointmentId();
+  const appointmentId = await generateAppointmentId();
 
   /*
   |--------------------------------------------------------------------------
   | Token Number
   |--------------------------------------------------------------------------
   */
-  const todayAppointmentsCount =
+  const todayAppointmentsCount = await Appointment.countDocuments({
+    doctorEmployeeId: doctorId,
 
-    await Appointment.countDocuments({
+    appointmentDate: {
+      $gte: normalizedDate,
 
-      doctorEmployeeId:
-        doctorId,
+      $lt: nextDay,
+    },
+  });
 
-      appointmentDate: {
-
-        $gte:
-          normalizedDate,
-
-        $lt:
-          nextDay,
-      },
-    });
-
-  const tokenNumber =
-
-    todayAppointmentsCount
-    + 1;
+  const tokenNumber = todayAppointmentsCount + 1;
 
   /*
   |--------------------------------------------------------------------------
   | Create Appointment
   |--------------------------------------------------------------------------
   */
-  const appointment =
+  const appointment = await Appointment.create({
+    appointmentId,
 
-    await Appointment.create({
+    patientId,
 
-      appointmentId,
+    doctorEmployeeId: doctorId,
 
-      patientId,
+    appointmentDate: normalizedDate,
 
-      doctorEmployeeId:
-        doctorId,
+    timeSlot: appointmentTime,
 
-      appointmentDate:
-        normalizedDate,
+    appointmentType,
 
-      timeSlot:
-        appointmentTime,
+    priority,
 
-      appointmentType,
+    paymentStatus,
 
-      priority,
+    visitMode,
 
-      paymentStatus,
+    symptoms,
 
-      visitMode,
+    reason,
 
-      symptoms,
+    notes,
 
-      reason,
+    tokenNumber,
 
-      notes,
+    createdByEmployeeId: user.userId,
 
-      tokenNumber,
-
-      createdByEmployeeId:
-        user.userId,
-
-      status:
-        "BOOKED",
-    });
+    status: "BOOKED",
+  });
 
   return appointment;
 };
 
-module.exports =
-  bookAppointment;
+module.exports = bookAppointment;
