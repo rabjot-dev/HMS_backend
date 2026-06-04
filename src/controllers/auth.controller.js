@@ -1,6 +1,6 @@
-const loginUser = require("../services/auth/login.service");
-const getCurrentLoggedInUser = require("../services/auth/get-current-user.service");
-const createEmployeePassword = require("../services/auth/create-password.service");
+const login_User = require("../services/auth/login.service");
+const getCurrent_LoggedInUser = require("../services/auth/get-current-user.service");
+const create_EmployeePassword = require("../services/auth/create-password.service");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const Employee = require("../models/Employee");
@@ -8,7 +8,7 @@ const Employee = require("../models/Employee");
 //login
 const login = async (req, res) => {
   try {
-    const loginResponse = await loginUser(req.body);
+    const loginResponse = await login_User(req.body);
 
     return res.status(200).json({
       success: true,
@@ -26,7 +26,7 @@ const login = async (req, res) => {
 //create password
 const createPassword = async (req, res) => {
   try {
-    const serviceResponse = await createEmployeePassword(req.body);
+    const serviceResponse = await create_EmployeePassword(req.body);
 
     return res.status(200).json({
       success: true,
@@ -42,11 +42,11 @@ const createPassword = async (req, res) => {
 
 //get current logged in user
 
-const getCurrentUser = async (req, res) => {
+const get_CurrentUser = async (req, res) => {
   try {
-    const user = await getCurrentLoggedInUser(req.user.userId);
+    const user = await getCurrent_LoggedInUser(req.user.userId);
 
-    return res.status(200).json({success: true, data: user});
+    return res.status(200).json({ success: true, data: user });
   } catch (error) {
     return res.status(400).json({
       success: false,
@@ -54,4 +54,4 @@ const getCurrentUser = async (req, res) => {
     });
   }
 };
-module.exports = { login, createPassword, getCurrentUser};
+module.exports = { login, createPassword, get_CurrentUser };

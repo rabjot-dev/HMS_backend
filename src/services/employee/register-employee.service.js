@@ -7,11 +7,6 @@ const STATUS = require("../../constants/status");
 const generateTemporaryPassword = require("../../utils/generateTemporaryPassword");
 const generateSequentialId = require("../../utils/generateSequentialId");
 
-// email 
-const sendEmail = require("../../utils/sendEmail");
-
-const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
-
 const registerEmployee = async (employeeData) => {
   const {
     name,
@@ -38,7 +33,7 @@ const registerEmployee = async (employeeData) => {
     role,
   } = employeeData;
 
- // existing user check
+  // existing user check
   const existingUser = await User.findOne({
     email: email.toLowerCase(),
   });
@@ -47,13 +42,11 @@ const registerEmployee = async (employeeData) => {
     throw new Error("Employee already exists with this email");
   }
 
-
   const prefix = EMPLOYEE_PREFIX[designation];
 
   if (!prefix) {
     throw new Error("Invalid employee designation");
   }
-
 
   const employeeCode = await generateSequentialId(prefix);
   const employee = await Employee.create({
@@ -83,12 +76,12 @@ const registerEmployee = async (employeeData) => {
     status: STATUS.ACTIVE,
   });
 
-// generate temporary password
+  // generate temporary password
   const temporaryPassword = generateTemporaryPassword();
   console.log(temporaryPassword);
-  const hashedTemporaryPassword = await bcrypt.hash(  temporaryPassword,  10);
+  const hashedTemporaryPassword = await bcrypt.hash(temporaryPassword, 10);
 
-// create user account
+  // create user account
   await User.create({
     email: email.toLowerCase(),
     temporaryPasswordHash: hashedTemporaryPassword,
@@ -99,23 +92,9 @@ const registerEmployee = async (employeeData) => {
     securityQuestion,
     securityAnswer,
   });
-// onboarding email
-  console.log("Before Email Send");
-
-  const loginLink = `${process.env.FRONTEND_URL}/login`;
-  const htmlContent = employeeWelcomeTemplate({name,email,employeeCode,temporaryPassword,loginLink,});
-
-  await sendEmail({
-    to: email,
-    subject: "Welcome to HMS",
-    htmlContent,
-  });
-
-  console.log("After Email Send");
-
-  
+  // onboarding email
+  //We will send this temporary-Password through mail -->SMTP
   return {
-    message: "Employee registered successfully",
     employee,
     temporaryPassword,
   };

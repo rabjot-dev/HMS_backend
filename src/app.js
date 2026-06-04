@@ -3,8 +3,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 const authRoutes = require("./routes/auth.routes");
 const employeeRoutes = require("./routes/employee.routes");
 
-
-
 const cors = require("cors");
 const app = express();
 
