@@ -23,7 +23,7 @@ const login = async (req, res) => {
   }
 };
 
-//create password
+//creating password here
 const createPassword = async (req, res) => {
   try {
     const serviceResponse = await createEmployeePassword(req.body);
@@ -40,7 +40,7 @@ const createPassword = async (req, res) => {
   }
 };
 
-//get current logged in user
+//getting current logged in user here
 
 const getCurrentUser = async (req, res) => {
   try {

@@ -1,8 +1,8 @@
 const bcrypt = require("bcryptjs");
-
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
 
+//creating password for first time login
 const createEmployeePassword = async (passwordData) => {
   const {
     loginId,
@@ -42,20 +42,20 @@ const createEmployeePassword = async (passwordData) => {
   console.log(typeof user.passwordHash);
   console.log(user.passwordHash);
 
+  // temporary password validation
   const isTemporaryPasswordValid = await bcrypt.compare(temporaryPassword,user.temporaryPasswordHash);
 
   if (!isTemporaryPasswordValid) {
     throw new Error("Invalid temporary password");
   }
-
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
   user.passwordHash = hashedNewPassword;
   user.temporaryPasswordHash = null;
   user.isFirstLogin = false;
   user.securityQuestion = securityQuestion;
-  user.securityAnswer = securityAnswer;
-
+  const hashedAnswer =
+ await bcrypt.hash(securityAnswer,10);
+ user.securityAnswer = hashedAnswer;
   await user.save();
   return {
     message: "Password created successfully",

@@ -7,11 +7,7 @@ const STATUS = require("../../constants/status");
 const generateTemporaryPassword = require("../../utils/generateTemporaryPassword");
 const generateSequentialId = require("../../utils/generateSequentialId");
 
-// email 
-const sendEmail = require("../../utils/sendEmail");
-
-const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
-
+// employee registration
 const registerEmployee = async (employeeData) => {
   const {
     name,
@@ -54,7 +50,7 @@ const registerEmployee = async (employeeData) => {
     throw new Error("Invalid employee designation");
   }
 
-
+// employee code generation
   const employeeCode = await generateSequentialId(prefix);
   const employee = await Employee.create({
     employeeCode,
@@ -92,33 +88,14 @@ const registerEmployee = async (employeeData) => {
   await User.create({
     email: email.toLowerCase(),
     temporaryPasswordHash: hashedTemporaryPassword,
-    roles: [role || designation || ROLES.DOCTOR],
+    roles: [role],
     employeeId: employee._id,
     isFirstLogin: true,
     status: STATUS.ACTIVE,
     securityQuestion,
     securityAnswer,
   });
-// onboarding email
-  console.log("Before Email Send");
-
-  const loginLink = `${process.env.FRONTEND_URL}/login`;
-  const htmlContent = employeeWelcomeTemplate({name,email,employeeCode,temporaryPassword,loginLink,});
-
-  await sendEmail({
-    to: email,
-    subject: "Welcome to HMS",
-    htmlContent,
-  });
-
-  console.log("After Email Send");
-
-  
-  return {
-    message: "Employee registered successfully",
-    employee,
-    temporaryPassword,
-  };
+return {message: "Employee registered successfully", temporaryPassword, employee};
 };
 
 module.exports = registerEmployee;

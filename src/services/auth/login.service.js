@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
+const STATUS = require("../../constants/status");
 const generateToken = require("../../utils/generateToken");
 const loginUser = async (loginData) => {
 const { loginId, password } = loginData;
@@ -8,6 +9,7 @@ const { loginId, password } = loginData;
   let user = null;
 
   const isEmailLogin = loginId.includes("@");
+
 // Login using email
   if (isEmailLogin) {
     user = await User.findOne({
@@ -32,6 +34,10 @@ const { loginId, password } = loginData;
     throw new Error("Invalid credentials");
   }
 
+  if (user.status !== "ACTIVE") {
+  throw new Error("Account is inactive");
+  }
+
 
   let isPasswordValid = false;
 
@@ -50,14 +56,8 @@ const { loginId, password } = loginData;
 
     // Normal login
     console.log("NORMAL LOGIN");
-
     console.log(user.passwordHash);
-
-    isPasswordValid = await bcrypt.compare(
-      password,
-
-      user.passwordHash,
-    );
+    isPasswordValid = await bcrypt.compare( password,user.passwordHash);
   }
 
 // invalid password
@@ -77,7 +77,7 @@ const { loginId, password } = loginData;
   user.lastLoginAt = new Date();
   await user.save();
 
-  return {token,user: { email: user.email, roles: user.roles, employeeId: user.employeeId }};
+  return {token,user: { email: user.email, isFirstLogin: user.isFirstLogin, roles: user.roles, employeeId: user.employeeId }};
 };
 
 module.exports = loginUser;
