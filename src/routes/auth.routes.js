@@ -10,16 +10,18 @@ const {
   createPassword,
   get_CurrentUser,
 } = require("../controllers/auth.controller");
-const { register } = require("../controllers/auth.controller");
+
 const router = express.Router();
 
 router.post("/login", loginValidation, validateMiddleware, login);
+
 router.post(
   "/create-password",
   createPasswordValidation,
   validateMiddleware,
   createPassword,
 );
+
 router.get("/me", authMiddleware, get_CurrentUser);
 
 module.exports = router;

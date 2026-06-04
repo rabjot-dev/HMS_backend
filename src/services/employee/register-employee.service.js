@@ -49,6 +49,7 @@ const registerEmployee = async (employeeData) => {
   }
 
   const employeeCode = await generateSequentialId(prefix);
+
   const employee = await Employee.create({
     employeeCode,
     name,
@@ -72,13 +73,12 @@ const registerEmployee = async (employeeData) => {
       breakEndTime,
       maxPatientsPerDay: maxPatientsPerDay || 40,
     },
-
     status: STATUS.ACTIVE,
   });
 
   // generate temporary password
   const temporaryPassword = generateTemporaryPassword();
-  console.log(temporaryPassword);
+
   const hashedTemporaryPassword = await bcrypt.hash(temporaryPassword, 10);
 
   // create user account
@@ -92,8 +92,10 @@ const registerEmployee = async (employeeData) => {
     securityQuestion,
     securityAnswer,
   });
+
   // onboarding email
-  //We will send this temporary-Password through mail -->SMTP
+  // We will send this temporary-Password through mail -->SMTP
+
   return {
     employee,
     temporaryPassword,

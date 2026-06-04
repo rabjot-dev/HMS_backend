@@ -1,9 +1,4 @@
-const bcrypt = require("bcryptjs");
-const Employee = require("../models/Employee");
-const User = require("../models/User");
-const STATUS = require("../constants/status");
 const registerEmployee = require("../services/employee/register-employee.service");
-const generateTemporaryPassword = require("../utils/generateTemporaryPassword");
 
 // create employee
 const createEmployee = async (req, res) => {
@@ -17,12 +12,16 @@ const createEmployee = async (req, res) => {
     });
   } catch (error) {
     if (error.code === 11000) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Phone number already exists" });
+      return res.status(400).json({
+        success: false,
+        message: "Phone number already exists",
+      });
     }
 
-    return res.status(400).json({ success: false, message: error.message });
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
