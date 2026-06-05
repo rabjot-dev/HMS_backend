@@ -2,60 +2,72 @@ const { body } = require("express-validator");
 const ROLES = require("../constants/roles");
 
 const registerEmployeeValidation = [
-  // NAME
   body("name")
+    .trim()
     .notEmpty()
     .withMessage("Employee name is required")
-    .isLength({ min: 2 })
-    .withMessage("Name must be at least 2 characters")
-    .matches(/^[A-Za-z\s]+$/)
-    .withMessage("Name must contain only alphabets")
-    .trim(),
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Name must be between 2 and 100 characters"),
 
-  // EMAIL
   body("email")
+    .trim()
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
     .withMessage("Invalid email format")
     .normalizeEmail(),
 
-  // PHONE
   body("phone")
     .notEmpty()
     .withMessage("Phone number is required")
-    .matches(/^[0-9]{10}$/)
+    .matches(/^\d{10}$/)
     .withMessage("Phone number must be exactly 10 digits"),
 
-  // GENDER
   body("gender")
     .notEmpty()
     .withMessage("Gender is required")
     .isIn(["MALE", "FEMALE", "OTHER"])
-    .withMessage("Invalid gender value"),
+    .withMessage("Invalid gender"),
 
-  // DEPARTMENT
-  body("department").notEmpty().withMessage("Department is required").trim(),
-
-  // DESIGNATION
-  body("designation")
+  body("department")
+    .trim()
     .notEmpty()
-    .withMessage("Designation is required")
-    .isString(),
+    .withMessage("Department is required")
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Department must be between 2 and 100 characters"),
 
-  // JOINING DATE
+  body("designation").trim().notEmpty().withMessage("Designation is required"),
+
   body("joiningDate")
     .notEmpty()
     .withMessage("Joining date is required")
     .isISO8601()
-    .withMessage("Invalid date format (use YYYY-MM-DD)"),
+    .withMessage("Invalid joining date format"),
 
-  // ROLE
   body("role")
     .notEmpty()
     .withMessage("Role is required")
     .isIn(Object.values(ROLES))
     .withMessage("Invalid employee role"),
+
+  body("consultationFee")
+    .optional()
+    .isNumeric()
+    .withMessage("Consultation fee must be a number")
+    .custom((value) => value >= 0)
+    .withMessage("Consultation fee cannot be negative"),
+
+  body("medicalRegistrationNo")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Medical registration number is too long"),
+
+  body("specialization")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Specialization is too long"),
 ];
 
 module.exports = { registerEmployeeValidation };

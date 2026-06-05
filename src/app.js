@@ -1,7 +1,5 @@
 const express = require("express");
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
-
 const authRoutes = require("./routes/auth.routes");
 const employeeRoutes = require("./routes/employee.routes");
 
@@ -18,7 +16,7 @@ app.use(
   }),
 );
 
-app.get("/health", (req, res) => {
+app.get("/", (req, res) => {
   return res.status(200).json({
     success: true,
     message: "Server is running",
