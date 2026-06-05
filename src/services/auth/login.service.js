@@ -1,58 +1,27 @@
 const bcrypt = require("bcryptjs");
-const User = require("../../models/User");
-const Employee = require("../../models/Employee");
 const generateToken = require("../../utils/generateToken");
+const findUserByLoginId = require("../../utils/findUserByLoginId");
 
 const loginUser = async (loginData) => {
   const { loginId, password } = loginData;
 
-  let user = null;
-
-  const isEmailLogin = loginId.includes("@");
-
-  // Login using email
-  if (isEmailLogin) {
-    user = await User.findOne({
-      email: loginId.toLowerCase(),
-    });
-  } else {
-    // Login using employee code
-    const employee = await Employee.findOne({
-      employeeCode: loginId,
-    });
-
-    if (!employee) {
-      throw new Error("Invalid credentials");
-    }
-
-    user = await User.findOne({
-      employeeId: employee._id,
-    });
-  }
-
-  if (!user) {
-    throw new Error("Invalid credentials");
-  }
+  const user = await findUserByLoginId(loginId, "Invalid credentials");
 
   let isPasswordValid = false;
 
-  // First login
   if (user.isFirstLogin) {
     isPasswordValid = await bcrypt.compare(
       password,
       user.temporaryPasswordHash,
     );
   } else {
-    // Normal login
     isPasswordValid = await bcrypt.compare(password, user.passwordHash);
   }
 
-  // Invalid password
   if (!isPasswordValid) {
     throw new Error("Invalid credentials");
   }
 
-  // Generate Token
   const tokenPayload = {
     userId: user._id,
     employeeId: user.employeeId,
@@ -61,7 +30,6 @@ const loginUser = async (loginData) => {
 
   const token = generateToken(tokenPayload);
 
-  // Last login
   user.lastLoginAt = new Date();
   await user.save();
 

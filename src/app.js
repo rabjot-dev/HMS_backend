@@ -1,32 +1,21 @@
 const express = require("express");
-
 const authRoutes = require("./routes/auth.routes");
 const employeeRoutes = require("./routes/employee.routes");
 
 const cors = require("cors");
-
 const app = express();
-
-app.use(cors());
+app.disable("x-powered-by");
+app.use(cors({ origin: ["http://localhost:4200"], credentials: true }));
 app.use(express.json());
 
-app.use(
-  express.urlencoded({
-    extended: true,
-  }),
-);
-
-app.get("/", (req, res) => {
+app.get("/health", (req, res) => {
   return res.status(200).json({
     success: true,
     message: "Server is running",
   });
 });
-
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
-
-// Global error handler
 app.use((error, req, res, next) => {
   return res.status(500).json({
     success: false,

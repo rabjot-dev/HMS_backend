@@ -1,7 +1,5 @@
 const bcrypt = require("bcryptjs");
-
-const User = require("../../models/User");
-const Employee = require("../../models/Employee");
+const findUserByLoginId = require("../../utils/findUserByLoginId");
 
 const createEmployeePassword = async (passwordData) => {
   const {
@@ -12,31 +10,7 @@ const createEmployeePassword = async (passwordData) => {
     securityAnswer,
   } = passwordData;
 
-  let user = null;
-
-  const isEmailLogin = loginId.includes("@");
-
-  if (isEmailLogin) {
-    user = await User.findOne({
-      email: loginId.toLowerCase(),
-    });
-  } else {
-    const employee = await Employee.findOne({
-      employeeCode: loginId,
-    });
-
-    if (!employee) {
-      throw new Error("Invalid login ID");
-    }
-
-    user = await User.findOne({
-      employeeId: employee._id,
-    });
-  }
-
-  if (!user) {
-    throw new Error("User not found");
-  }
+  const user = await findUserByLoginId(loginId, "User not found");
 
   if (!user.isFirstLogin) {
     throw new Error("Password is already created for this account");
@@ -61,9 +35,7 @@ const createEmployeePassword = async (passwordData) => {
 
   await user.save();
 
-  return {
-    message: "Password created successfully",
-  };
+  return { message: "Password created successfully" };
 };
 
 module.exports = createEmployeePassword;
