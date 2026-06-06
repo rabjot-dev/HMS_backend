@@ -44,19 +44,11 @@ const { loginId, password } = loginData;
  // First login
   if (user.isFirstLogin) {
     console.log("FIRST LOGIN");
-
-    console.log(user.temporaryPasswordHash);
-
-    isPasswordValid = await bcrypt.compare(
-      password,
-
-      user.temporaryPasswordHash,
-    );
+    isPasswordValid = await bcrypt.compare( password, user.temporaryPasswordHash);
   } else {
 
     // Normal login
     console.log("NORMAL LOGIN");
-    console.log(user.passwordHash);
     isPasswordValid = await bcrypt.compare( password,user.passwordHash);
   }
 

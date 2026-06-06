@@ -16,7 +16,7 @@ const login = async (req, res) => {
       data: loginResponse,
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(401).json({
       success: false,
       message: error.message,
     });
@@ -33,11 +33,33 @@ const createPassword = async (req, res) => {
       message: serviceResponse.message,
     });
   } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+
+  if(error.message === "User not found"){
+      return res.status(404).json({
+          success:false,
+          message:error.message
+      });
   }
+
+  if(error.message === "Password is already created for this account"){
+      return res.status(409).json({
+          success:false,
+          message:error.message
+      });
+  }
+
+  if(error.message === "Invalid temporary password"){
+      return res.status(401).json({
+          success:false,
+          message:error.message
+      });
+  }
+
+  return res.status(400).json({
+      success:false,
+      message:error.message
+  });
+}
 };
 
 //getting current logged in user here
@@ -48,7 +70,7 @@ const getCurrentUser = async (req, res) => {
 
     return res.status(200).json({success: true, data: user});
   } catch (error) {
-    return res.status(400).json({
+    return res.status(401).json({
       success: false,
       message: error.message,
     });
