@@ -2,22 +2,19 @@ const { body } = require("express-validator");
 
 const loginValidation = [
   body("loginId").notEmpty().withMessage("Email/EmpId is required"),
-
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
 const createPasswordValidation = [
-  body("loginId").notEmpty().withMessage("Login ID is required"),
-
-  body("temporaryPassword")
-    .notEmpty()
-    .withMessage("Temporary password is required"),
-
-  body("newPassword")
-    .notEmpty()
-    .withMessage("New password is required")
-    .isLength({ min: 8 })
-    .withMessage("New password must be at least 8 characters long"),
+  body("loginId").trim().notEmpty().withMessage("Login ID is required"),
+  body("temporaryPassword").notEmpty().withMessage("Temporary password is required"),
+  body("newPassword").notEmpty().withMessage("New password is required").isLength({ min: 8, max: 20 })
+  .withMessage("Password must be between 8 and 20 characters").matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/) 
+  .withMessage("Password must contain uppercase, lowercase, number and special character"),
+   body("confirmPassword").notEmpty().withMessage("Confirm password is required").custom((value, { req }) => {
+  if (value !== req.body.newPassword) {throw new Error("Confirm password does not match new password",);}return true; }),
+  body("securityQuestion").trim().notEmpty().withMessage("Security question is required"),
+  body("securityAnswer").trim().notEmpty().withMessage("Security answer is required").isLength({ min: 2, max: 100 }).withMessage("Security answer must be between 2 and 100 characters"),
 ];
 /*
 |--------------------------------------------------------------------------
@@ -26,9 +23,11 @@ const createPasswordValidation = [
 */
 const forgotPasswordValidation = [
   body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
     .isEmail()
-
-    .withMessage("Valid email is required"),
+    .withMessage("Please provide a valid email address"),
 ];
 
 /*
@@ -38,22 +37,54 @@ const forgotPasswordValidation = [
 */
 const resetPasswordValidation = [
   body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
     .isEmail()
-
-    .withMessage("Valid email is required"),
+    .withMessage("Please provide a valid email address"),
 
   body("securityAnswer")
+    .trim()
     .notEmpty()
-
-    .withMessage("Security answer is required"),
+    .withMessage("Security answer is required")
+    .isLength({
+      min: 2,
+      max: 100,
+    })
+    .withMessage(
+      "Security answer must be between 2 and 100 characters",
+    ),
 
   body("newPassword")
+    .notEmpty()
+    .withMessage("New password is required")
     .isLength({
-      min: 6,
+      min: 8,
+      max: 20,
     })
+    .withMessage(
+      "Password must be between 8 and 20 characters",
+    )
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+    )
+    .withMessage(
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+    ),
 
-    .withMessage("Password must be at least 6 characters"),
+  body("confirmPassword")
+    .notEmpty()
+    .withMessage("Confirm password is required")
+    .custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        throw new Error(
+          "Confirm password does not match new password",
+        );
+      }
+      return true;
+    }),
 ];
+
 
 module.exports = {
   loginValidation,

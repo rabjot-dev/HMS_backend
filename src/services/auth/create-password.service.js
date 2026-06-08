@@ -56,6 +56,7 @@ const createEmployeePassword = async (passwordData) => {
   }
 
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+  const hashedSecurityAnswer = await bcrypt.hash(securityAnswer.trim().toLowerCase(),10,);
 
   user.passwordHash = hashedNewPassword;
 
@@ -64,7 +65,7 @@ const createEmployeePassword = async (passwordData) => {
   user.isFirstLogin = false;
   user.securityQuestion = securityQuestion;
 
-  user.securityAnswer = securityAnswer;
+  user.securityAnswer = hashedSecurityAnswer;
 
   await user.save();
   return {

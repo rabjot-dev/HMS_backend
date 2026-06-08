@@ -177,15 +177,17 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    if (
-      user?.securityAnswer?.toLowerCase() !==
-      securityAnswer?.toLowerCase()
-    ) {
-      return res.status(401).json({
-        success: false,
-        message: "Security answer is incorrect",
-      });
-    }
+   const isValidAnswer = await bcrypt.compare(
+  securityAnswer.trim().toLowerCase(),
+  user.securityAnswer,
+);
+
+if (!isValidAnswer) {
+  return res.status(401).json({
+    success: false,
+    message: "Security answer is incorrect",
+  });
+}
 
     const isSamePassword = await bcrypt.compare(
       newPassword,
