@@ -1,5 +1,5 @@
 const Appointment = require("../models/Appointment");
-
+const mongoose = require("mongoose");
 const getAvailableSlotsService = require("../services/appointment/get-available-slots.service");
 
 const bookAppointmentService = require("../services/appointment/book-appointment.service");
@@ -29,14 +29,13 @@ const getAvailableSlots = async (req, res) => {
       data: availableSlots,
     });
   } catch (error) {
-    console.log(error);
+  console.error("GET AVAILABLE SLOTS ERROR:", error);
 
-    return res.status(400).json({
-      success: false,
-
-      message: error.message,
-    });
-  }
+  return res.status(500).json({
+    success: false,
+    message: "Failed to fetch available appointment slots",
+  });
+}
 };
 
 /*
@@ -59,15 +58,42 @@ const bookAppointment = async (req, res) => {
 
       data: appointment,
     });
-  } catch (error) {
-    console.log(error);
+  }catch (error) {
+  console.error("BOOK APPOINTMENT ERROR:", error);
 
-    return res.status(400).json({
+  if (error.message === "Patient not found") {
+    return res.status(404).json({
       success: false,
-
-      message: error.message,
+      message: "Patient record not found",
     });
   }
+
+  if (error.message === "Doctor not found") {
+    return res.status(404).json({
+      success: false,
+      message: "Doctor record not found",
+    });
+  }
+
+  if (error.message === "Slot already booked") {
+    return res.status(409).json({
+      success: false,
+      message: "Selected appointment slot is already booked",
+    });
+  }
+
+  if (error.message === "Past date not allowed") {
+    return res.status(422).json({
+      success: false,
+      message: "Appointments cannot be booked for past dates",
+    });
+  }
+
+  return res.status(500).json({
+    success: false,
+    message: "Failed to book appointment",
+  });
+}
 };
 
 /*
@@ -93,14 +119,13 @@ const getAppointments = async (req, res) => {
       data: appointments,
     });
   } catch (error) {
-    console.log("GET APPOINTMENTS ERROR:", error);
+  console.error("GET APPOINTMENTS ERROR:", error);
 
-    return res.status(500).json({
-      success: false,
-
-      message: "Internal Server Error",
-    });
-  }
+  return res.status(500).json({
+    success: false,
+    message: "Failed to retrieve appointments",
+  });
+}
 };
 
 /*
@@ -108,20 +133,27 @@ const getAppointments = async (req, res) => {
 | Delete Appointment
 |--------------------------------------------------------------------------
 */
+
+
 const deleteAppointment = async (req, res) => {
   try {
     const { id } = req.params;
+    
+if (!mongoose.Types.ObjectId.isValid(id)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid appointment ID",
+  });
+}
 
     const appointment = await Appointment.findById(id);
 
     if (!appointment) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Appointment not found",
-      });
-    }
-
+  return res.status(404).json({
+    success: false,
+    message: "Appointment not found for the provided ID",
+  });
+}
     await Appointment.findByIdAndDelete(id);
 
     return res.status(200).json({
@@ -130,14 +162,13 @@ const deleteAppointment = async (req, res) => {
       message: "Appointment deleted successfully",
     });
   } catch (error) {
-    console.log(error);
+  console.error("DELETE APPOINTMENT ERROR:", error);
 
-    return res.status(500).json({
-      success: false,
-
-      message: "Internal Server Error",
-    });
-  }
+  return res.status(500).json({
+    success: false,
+    message: "Failed to delete appointment",
+  });
+}
 };
 
 /*
@@ -145,9 +176,16 @@ const deleteAppointment = async (req, res) => {
 | Get Appointment By ID
 |--------------------------------------------------------------------------
 */
+
 const getAppointmentById = async (req, res) => {
   try {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid appointment ID",
+  });
+}
 
     const appointment = await Appointment.findById(id)
 
@@ -156,11 +194,10 @@ const getAppointmentById = async (req, res) => {
       .populate("doctorEmployeeId");
 
     if (!appointment) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Appointment not found",
-      });
+     return res.status(404).json({
+  success: false,
+  message: "Appointment not found for the provided ID",
+});
     }
 
     return res.status(200).json({
@@ -169,15 +206,16 @@ const getAppointmentById = async (req, res) => {
       data: appointment,
     });
   } catch (error) {
-    console.log(error);
+  console.error("GET APPOINTMENT BY ID ERROR:", error);
 
-    return res.status(500).json({
-      success: false,
-
-      message: "Internal Server Error",
-    });
-  }
+  return res.status(500).json({
+    success: false,
+    message: "Failed to retrieve appointment details",
+  });
+}
 };
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -188,27 +226,25 @@ const updateAppointment = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Validate Appointment ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid appointment ID",
+      });
+    }
+
     const {
       doctorEmployeeId,
-
       appointmentDate,
-
       timeSlot,
-
       appointmentType,
-
       priority,
-
       paymentStatus,
-
       visitMode,
-
       status,
-
       reason,
-
       notes,
-
       symptoms,
     } = req.body;
 
@@ -217,53 +253,89 @@ const updateAppointment = async (req, res) => {
     if (!appointment) {
       return res.status(404).json({
         success: false,
-
         message: "Appointment not found",
       });
     }
 
-    appointment.doctorEmployeeId = doctorEmployeeId;
+    // Validate appointment date
+    if (appointmentDate) {
+      const selectedDate = new Date(appointmentDate);
+      selectedDate.setHours(0, 0, 0, 0);
 
-    appointment.appointmentDate = appointmentDate;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    appointment.timeSlot = timeSlot;
+      if (selectedDate < today) {
+        return res.status(422).json({
+          success: false,
+          message: "Appointment date cannot be in the past",
+        });
+      }
+    }
 
-    appointment.appointmentType = appointmentType;
+    // Determine updated values
+    const updatedDoctorId =
+      doctorEmployeeId || appointment.doctorEmployeeId;
 
-    appointment.priority = priority;
+    const updatedAppointmentDate =
+      appointmentDate || appointment.appointmentDate;
 
-    appointment.paymentStatus = paymentStatus;
+    const updatedTimeSlot =
+      timeSlot || appointment.timeSlot;
 
-    appointment.visitMode = visitMode;
+    // Check slot conflict
+    const conflictingAppointment = await Appointment.findOne({
+      _id: { $ne: id },
+      doctorEmployeeId: updatedDoctorId,
+      appointmentDate: updatedAppointmentDate,
+      timeSlot: updatedTimeSlot,
+    });
 
-    appointment.status = status;
+    if (conflictingAppointment) {
+      return res.status(409).json({
+        success: false,
+        message: "Selected time slot is already booked",
+      });
+    }
 
-    appointment.reason = reason;
-
-    appointment.notes = notes;
-
-    appointment.symptoms = symptoms;
+    // Update fields
+    Object.assign(appointment, {
+      doctorEmployeeId,
+      appointmentDate,
+      timeSlot,
+      appointmentType,
+      priority,
+      paymentStatus,
+      visitMode,
+      status,
+      reason,
+      notes,
+      symptoms,
+    });
 
     await appointment.save();
 
     return res.status(200).json({
       success: true,
-
       message: "Appointment updated successfully",
-
       data: appointment,
     });
   } catch (error) {
-    console.log(error);
+    console.error("UPDATE APPOINTMENT ERROR:", error);
+
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
-
-      message: "Internal Server Error",
+      message: "Failed to update appointment. Please try again later",
     });
   }
 };
-
 /*
 |--------------------------------------------------------------------------
 | Get Doctor Queue
@@ -299,18 +371,17 @@ const getDoctorQueue = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-
-      data: appointments,
+  message: "No appointments found in doctor's queue",
+  data: []
     });
   } catch (error) {
-    console.log(error);
+  console.error("GET DOCTOR QUEUE ERROR:", error);
 
-    return res.status(500).json({
-      success: false,
-
-      message: "Internal Server Error",
-    });
-  }
+  return res.status(500).json({
+    success: false,
+    message: "Failed to retrieve doctor's queue",
+  });
+}
 };
 
 module.exports = {
