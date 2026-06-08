@@ -13,29 +13,7 @@ const {
 } = require("../controllers/patient.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
-
-/*
-|--------------------------------------------------------------------------
-| Role Middleware
-|--------------------------------------------------------------------------
-*/
-const authorizeRoles = (...roles) => {
-  return (req, res, next) => {
-    const userRoles = req.user.roles;
-
-    const hasAccess = userRoles.some((role) => roles.includes(role));
-
-    if (!hasAccess) {
-      return res.status(403).json({
-        success: false,
-
-        message: "Access Denied",
-      });
-    }
-
-    next();
-  };
-};
+const roleMiddleware = require("../middleware/role.middleware");
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +25,7 @@ router.post(
 
   authMiddleware,
 
-  authorizeRoles(
+  roleMiddleware(
     "ADMIN",
 
     "RECEPTIONIST",
@@ -92,7 +70,7 @@ router.put(
 
   authMiddleware,
 
-  authorizeRoles(
+  roleMiddleware(
     "ADMIN",
 
     "RECEPTIONIST",

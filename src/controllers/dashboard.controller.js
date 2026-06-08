@@ -1,10 +1,12 @@
-const Employee = require("../models/Employee");
+const getAdminStatsService = require("../services/dashboard/get-admin-stats.service");
 
-const Appointment = require("../models/Appointment");
+const getRecentEmployeesService = require("../services/dashboard/get-recent-employees.service");
 
-const Patient = require("../models/Patient");
+const getDoctorStatsService = require("../services/dashboard/get-doctor-stats.service");
 
-const STATUS = require("../constants/status");
+const getReceptionistStatsService = require("../services/dashboard/get-receptionist-stats.service");
+
+const getTodayAppointmentsService = require("../services/dashboard/get-today-appointments.service");
 
 /*
 |--------------------------------------------------------------------------
@@ -12,33 +14,21 @@ const STATUS = require("../constants/status");
 |--------------------------------------------------------------------------
 */
 const getAdminStats = async (req, res) => {
-  const totalEmployees = await Employee.countDocuments();
+  try {
+    const stats = await getAdminStatsService();
 
-  const totalDoctors = await Employee.countDocuments({
-    designation: "DOCTOR",
-  });
+    return res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    console.error("GET ADMIN STATS ERROR:", error);
 
-  const totalNurses = await Employee.countDocuments({
-    designation: "NURSE",
-  });
-
-  const pendingRequests = await Employee.countDocuments({
-    status: STATUS.PENDING,
-  });
-
-  return res.status(200).json({
-    success: true,
-
-    data: {
-      totalEmployees,
-
-      totalDoctors,
-
-      totalNurses,
-
-      pendingRequests,
-    },
-  });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch admin dashboard statistics",
+    });
+  }
 };
 
 /*
@@ -47,19 +37,22 @@ const getAdminStats = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 const getRecentEmployees = async (req, res) => {
-  const employees = await Employee.find()
+  try {
+    const employees =
+      await getRecentEmployeesService();
 
-    .sort({
-      createdAt: -1,
-    })
+    return res.status(200).json({
+      success: true,
+      data: employees,
+    });
+  } catch (error) {
+    console.error("GET RECENT EMPLOYEES ERROR:", error);
 
-    .limit(5);
-
-  return res.status(200).json({
-    success: true,
-
-    data: employees,
-  });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch recent employees",
+    });
+  }
 };
 
 /*
@@ -68,31 +61,21 @@ const getRecentEmployees = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 const getDoctorStats = async (req, res) => {
-  const totalAppointments = await Appointment.countDocuments();
+  try {
+    const stats = await getDoctorStatsService();
 
-  const completedAppointments = await Appointment.countDocuments({
-    status: "COMPLETED",
-  });
+    return res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    console.error("GET DOCTOR STATS ERROR:", error);
 
-  const pendingAppointments = await Appointment.countDocuments({
-    status: "BOOKED",
-  });
-
-  const totalPatients = await Patient.countDocuments();
-
-  return res.status(200).json({
-    success: true,
-
-    data: {
-      totalAppointments,
-
-      completedAppointments,
-
-      pendingAppointments,
-
-      totalPatients,
-    },
-  });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch doctor dashboard statistics",
+    });
+  }
 };
 
 /*
@@ -101,31 +84,26 @@ const getDoctorStats = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 const getReceptionistStats = async (req, res) => {
-  const todayAppointments = await Appointment.countDocuments();
+  try {
+    const stats =
+      await getReceptionistStatsService();
 
-  const totalPatients = await Patient.countDocuments();
+    return res.status(200).json({
+      success: true,
+      data: stats,
+    });
+  } catch (error) {
+    console.error(
+      "GET RECEPTIONIST STATS ERROR:",
+      error,
+    );
 
-  const checkedInPatients = await Appointment.countDocuments({
-    status: "IN_CONSULTATION",
-  });
-
-  const pendingAppointments = await Appointment.countDocuments({
-    status: "BOOKED",
-  });
-
-  return res.status(200).json({
-    success: true,
-
-    data: {
-      todayAppointments,
-
-      totalPatients,
-
-      checkedInPatients,
-
-      pendingAppointments,
-    },
-  });
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to fetch receptionist dashboard statistics",
+    });
+  }
 };
 
 /*
@@ -134,31 +112,31 @@ const getReceptionistStats = async (req, res) => {
 |--------------------------------------------------------------------------
 */
 const getTodayAppointments = async (req, res) => {
-  const appointments = await Appointment.find()
+  try {
+    const appointments =
+      await getTodayAppointmentsService();
 
-    .populate("patientId")
+    return res.status(200).json({
+      success: true,
+      data: appointments,
+    });
+  } catch (error) {
+    console.error(
+      "GET TODAY APPOINTMENTS ERROR:",
+      error,
+    );
 
-    .sort({
-      createdAt: -1,
-    })
-
-    .limit(5);
-
-  return res.status(200).json({
-    success: true,
-
-    data: appointments,
-  });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch appointments",
+    });
+  }
 };
 
 module.exports = {
   getAdminStats,
-
   getRecentEmployees,
-
   getDoctorStats,
-
   getReceptionistStats,
-
   getTodayAppointments,
 };

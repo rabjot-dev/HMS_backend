@@ -4,11 +4,8 @@ const router = express.Router();
 
 const {
   createConsultation,
-
   getConsultationByAppointment,
-
   updateConsultation,
-
   getConsultations,
   downloadPrescriptionPdf,
   getConsultationById,
@@ -16,29 +13,7 @@ const {
 
 const authMiddleware = require("../middleware/auth.middleware");
 
-/*
-|--------------------------------------------------------------------------
-| Role Middleware
-|--------------------------------------------------------------------------
-*/
-const authorizeRoles = (...roles) => {
-  return (req, res, next) => {
-    const userRoles = req.user.roles;
-
-    const hasAccess = userRoles.some((role) => roles.includes(role));
-
-    if (!hasAccess) {
-      return res.status(403).json({
-        success: false,
-
-        message: "Access Denied",
-      });
-    }
-
-    next();
-  };
-};
-
+const roleMiddleware = require("../middleware/role.middleware");
 /*
 |--------------------------------------------------------------------------
 | Create Consultation
@@ -49,7 +24,7 @@ router.post(
 
   authMiddleware,
 
-  authorizeRoles("DOCTOR"),
+  roleMiddleware("DOCTOR"),
 
   createConsultation,
 );
@@ -102,7 +77,7 @@ router.put(
 
   authMiddleware,
 
-  authorizeRoles("DOCTOR"),
+  roleMiddleware("DOCTOR"),
 
   updateConsultation,
 );

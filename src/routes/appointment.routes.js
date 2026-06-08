@@ -20,28 +20,7 @@ const {
 
 const authMiddleware = require("../middleware/auth.middleware");
 
-/*
-|--------------------------------------------------------------------------
-| Role Middleware
-|--------------------------------------------------------------------------
-*/
-const authorizeRoles = (...roles) => {
-  return (req, res, next) => {
-    const userRoles = req.user.roles;
-
-    const hasAccess = userRoles.some((role) => roles.includes(role));
-
-    if (!hasAccess) {
-      return res.status(403).json({
-        success: false,
-
-        message: "Access Denied",
-      });
-    }
-
-    next();
-  };
-};
+const roleMiddleware = require("../middleware/role.middleware");
 
 /*
 |--------------------------------------------------------------------------
@@ -53,7 +32,7 @@ router.get(
 
   authMiddleware,
 
-  authorizeRoles("DOCTOR"),
+  roleMiddleware("DOCTOR"),
 
   getDoctorQueue,
 );
@@ -107,11 +86,7 @@ router.post(
 
   authMiddleware,
 
-  authorizeRoles(
-    "ADMIN",
-
-    "RECEPTIONIST",
-  ),
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
 
   bookAppointment,
 );
@@ -126,11 +101,7 @@ router.put(
 
   authMiddleware,
 
-  authorizeRoles(
-    "ADMIN",
-
-    "RECEPTIONIST",
-  ),
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
 
   updateAppointment,
 );
@@ -145,11 +116,7 @@ router.delete(
 
   authMiddleware,
 
-  authorizeRoles(
-    "ADMIN",
-
-    "RECEPTIONIST",
-  ),
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
 
   deleteAppointment,
 );

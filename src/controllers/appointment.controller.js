@@ -1,7 +1,6 @@
 const Appointment = require("../models/Appointment");
 const mongoose = require("mongoose");
 const getAvailableSlotsService = require("../services/appointment/get-available-slots.service");
-
 const bookAppointmentService = require("../services/appointment/book-appointment.service");
 
 /*

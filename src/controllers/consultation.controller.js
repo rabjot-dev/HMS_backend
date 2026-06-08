@@ -1,6 +1,14 @@
-const Consultation = require("../models/consultation");
+const createConsultationService = require("../services/consultation/create-consultation.service");
 
-const Appointment = require("../models/appointment");
+const getConsultationByIdService = require("../services/consultation/get-consultation-by-id.service");
+
+const getConsultationByAppointmentService = require("../services/consultation/get-consultation-by-appointment.service");
+
+const updateConsultationService = require("../services/consultation/update-consultation.service");
+
+const getConsultationsService = require("../services/consultation/get-consultations.service");
+
+const getPrescriptionDataService = require("../services/consultation/download-prescription-pdf.service");
 
 const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
 
@@ -11,98 +19,8 @@ const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
 */
 const createConsultation = async (req, res) => {
   try {
-    const {
-      appointmentId,
+    const consultation = await createConsultationService(req.body);
 
-      diagnosis,
-
-      symptoms,
-
-      doctorNotes,
-
-      vitals,
-
-      prescriptions,
-    } = req.body;
-
-    /*
-            |--------------------------------------------------------------------------
-            | Check Existing Consultation
-            |--------------------------------------------------------------------------
-            */
-    const existingConsultation = await Consultation.findOne({
-      appointmentId,
-    });
-
-    if (existingConsultation) {
-      return res.status(400).json({
-        success: false,
-
-        message: "Consultation already exists",
-      });
-    }
-
-    /*
-            |--------------------------------------------------------------------------
-            | Find Appointment
-            |--------------------------------------------------------------------------
-            */
-    const appointment = await Appointment.findById(appointmentId);
-
-    /*
-            |--------------------------------------------------------------------------
-            | Appointment Not Found
-            |--------------------------------------------------------------------------
-            */
-    if (!appointment) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Appointment not found",
-      });
-    }
-
-    /*
-            |--------------------------------------------------------------------------
-            | Create Consultation
-            |--------------------------------------------------------------------------
-            */
-    const consultation = await Consultation.create({
-      appointmentId,
-
-      patientId: appointment.patientId,
-
-      doctorEmployeeId: appointment.doctorEmployeeId,
-
-      diagnosis,
-
-      symptoms,
-
-      doctorNotes,
-
-      vitals,
-
-      prescriptions,
-    });
-
-    /*
-            |--------------------------------------------------------------------------
-            | Update Appointment Status
-            |--------------------------------------------------------------------------
-            */
-    await Appointment.findByIdAndUpdate(
-      appointmentId,
-
-      {
-        status: "COMPLETED",
-      },
-    );
-
-    /*
-            |--------------------------------------------------------------------------
-            | Response
-            |--------------------------------------------------------------------------
-            */
     return res.status(201).json({
       success: true,
 
@@ -111,12 +29,28 @@ const createConsultation = async (req, res) => {
       data: consultation,
     });
   } catch (error) {
-    console.log(error);
+    console.error("CREATE CONSULTATION ERROR:", error);
+
+    if (error.message === "Consultation already exists") {
+      return res.status(409).json({
+        success: false,
+
+        message: error.message,
+      });
+    }
+
+    if (error.message === "Appointment not found") {
+      return res.status(404).json({
+        success: false,
+
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
 
-      message: "Internal Server Error",
+      message: "Failed to create consultation",
     });
   }
 };
@@ -128,53 +62,34 @@ const createConsultation = async (req, res) => {
 */
 const getConsultationByAppointment = async (req, res) => {
   try {
-    const { appointmentId } = req.params;
+    const consultation =
+      await getConsultationByAppointmentService(
+        req.params.appointmentId,
+      );
 
-    /*
-            |--------------------------------------------------------------------------
-            | Find Consultation
-            |--------------------------------------------------------------------------
-            */
-    const consultation = await Consultation.findOne({
-      appointmentId,
-    })
-
-      .populate("patientId")
-
-      .populate("doctorEmployeeId")
-
-      .populate("appointmentId");
-
-    /*
-            |--------------------------------------------------------------------------
-            | Not Found
-            |--------------------------------------------------------------------------
-            */
-    if (!consultation) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Consultation not found",
-      });
-    }
-
-    /*
-            |--------------------------------------------------------------------------
-            | Response
-            |--------------------------------------------------------------------------
-            */
     return res.status(200).json({
       success: true,
 
       data: consultation,
     });
   } catch (error) {
-    console.log(error);
+    console.error(
+      "GET CONSULTATION BY APPOINTMENT ERROR:",
+      error,
+    );
+
+    if (error.message === "Consultation not found") {
+      return res.status(404).json({
+        success: false,
+
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
 
-      message: "Internal Server Error",
+      message: "Failed to fetch consultation",
     });
   }
 };
@@ -186,41 +101,12 @@ const getConsultationByAppointment = async (req, res) => {
 */
 const updateConsultation = async (req, res) => {
   try {
-    const { id } = req.params;
+    const consultation =
+      await updateConsultationService(
+        req.params.id,
+        req.body,
+      );
 
-    /*
-            |--------------------------------------------------------------------------
-            | Update
-            |--------------------------------------------------------------------------
-            */
-    const consultation = await Consultation.findByIdAndUpdate(
-      id,
-
-      req.body,
-
-      {
-        new: true,
-      },
-    );
-
-    /*
-            |--------------------------------------------------------------------------
-            | Not Found
-            |--------------------------------------------------------------------------
-            */
-    if (!consultation) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Consultation not found",
-      });
-    }
-
-    /*
-            |--------------------------------------------------------------------------
-            | Response
-            |--------------------------------------------------------------------------
-            */
     return res.status(200).json({
       success: true,
 
@@ -229,12 +115,20 @@ const updateConsultation = async (req, res) => {
       data: consultation,
     });
   } catch (error) {
-    console.log(error);
+    console.error("UPDATE CONSULTATION ERROR:", error);
+
+    if (error.message === "Consultation not found") {
+      return res.status(404).json({
+        success: false,
+
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
 
-      message: "Internal Server Error",
+      message: "Failed to update consultation",
     });
   }
 };
@@ -246,17 +140,7 @@ const updateConsultation = async (req, res) => {
 */
 const getConsultations = async (req, res) => {
   try {
-    const consultations = await Consultation.find()
-
-      .populate("patientId")
-
-      .populate("doctorEmployeeId")
-
-      .populate("appointmentId")
-
-      .sort({
-        createdAt: -1,
-      });
+    const consultations = await getConsultationsService();
 
     return res.status(200).json({
       success: true,
@@ -264,12 +148,12 @@ const getConsultations = async (req, res) => {
       data: consultations,
     });
   } catch (error) {
-    console.log(error);
+    console.error("GET CONSULTATIONS ERROR:", error);
 
     return res.status(500).json({
       success: false,
 
-      message: "Internal Server Error",
+      message: "Failed to fetch consultations",
     });
   }
 };
@@ -281,76 +165,48 @@ const getConsultations = async (req, res) => {
 */
 const downloadPrescriptionPdf = async (req, res) => {
   try {
-    const { consultationId } = req.params;
+    const consultation =
+      await getPrescriptionDataService(
+        req.params.consultationId,
+      );
 
-    /*
-            |--------------------------------------------------------------------------
-            | Find Consultation
-            |--------------------------------------------------------------------------
-            */
-    const consultation = await Consultation.findById(consultationId)
-
-      .populate("patientId")
-
-      .populate("doctorEmployeeId")
-
-      .populate("appointmentId");
-
-    /*
-            |--------------------------------------------------------------------------
-            | Not Found
-            |--------------------------------------------------------------------------
-            */
-    if (!consultation) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Consultation not found",
-      });
-    }
-
-    /*
-            |--------------------------------------------------------------------------
-            | Generate PDF
-            |--------------------------------------------------------------------------
-            */
     generatePrescriptionPdf(
       consultation,
-
       res,
     );
   } catch (error) {
-    console.log(error);
+    console.error(
+      "DOWNLOAD PRESCRIPTION PDF ERROR:",
+      error,
+    );
+
+    if (error.message === "Consultation not found") {
+      return res.status(404).json({
+        success: false,
+
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
 
-      message: "Internal Server Error",
+      message: "Failed to generate prescription PDF",
     });
   }
 };
+
 /*
 |--------------------------------------------------------------------------
-| Get Consultation By Id
+| Get Consultation By ID
 |--------------------------------------------------------------------------
 */
 const getConsultationById = async (req, res) => {
   try {
-    const consultation = await Consultation.findById(req.params.id)
-
-      .populate("patientId")
-
-      .populate("doctorEmployeeId")
-
-      .populate("appointmentId");
-
-    if (!consultation) {
-      return res.status(404).json({
-        success: false,
-
-        message: "Consultation not found",
-      });
-    }
+    const consultation =
+      await getConsultationByIdService(
+        req.params.id,
+      );
 
     return res.status(200).json({
       success: true,
@@ -358,12 +214,23 @@ const getConsultationById = async (req, res) => {
       data: consultation,
     });
   } catch (error) {
-    console.log(error);
+    console.error(
+      "GET CONSULTATION BY ID ERROR:",
+      error,
+    );
+
+    if (error.message === "Consultation not found") {
+      return res.status(404).json({
+        success: false,
+
+        message: error.message,
+      });
+    }
 
     return res.status(500).json({
       success: false,
 
-      message: "Internal Server Error",
+      message: "Failed to fetch consultation",
     });
   }
 };
@@ -371,12 +238,8 @@ const getConsultationById = async (req, res) => {
 module.exports = {
   createConsultation,
   getConsultationById,
-
   getConsultationByAppointment,
-
   updateConsultation,
-
   getConsultations,
-
   downloadPrescriptionPdf,
 };
