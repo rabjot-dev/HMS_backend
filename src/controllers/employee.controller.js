@@ -1,4 +1,13 @@
 const mongoose = require("mongoose");
+
+
+const Employee = require("../models/Employee");
+
+const User = require("../models/User");
+
+const STATUS = require("../constants/status");
+
+const registerEmployee = require("../services/employee/register-employee.service");
 /*
 |--------------------------------------------------------------------------
 | Create Employee
@@ -14,27 +23,45 @@ const createEmployee = async (req, res) => {
       data: serviceResponse,
     });
   } catch (error) {
-    console.error("CREATE EMPLOYEE ERROR:", error);
+  console.error(
+    "CREATE EMPLOYEE ERROR:",
+    error,
+  );
 
-    if (error.code === 11000) {
-      return res.status(409).json({
-        success: false,
-        message: "Phone number already exists",
-      });
-    }
-
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    return res.status(500).json({
+  if (
+    error.message ===
+    "Employee already exists with this phone number"
+  ) {
+    return res.status(409).json({
       success: false,
-      message: "Failed to register employee",
+      message:
+        "Employee already exists with this phone number",
     });
   }
+
+  if (
+    error.message ===
+    "Employee already exists with this email"
+  ) {
+    return res.status(409).json({
+      success: false,
+      message:
+        "Employee already exists with this email",
+    });
+  }
+
+  if (error.code === 11000) {
+    return res.status(409).json({
+      success: false,
+      message: "Duplicate record found",
+    });
+  }
+
+  return res.status(500).json({
+    success: false,
+    message: "Failed to register employee",
+  });
+}
 };
 
 /*
@@ -117,14 +144,20 @@ const updateEmployee = async (req, res) => {
       });
     }
 
-    const employee = await Employee.findByIdAndUpdate(
-      id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
+    const {
+  email,
+  employeeCode,
+  ...updateData
+} = req.body;
+
+const employee = await Employee.findByIdAndUpdate(
+  id,
+  updateData,
+  {
+    new: true,
+    runValidators: true,
+  },
+);
 
     if (!employee) {
       return res.status(404).json({

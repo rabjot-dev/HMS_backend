@@ -68,7 +68,20 @@ const registerEmployee = async (employeeData) => {
   if (existingUser) {
     throw new Error("Employee already exists with this email");
   }
+/*
+|--------------------------------------------------------------------------
+| Existing Phone Check
+|--------------------------------------------------------------------------
+*/
+const existingPhone = await Employee.findOne({
+  phone,
+});
 
+if (existingPhone) {
+  throw new Error(
+    "Employee already exists with this phone number",
+  );
+}
   /*
         |--------------------------------------------------------------------------
         | Employee Prefix

@@ -33,6 +33,8 @@ const registerEmployeeSelf = async (employeeData) => {
     medicalRegistrationNo,
     consultationFee,
     password,
+      securityQuestion,
+  securityAnswer,
   } = employeeData;
 
   /*
@@ -47,6 +49,15 @@ const registerEmployeeSelf = async (employeeData) => {
   if (existingUser) {
     throw new Error("User already exists");
   }
+  const existingPhone = await Employee.findOne({
+  phone,
+});
+
+if (existingPhone) {
+  throw new Error(
+    "Phone number is already registered"
+  );
+}
 
   /*
     |--------------------------------------------------------------------------
@@ -74,6 +85,13 @@ const registerEmployeeSelf = async (employeeData) => {
   const hashedPassword = await bcrypt.hash(
     password,
 
+    10,
+  );
+  const hashedSecurityAnswer =
+  await bcrypt.hash(
+    securityAnswer
+      .trim()
+      .toLowerCase(),
     10,
   );
 
@@ -127,6 +145,10 @@ const registerEmployeeSelf = async (employeeData) => {
     status: STATUS.PENDING,
 
     isFirstLogin: false,
+    securityQuestion,
+
+  securityAnswer:
+    hashedSecurityAnswer,
   });
 
   /*

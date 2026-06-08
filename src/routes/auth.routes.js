@@ -6,6 +6,7 @@ const {
   createPasswordValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
+  registerValidation,
 } = require("../validations/auth.validation");
 const {
   login,
@@ -26,7 +27,12 @@ router.post(
   createPassword,
 );
 router.get("/me", authMiddleware, getCurrentUser);
-router.post("/register", register);
+router.post(
+  "/register",
+  registerValidation,
+  validateMiddleware,
+  register
+);
 router.post(
   "/forgot-password",
   forgotPasswordValidation,
