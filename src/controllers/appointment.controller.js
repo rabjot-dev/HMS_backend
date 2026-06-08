@@ -352,27 +352,26 @@ const getDoctorQueue = async (req, res) => {
 
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const appointments = await Appointment.find({
-      doctorEmployeeId,
+   const appointments = await Appointment.find({
+  doctorEmployeeId,
+  appointmentDate: {
+    $gte: today,
+    $lt: tomorrow,
+  },
+})
+.populate("patientId")
+.sort({
+  tokenNumber: 1,
+});
 
-      appointmentDate: {
-        $gte: today,
-
-        $lt: tomorrow,
-      },
-    })
-
-      .populate("patientId")
-
-      .sort({
-        tokenNumber: 1,
-      });
-
-    return res.status(200).json({
-      success: true,
-  message: "No appointments found in doctor's queue",
-  data: []
-    });
+return res.status(200).json({
+  success: true,
+  message:
+    appointments.length > 0
+      ? "Doctor queue retrieved successfully"
+      : "No appointments found in doctor's queue",
+  data: appointments,
+});
   } catch (error) {
   console.error("GET DOCTOR QUEUE ERROR:", error);
 

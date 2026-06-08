@@ -119,8 +119,8 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   | Booked Slots
   |--------------------------------------------------------------------------
   */
-  const bookedSlots = bookedAppointments.map(
-    (appointment) => appointment.timeSlot,
+  const bookedSlots = new Set(
+    bookedAppointments.map((appointment) => appointment.timeSlot),
   );
 
   /*
@@ -128,7 +128,7 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   | Available Slots
   |--------------------------------------------------------------------------
   */
-  return allSlots.filter((slot) => !bookedSlots.includes(slot));
+  return allSlots.filter((slot) => !bookedSlots.has(slot));
 };
 
 module.exports = getAvailableSlots;
