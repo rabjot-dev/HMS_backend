@@ -1,13 +1,10 @@
+const mongoose = require("mongoose");
+
 const createConsultationService = require("../services/consultation/create-consultation.service");
-
 const getConsultationByIdService = require("../services/consultation/get-consultation-by-id.service");
-
 const getConsultationByAppointmentService = require("../services/consultation/get-consultation-by-appointment.service");
-
 const updateConsultationService = require("../services/consultation/update-consultation.service");
-
 const getConsultationsService = require("../services/consultation/get-consultations.service");
-
 const getPrescriptionDataService = require("../services/consultation/download-prescription-pdf.service");
 
 const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
@@ -23,9 +20,7 @@ const createConsultation = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-
       message: "Consultation created successfully",
-
       data: consultation,
     });
   } catch (error) {
@@ -34,22 +29,26 @@ const createConsultation = async (req, res) => {
     if (error.message === "Consultation already exists") {
       return res.status(409).json({
         success: false,
-
-        message: error.message,
+        message: "A consultation already exists for this appointment",
       });
     }
 
     if (error.message === "Appointment not found") {
       return res.status(404).json({
         success: false,
+        message: "Appointment not found",
+      });
+    }
 
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
         message: error.message,
       });
     }
 
     return res.status(500).json({
       success: false,
-
       message: "Failed to create consultation",
     });
   }
@@ -62,14 +61,24 @@ const createConsultation = async (req, res) => {
 */
 const getConsultationByAppointment = async (req, res) => {
   try {
+    const { appointmentId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid appointment ID",
+      });
+    }
+
     const consultation =
       await getConsultationByAppointmentService(
-        req.params.appointmentId,
+        appointmentId,
       );
 
     return res.status(200).json({
       success: true,
-
+      message:
+        "Consultation retrieved successfully",
       data: consultation,
     });
   } catch (error) {
@@ -81,15 +90,15 @@ const getConsultationByAppointment = async (req, res) => {
     if (error.message === "Consultation not found") {
       return res.status(404).json({
         success: false,
-
-        message: error.message,
+        message:
+          "No consultation found for the provided appointment",
       });
     }
 
     return res.status(500).json({
       success: false,
-
-      message: "Failed to fetch consultation",
+      message:
+        "Failed to retrieve consultation details",
     });
   }
 };
@@ -101,33 +110,48 @@ const getConsultationByAppointment = async (req, res) => {
 */
 const updateConsultation = async (req, res) => {
   try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid consultation ID",
+      });
+    }
+
     const consultation =
       await updateConsultationService(
-        req.params.id,
+        id,
         req.body,
       );
 
     return res.status(200).json({
       success: true,
-
       message: "Consultation updated successfully",
-
       data: consultation,
     });
   } catch (error) {
-    console.error("UPDATE CONSULTATION ERROR:", error);
+    console.error(
+      "UPDATE CONSULTATION ERROR:",
+      error,
+    );
 
     if (error.message === "Consultation not found") {
       return res.status(404).json({
         success: false,
+        message: "Consultation not found",
+      });
+    }
 
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
         message: error.message,
       });
     }
 
     return res.status(500).json({
       success: false,
-
       message: "Failed to update consultation",
     });
   }
@@ -140,20 +164,25 @@ const updateConsultation = async (req, res) => {
 */
 const getConsultations = async (req, res) => {
   try {
-    const consultations = await getConsultationsService();
+    const consultations =
+      await getConsultationsService();
 
     return res.status(200).json({
       success: true,
-
+      message:
+        "Consultations retrieved successfully",
       data: consultations,
     });
   } catch (error) {
-    console.error("GET CONSULTATIONS ERROR:", error);
+    console.error(
+      "GET CONSULTATIONS ERROR:",
+      error,
+    );
 
     return res.status(500).json({
       success: false,
-
-      message: "Failed to fetch consultations",
+      message:
+        "Failed to retrieve consultations",
     });
   }
 };
@@ -163,11 +192,27 @@ const getConsultations = async (req, res) => {
 | Download Prescription PDF
 |--------------------------------------------------------------------------
 */
-const downloadPrescriptionPdf = async (req, res) => {
+const downloadPrescriptionPdf = async (
+  req,
+  res,
+) => {
   try {
+    const { consultationId } = req.params;
+
+    if (
+      !mongoose.Types.ObjectId.isValid(
+        consultationId,
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid consultation ID",
+      });
+    }
+
     const consultation =
       await getPrescriptionDataService(
-        req.params.consultationId,
+        consultationId,
       );
 
     generatePrescriptionPdf(
@@ -183,15 +228,14 @@ const downloadPrescriptionPdf = async (req, res) => {
     if (error.message === "Consultation not found") {
       return res.status(404).json({
         success: false,
-
-        message: error.message,
+        message: "Consultation not found",
       });
     }
 
     return res.status(500).json({
       success: false,
-
-      message: "Failed to generate prescription PDF",
+      message:
+        "Failed to generate prescription PDF",
     });
   }
 };
@@ -201,16 +245,27 @@ const downloadPrescriptionPdf = async (req, res) => {
 | Get Consultation By ID
 |--------------------------------------------------------------------------
 */
-const getConsultationById = async (req, res) => {
+const getConsultationById = async (
+  req,
+  res,
+) => {
   try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid consultation ID",
+      });
+    }
+
     const consultation =
-      await getConsultationByIdService(
-        req.params.id,
-      );
+      await getConsultationByIdService(id);
 
     return res.status(200).json({
       success: true,
-
+      message:
+        "Consultation retrieved successfully",
       data: consultation,
     });
   } catch (error) {
@@ -222,15 +277,14 @@ const getConsultationById = async (req, res) => {
     if (error.message === "Consultation not found") {
       return res.status(404).json({
         success: false,
-
-        message: error.message,
+        message: "Consultation not found",
       });
     }
 
     return res.status(500).json({
       success: false,
-
-      message: "Failed to fetch consultation",
+      message:
+        "Failed to retrieve consultation details",
     });
   }
 };

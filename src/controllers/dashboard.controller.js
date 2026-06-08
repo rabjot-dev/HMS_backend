@@ -19,6 +19,7 @@ const getAdminStats = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: "Admin dashboard statistics retrieved successfully",
       data: stats,
     });
   } catch (error) {
@@ -26,7 +27,7 @@ const getAdminStats = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch admin dashboard statistics",
+      message: "Failed to retrieve admin dashboard statistics",
     });
   }
 };
@@ -38,11 +39,11 @@ const getAdminStats = async (req, res) => {
 */
 const getRecentEmployees = async (req, res) => {
   try {
-    const employees =
-      await getRecentEmployeesService();
+    const employees = await getRecentEmployeesService();
 
     return res.status(200).json({
       success: true,
+      message: "Recent employees retrieved successfully",
       data: employees,
     });
   } catch (error) {
@@ -50,7 +51,7 @@ const getRecentEmployees = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch recent employees",
+      message: "Failed to retrieve recent employees",
     });
   }
 };
@@ -66,6 +67,7 @@ const getDoctorStats = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: "Doctor dashboard statistics retrieved successfully",
       data: stats,
     });
   } catch (error) {
@@ -73,7 +75,7 @@ const getDoctorStats = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch doctor dashboard statistics",
+      message: "Failed to retrieve doctor dashboard statistics",
     });
   }
 };
@@ -85,11 +87,11 @@ const getDoctorStats = async (req, res) => {
 */
 const getReceptionistStats = async (req, res) => {
   try {
-    const stats =
-      await getReceptionistStatsService();
+    const stats = await getReceptionistStatsService();
 
     return res.status(200).json({
       success: true,
+      message: "Receptionist dashboard statistics retrieved successfully",
       data: stats,
     });
   } catch (error) {
@@ -101,7 +103,7 @@ const getReceptionistStats = async (req, res) => {
     return res.status(500).json({
       success: false,
       message:
-        "Failed to fetch receptionist dashboard statistics",
+        "Failed to retrieve receptionist dashboard statistics",
     });
   }
 };
@@ -118,6 +120,7 @@ const getTodayAppointments = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+      message: "Appointments retrieved successfully",
       data: appointments,
     });
   } catch (error) {
@@ -128,7 +131,7 @@ const getTodayAppointments = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch appointments",
+      message: "Failed to retrieve appointments",
     });
   }
 };

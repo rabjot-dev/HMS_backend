@@ -1,11 +1,13 @@
+const mongoose = require("mongoose");
+
 const Patient = require("../models/Patient");
 
 const registerPatient = require("../services/patient/register-patient.service");
 
 /*
-|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------
 | Register Patient
-|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------
 */
 const createPatient = async (req, res) => {
   try {
@@ -13,173 +15,166 @@ const createPatient = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-
       message: "Patient registered successfully",
-
       data: serviceResponse,
     });
   } catch (error) {
-    console.log(error);
+    console.error("CREATE PATIENT ERROR:", error);
 
-    /*
-        |------------------------------------------------------------------|
-        | Duplicate Phone
-        |------------------------------------------------------------------|
-        */
     if (error.code === 11000) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-
         message: "Phone number already exists",
       });
     }
 
-    return res.status(400).json({
-      success: false,
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
 
-      message: error.message,
+    return res.status(500).json({
+      success: false,
+      message: "Failed to register patient",
     });
   }
 };
 
 /*
-|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------
 | Get All Patients
-|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------
 */
 const getPatients = async (req, res) => {
   try {
     const patients = await Patient.find()
-
       .populate("assignedDoctor")
-
       .sort({
         createdAt: -1,
       });
 
     return res.status(200).json({
       success: true,
-
+      message: "Patients retrieved successfully",
       data: patients,
     });
   } catch (error) {
-    console.log(error);
+    console.error("GET PATIENTS ERROR:", error);
 
     return res.status(500).json({
       success: false,
-
-      message: "Internal Server Error",
+      message: "Failed to retrieve patients",
     });
   }
 };
 
 /*
-|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------
 | Get Patient By ID
-|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------
 */
 const getPatientById = async (req, res) => {
   try {
-    const patient = await Patient.findById(req.params.id)
+    const { id } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid patient ID",
+      });
+    }
+
+    const patient = await Patient.findById(id)
       .populate("assignedDoctor");
 
-    /*
-        |------------------------------------------------------------------|
-        | Not Found
-        |------------------------------------------------------------------|
-        */
     if (!patient) {
       return res.status(404).json({
         success: false,
-
         message: "Patient not found",
       });
     }
 
     return res.status(200).json({
       success: true,
-
+      message: "Patient retrieved successfully",
       data: patient,
     });
   } catch (error) {
-    console.log(error);
+    console.error("GET PATIENT BY ID ERROR:", error);
 
     return res.status(500).json({
       success: false,
-
-      message: "Internal Server Error",
+      message: "Failed to retrieve patient details",
     });
   }
 };
 
 /*
-|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------
 | Update Patient
-|--------------------------------------------------------------------------|
+|--------------------------------------------------------------------------
 */
 const updatePatient = async (req, res) => {
   try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid patient ID",
+      });
+    }
+
     const patient = await Patient.findByIdAndUpdate(
-      req.params.id,
-
+      id,
       req.body,
-
       {
-        returnDocument: "after",
+        new: true,
+        runValidators: true,
       },
     );
 
-    /*
-        |------------------------------------------------------------------|
-        | Not Found
-        |------------------------------------------------------------------|
-        */
     if (!patient) {
       return res.status(404).json({
         success: false,
-
         message: "Patient not found",
       });
     }
 
     return res.status(200).json({
       success: true,
-
       message: "Patient updated successfully",
-
       data: patient,
     });
   } catch (error) {
-    console.log(error);
+    console.error("UPDATE PATIENT ERROR:", error);
 
-    /*
-        |------------------------------------------------------------------|
-        | Duplicate Phone
-        |------------------------------------------------------------------|
-        */
     if (error.code === 11000) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-
         message: "Phone number already exists",
       });
     }
 
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
     return res.status(500).json({
       success: false,
-
-      message: "Internal Server Error",
+      message: "Failed to update patient details",
     });
   }
 };
 
 module.exports = {
   createPatient,
-
   getPatients,
-
   getPatientById,
-
   updatePatient,
 };
