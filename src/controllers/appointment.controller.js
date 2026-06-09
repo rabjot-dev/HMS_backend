@@ -102,29 +102,47 @@ const bookAppointment = async (req, res) => {
 */
 const getAppointments = async (req, res) => {
   try {
-    const appointments = await Appointment.find()
 
-      .populate("patientId")
+    let filter = {};
 
-      .populate("doctorEmployeeId")
+    /*
+    |---------------------------------------------------
+    | Doctor Can See Only Own Appointments
+    |---------------------------------------------------
+    */
+    if (
+      req.user.roles?.includes("DOCTOR")
+    ) {
+      filter.doctorEmployeeId =
+        req.user.employeeId;
+    }
 
-      .sort({
-        appointmentDate: -1,
-      });
+   const appointments = await Appointment.find(filter)
+  .populate("patientId")
+  .populate("doctorEmployeeId")
+  .sort({
+    appointmentDate: 1,
+    timeSlot: 1,
+  });
 
     return res.status(200).json({
       success: true,
-
       data: appointments,
     });
-  } catch (error) {
-  console.error("GET APPOINTMENTS ERROR:", error);
 
-  return res.status(500).json({
-    success: false,
-    message: "Failed to retrieve appointments",
-  });
-}
+  } catch (error) {
+
+    console.error(
+      "GET APPOINTMENTS ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to retrieve appointments",
+    });
+  }
 };
 
 /*
@@ -257,8 +275,22 @@ const updateAppointment = async (req, res) => {
     }
 
     // Validate appointment date
-    if (appointmentDate) {
-      const selectedDate = new Date(appointmentDate);
+   if (appointmentDate) {
+
+  const [
+    year,
+    month,
+    day
+  ] = appointmentDate
+    .split('-')
+    .map(Number);
+
+  const selectedDate =
+    new Date(
+      year,
+      month - 1,
+      day
+    );
       selectedDate.setHours(0, 0, 0, 0);
 
       const today = new Date();
@@ -298,20 +330,35 @@ const updateAppointment = async (req, res) => {
     }
 
     // Update fields
-    Object.assign(appointment, {
-      doctorEmployeeId,
-      appointmentDate,
-      timeSlot,
-      appointmentType,
-      priority,
-      paymentStatus,
-      visitMode,
-      status,
-      reason,
-      notes,
-      symptoms,
-    });
+   let formattedDate =
+  appointment.appointmentDate;
 
+if (appointmentDate) {
+
+  const [
+    year,
+    month,
+    day
+  ] = appointmentDate
+    .split('-')
+    .map(Number);
+formattedDate = appointmentDate;
+}
+
+Object.assign(appointment, {
+  doctorEmployeeId,
+  appointmentDate:
+    formattedDate,
+  timeSlot,
+  appointmentType,
+  priority,
+  paymentStatus,
+  visitMode,
+  status,
+  reason,
+  notes,
+  symptoms,
+});
     await appointment.save();
 
     return res.status(200).json({

@@ -116,9 +116,23 @@ const bookAppointment = async (appointmentData, user) => {
   | Normalize Date
   |--------------------------------------------------------------------------
   */
-  const normalizedDate = new Date(appointmentDate);
+const [
+  year,
+  month,
+  day
+] = appointmentDate
+  .split('-')
+  .map(Number);
 
-  normalizedDate.setHours(0, 0, 0, 0);
+const normalizedDate =
+  new Date(
+    year,
+    month - 1,
+    day,
+    12,
+    0,
+    0
+  );
 
   const nextDay = new Date(normalizedDate);
 
@@ -233,7 +247,7 @@ const bookAppointment = async (appointmentData, user) => {
 
     doctorEmployeeId: doctorId,
 
-    appointmentDate: normalizedDate,
+    appointmentDate,
 
     timeSlot: appointmentTime,
 

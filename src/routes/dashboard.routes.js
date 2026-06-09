@@ -1,5 +1,6 @@
 const express = require("express");
-
+const authMiddleware =
+  require("../middleware/auth.middleware");
 const router = express.Router();
 
 const {
@@ -22,12 +23,14 @@ const {
 router.get(
   "/admin-stats",
 
+  authMiddleware,
   getAdminStats,
 );
 
 router.get(
   "/recent-employees",
 
+  authMiddleware,
   getRecentEmployees,
 );
 
@@ -38,7 +41,7 @@ router.get(
 */
 router.get(
   "/doctor-stats",
-
+  authMiddleware,
   getDoctorStats,
 );
 
@@ -55,7 +58,7 @@ router.get(
 
 router.get(
   "/today-appointments",
-
+  authMiddleware,
   getTodayAppointments,
 );
 

@@ -63,7 +63,7 @@ const getRecentEmployees = async (req, res) => {
 */
 const getDoctorStats = async (req, res) => {
   try {
-    const stats = await getDoctorStatsService();
+    const stats = await getDoctorStatsService( req.user.employeeId);
 
     return res.status(200).json({
       success: true,
@@ -116,8 +116,12 @@ const getReceptionistStats = async (req, res) => {
 const getTodayAppointments = async (req, res) => {
   try {
     const appointments =
-      await getTodayAppointmentsService();
+      await getTodayAppointmentsService( req.user);
 
+console.log(
+  "TODAY APPOINTMENTS =>",
+  appointments
+);
     return res.status(200).json({
       success: true,
       message: "Appointments retrieved successfully",

@@ -1,28 +1,54 @@
-const Appointment = require("../../models/Appointment");
-const Patient = require("../../models/Patient");
+const Appointment =
+  require("../../models/Appointment");
 
-const getDoctorStatsService = async () => {
-  const totalAppointments = await Appointment.countDocuments();
+const getDoctorStatsService =
+  async (doctorEmployeeId) => {
 
-  const completedAppointments =
-    await Appointment.countDocuments({
-      status: "COMPLETED",
-    });
+    const totalAppointments =
+      await Appointment.countDocuments({
+        doctorEmployeeId,
+      });
 
-  const pendingAppointments =
-    await Appointment.countDocuments({
-      status: "BOOKED",
-    });
+    const completedConsultations =
+      await Appointment.countDocuments({
+        doctorEmployeeId,
+        status: "COMPLETED",
+      });
 
-  const totalPatients =
-    await Patient.countDocuments();
+    const pendingConsultations =
+      await Appointment.countDocuments({
+        doctorEmployeeId,
+        status: "BOOKED",
+      });
 
-  return {
-    totalAppointments,
-    completedAppointments,
-    pendingAppointments,
-    totalPatients,
+    const today = new Date();
+
+    today.setHours(
+      0,
+      0,
+      0,
+      0
+    );
+
+    const todayString =
+      today
+        .toISOString()
+        .split("T")[0];
+
+    const todayPatients =
+      await Appointment.countDocuments({
+        doctorEmployeeId,
+        appointmentDate:
+          todayString,
+      });
+
+    return {
+      totalAppointments,
+      completedConsultations,
+      pendingConsultations,
+      todayPatients,
+    };
   };
-};
 
-module.exports = getDoctorStatsService;
+module.exports =
+  getDoctorStatsService;
