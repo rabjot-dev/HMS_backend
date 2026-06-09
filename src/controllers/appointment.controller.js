@@ -306,7 +306,6 @@ const updateAppointment = async (req, res) => {
     let formattedDate = appointment.appointmentDate;
 
     if (appointmentDate) {
-      const [year, month, day] = appointmentDate.split("-").map(Number);
       formattedDate = appointmentDate;
     }
 

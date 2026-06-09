@@ -23,7 +23,7 @@ const registerValidation = [
   body("phone")
     .notEmpty()
     .withMessage("Phone number is required")
-    .matches(/^[0-9]{10}$/)
+    .matches(/^\d{10}$/)
     .withMessage("Phone number must contain exactly 10 digits"),
 
   body("gender").notEmpty().withMessage("Gender is required"),

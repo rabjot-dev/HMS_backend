@@ -55,7 +55,7 @@ const createPatientValidation = [
     .trim()
     .notEmpty()
     .withMessage("Phone number is required")
-    .matches(/^[0-9]{10}$/)
+    .matches(/^\d{10}$/)
     .withMessage("Phone number must be exactly 10 digits"),
 
   body("email")
@@ -83,7 +83,7 @@ const createPatientValidation = [
 
   body("pincode")
     .optional()
-    .matches(/^[0-9]{6}$/)
+    .matches(/^\d{6}$/)
     .withMessage("Pincode must be 6 digits"),
 
   body("country")
@@ -100,7 +100,7 @@ const createPatientValidation = [
 
   body("emergencyContactPhone")
     .optional()
-    .matches(/^[0-9]{10}$/)
+    .matches(/^\d{10}$/)
     .withMessage("Emergency contact phone must be exactly 10 digits"),
 
   body("relationship")
@@ -174,7 +174,7 @@ const updatePatientValidation = [
 
   body("phone")
     .optional()
-    .matches(/^[0-9]{10}$/)
+    .matches(/^\d{10}$/)
     .withMessage("Phone number must be exactly 10 digits"),
 
   body("email")
@@ -184,12 +184,12 @@ const updatePatientValidation = [
 
   body("pincode")
     .optional()
-    .matches(/^[0-9]{6}$/)
+    .matches(/^\d{6}$/)
     .withMessage("Pincode must be 6 digits"),
 
   body("emergencyContactPhone")
     .optional()
-    .matches(/^[0-9]{10}$/)
+    .matches(/^\d{10}$/)
     .withMessage("Emergency contact phone must be exactly 10 digits"),
 
   body("insuranceCoverageAmount")
@@ -206,7 +206,6 @@ const updatePatientValidation = [
     .isISO8601()
     .withMessage("Invalid insurance expiry date"),
 
-  ,
   body("patientType")
     .optional()
     .isIn(["OPD", "IPD", "EMERGENCY"])

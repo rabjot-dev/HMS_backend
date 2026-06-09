@@ -68,7 +68,7 @@ const registerEmployeeValidation = [
     .withMessage(
       "Medical registration number must be between 5 and 50 characters",
     )
-    .matches(/^[A-Za-z0-9\-\/]+$/)
+    .matches(/^[A-Za-z0-9\-/]+$/)
     .withMessage("Medical registration number contains invalid characters"),
   body("qualification")
     .optional({ values: "falsy" })
