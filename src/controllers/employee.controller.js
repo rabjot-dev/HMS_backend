@@ -53,7 +53,7 @@ const createEmployee = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to register employee",
+      message: error.message,
     });
   }
 };
@@ -540,19 +540,32 @@ const updateDoctorAvailability = async (req, res) => {
     | Update Availability
     |--------------------------------------------------------------------------
     */
-    doctor.availability = {
-      ...doctor.availability,
-      workingDays,
-      startTime,
-      endTime,
-      slotDuration,
-      breakStartTime,
-      breakEndTime,
-      maxPatientsPerDay,
-      isAvailable,
-    };
-
+   await Employee.findByIdAndUpdate(
+  employeeId,
+  {
+    $set: {
+      availability: {
+        workingDays,
+        startTime,
+        endTime,
+        slotDuration,
+        breakStartTime,
+        breakEndTime,
+        maxPatientsPerDay,
+        isAvailable,
+      },
+    },
+  },
+  { new: true }
+);
     await doctor.save();
+    const updatedDoctor =
+  await Employee.findById(employeeId);
+
+console.log(
+  "SAVED AVAILABILITY =>",
+  updatedDoctor.availability
+);
 
     return res.status(200).json({
       success: true,
