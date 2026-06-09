@@ -1,8 +1,6 @@
 const Consultation = require("../../models/consultation");
 
-const getConsultationByAppointmentService = async (
-  appointmentId,
-) => {
+const getConsultationByAppointmentService = async (appointmentId) => {
   const consultation = await Consultation.findOne({
     appointmentId,
   })
@@ -17,5 +15,4 @@ const getConsultationByAppointmentService = async (
   return consultation;
 };
 
-module.exports =
-  getConsultationByAppointmentService;
+module.exports = getConsultationByAppointmentService;

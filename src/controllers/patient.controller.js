@@ -49,11 +49,33 @@ const createPatient = async (req, res) => {
 */
 const getPatients = async (req, res) => {
   try {
-    const patients = await Patient.find()
-      .populate("assignedDoctor")
-      .sort({
+    let patients = [];
+
+    if (req.user.roles?.includes("DOCTOR")) {
+      const appointments = await Appointment.find({
+        doctorEmployeeId: req.user.employeeId,
+      });
+
+      const patientIds = [
+        ...new Set(
+          appointments.map((appointment) => appointment.patientId.toString()),
+        ),
+      ];
+
+      patients = await Patient.find({
+        _id: {
+          $in: patientIds,
+        },
+      })
+        .populate("assignedDoctor")
+        .sort({
+          createdAt: -1,
+        });
+    } else {
+      patients = await Patient.find().populate("assignedDoctor").sort({
         createdAt: -1,
       });
+    }
 
     return res.status(200).json({
       success: true,
@@ -86,8 +108,7 @@ const getPatientById = async (req, res) => {
       });
     }
 
-    const patient = await Patient.findById(id)
-      .populate("assignedDoctor");
+    const patient = await Patient.findById(id).populate("assignedDoctor");
 
     if (!patient) {
       return res.status(404).json({
@@ -127,14 +148,10 @@ const updatePatient = async (req, res) => {
       });
     }
 
-    const patient = await Patient.findByIdAndUpdate(
-      id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
+    const patient = await Patient.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!patient) {
       return res.status(404).json({

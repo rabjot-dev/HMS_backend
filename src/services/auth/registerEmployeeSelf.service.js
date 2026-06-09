@@ -33,8 +33,8 @@ const registerEmployeeSelf = async (employeeData) => {
     medicalRegistrationNo,
     consultationFee,
     password,
-      securityQuestion,
-  securityAnswer,
+    securityQuestion,
+    securityAnswer,
   } = employeeData;
 
   /*
@@ -50,26 +50,21 @@ const registerEmployeeSelf = async (employeeData) => {
     throw new Error("Email is already registered");
   }
   const existingPhone = await Employee.findOne({
-  phone,
-});
+    phone,
+  });
 
-if (existingPhone) {
-  throw new Error(
-    "Phone number is already registered"
-  );
-}
-if (designation === 'DOCTOR') {
-  const existingDoctor =
-    await Employee.findOne({
-      medicalRegistrationNo
+  if (existingPhone) {
+    throw new Error("Phone number is already registered");
+  }
+  if (designation === "DOCTOR") {
+    const existingDoctor = await Employee.findOne({
+      medicalRegistrationNo,
     });
 
-  if (existingDoctor) {
-    throw new Error(
-      'Medical registration number already exists'
-    );
+    if (existingDoctor) {
+      throw new Error("Medical registration number already exists");
+    }
   }
-}
 
   /*
     |--------------------------------------------------------------------------
@@ -99,11 +94,8 @@ if (designation === 'DOCTOR') {
 
     10,
   );
-  const hashedSecurityAnswer =
-  await bcrypt.hash(
-    securityAnswer
-      .trim()
-      .toLowerCase(),
+  const hashedSecurityAnswer = await bcrypt.hash(
+    securityAnswer.trim().toLowerCase(),
     10,
   );
 
@@ -159,8 +151,7 @@ if (designation === 'DOCTOR') {
     isFirstLogin: false,
     securityQuestion,
 
-  securityAnswer:
-    hashedSecurityAnswer,
+    securityAnswer: hashedSecurityAnswer,
   });
 
   /*

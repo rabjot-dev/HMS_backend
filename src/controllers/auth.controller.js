@@ -103,53 +103,38 @@ const register = async (req, res) => {
       success: true,
       message: result.message,
     });
-  }catch (error) {
+  } catch (error) {
     console.log("ERROR MESSAGE =>", error.message);
-console.log("ERROR CODE =>", error.code);
-console.log("FULL ERROR =>", error);
-  console.error(
-    "REGISTER ERROR:",
-    error.message
-  );
+    console.log("ERROR CODE =>", error.code);
+    console.log("FULL ERROR =>", error);
+    console.error("REGISTER ERROR:", error.message);
 
-  if (
-    error.message ===
-    "Medical registration number already exists"
-  ) {
-    return res.status(409).json({
+    if (error.message === "Medical registration number already exists") {
+      return res.status(409).json({
+        success: false,
+        message: "Medical registration number already exists",
+      });
+    }
+
+    if (error.message === "Phone number is already registered") {
+      return res.status(409).json({
+        success: false,
+        message: "Phone number is already registered",
+      });
+    }
+
+    if (error.message === "Email is already registered") {
+      return res.status(409).json({
+        success: false,
+        message: "Email is already registered",
+      });
+    }
+
+    return res.status(500).json({
       success: false,
-      message:
-        "Medical registration number already exists",
+      message: "Registration failed",
     });
   }
-
-  if (
-    error.message ===
-    "Phone number is already registered"
-  ) {
-    return res.status(409).json({
-      success: false,
-      message:
-        "Phone number is already registered",
-    });
-  }
-
-  if (
-    error.message ===
-    "Email is already registered"
-  ) {
-    return res.status(409).json({
-      success: false,
-      message:
-        "Email is already registered",
-    });
-  }
-
-  return res.status(500).json({
-    success: false,
-    message: "Registration failed",
-  });
-}
 };
 /*
 |--------------------------------------------------------------------------
@@ -192,11 +177,7 @@ const forgotPassword = async (req, res) => {
 */
 const resetPassword = async (req, res) => {
   try {
-    const {
-      email,
-      securityAnswer,
-      newPassword,
-    } = req.body;
+    const { email, securityAnswer, newPassword } = req.body;
 
     const user = await User.findOne({
       email,
@@ -209,35 +190,28 @@ const resetPassword = async (req, res) => {
       });
     }
 
-   const isValidAnswer = await bcrypt.compare(
-  securityAnswer.trim().toLowerCase(),
-  user.securityAnswer,
-);
-
-if (!isValidAnswer) {
-  return res.status(401).json({
-    success: false,
-    message: "Security answer is incorrect",
-  });
-}
-
-    const isSamePassword = await bcrypt.compare(
-      newPassword,
-      user.passwordHash,
+    const isValidAnswer = await bcrypt.compare(
+      securityAnswer.trim().toLowerCase(),
+      user.securityAnswer,
     );
+
+    if (!isValidAnswer) {
+      return res.status(401).json({
+        success: false,
+        message: "Security answer is incorrect",
+      });
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.passwordHash);
 
     if (isSamePassword) {
       return res.status(409).json({
         success: false,
-        message:
-          "New password must be different from the current password",
+        message: "New password must be different from the current password",
       });
     }
 
-    const hashedPassword = await bcrypt.hash(
-      newPassword,
-      10,
-    );
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     user.passwordHash = hashedPassword;
 

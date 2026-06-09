@@ -71,34 +71,26 @@ const getConsultationByAppointment = async (req, res) => {
     }
 
     const consultation =
-      await getConsultationByAppointmentService(
-        appointmentId,
-      );
+      await getConsultationByAppointmentService(appointmentId);
 
     return res.status(200).json({
       success: true,
-      message:
-        "Consultation retrieved successfully",
+      message: "Consultation retrieved successfully",
       data: consultation,
     });
   } catch (error) {
-    console.error(
-      "GET CONSULTATION BY APPOINTMENT ERROR:",
-      error,
-    );
+    console.error("GET CONSULTATION BY APPOINTMENT ERROR:", error);
 
     if (error.message === "Consultation not found") {
       return res.status(404).json({
         success: false,
-        message:
-          "No consultation found for the provided appointment",
+        message: "No consultation found for the provided appointment",
       });
     }
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to retrieve consultation details",
+      message: "Failed to retrieve consultation details",
     });
   }
 };
@@ -119,11 +111,7 @@ const updateConsultation = async (req, res) => {
       });
     }
 
-    const consultation =
-      await updateConsultationService(
-        id,
-        req.body,
-      );
+    const consultation = await updateConsultationService(id, req.body);
 
     return res.status(200).json({
       success: true,
@@ -131,10 +119,7 @@ const updateConsultation = async (req, res) => {
       data: consultation,
     });
   } catch (error) {
-    console.error(
-      "UPDATE CONSULTATION ERROR:",
-      error,
-    );
+    console.error("UPDATE CONSULTATION ERROR:", error);
 
     if (error.message === "Consultation not found") {
       return res.status(404).json({
@@ -164,25 +149,19 @@ const updateConsultation = async (req, res) => {
 */
 const getConsultations = async (req, res) => {
   try {
-    const consultations =
-      await getConsultationsService();
+    const consultations = await getConsultationsService();
 
     return res.status(200).json({
       success: true,
-      message:
-        "Consultations retrieved successfully",
+      message: "Consultations retrieved successfully",
       data: consultations,
     });
   } catch (error) {
-    console.error(
-      "GET CONSULTATIONS ERROR:",
-      error,
-    );
+    console.error("GET CONSULTATIONS ERROR:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to retrieve consultations",
+      message: "Failed to retrieve consultations",
     });
   }
 };
@@ -192,38 +171,22 @@ const getConsultations = async (req, res) => {
 | Download Prescription PDF
 |--------------------------------------------------------------------------
 */
-const downloadPrescriptionPdf = async (
-  req,
-  res,
-) => {
+const downloadPrescriptionPdf = async (req, res) => {
   try {
     const { consultationId } = req.params;
 
-    if (
-      !mongoose.Types.ObjectId.isValid(
-        consultationId,
-      )
-    ) {
+    if (!mongoose.Types.ObjectId.isValid(consultationId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid consultation ID",
       });
     }
 
-    const consultation =
-      await getPrescriptionDataService(
-        consultationId,
-      );
+    const consultation = await getPrescriptionDataService(consultationId);
 
-    generatePrescriptionPdf(
-      consultation,
-      res,
-    );
+    generatePrescriptionPdf(consultation, res);
   } catch (error) {
-    console.error(
-      "DOWNLOAD PRESCRIPTION PDF ERROR:",
-      error,
-    );
+    console.error("DOWNLOAD PRESCRIPTION PDF ERROR:", error);
 
     if (error.message === "Consultation not found") {
       return res.status(404).json({
@@ -234,8 +197,7 @@ const downloadPrescriptionPdf = async (
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to generate prescription PDF",
+      message: "Failed to generate prescription PDF",
     });
   }
 };
@@ -245,10 +207,7 @@ const downloadPrescriptionPdf = async (
 | Get Consultation By ID
 |--------------------------------------------------------------------------
 */
-const getConsultationById = async (
-  req,
-  res,
-) => {
+const getConsultationById = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -259,20 +218,15 @@ const getConsultationById = async (
       });
     }
 
-    const consultation =
-      await getConsultationByIdService(id);
+    const consultation = await getConsultationByIdService(id);
 
     return res.status(200).json({
       success: true,
-      message:
-        "Consultation retrieved successfully",
+      message: "Consultation retrieved successfully",
       data: consultation,
     });
   } catch (error) {
-    console.error(
-      "GET CONSULTATION BY ID ERROR:",
-      error,
-    );
+    console.error("GET CONSULTATION BY ID ERROR:", error);
 
     if (error.message === "Consultation not found") {
       return res.status(404).json({
@@ -283,8 +237,7 @@ const getConsultationById = async (
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to retrieve consultation details",
+      message: "Failed to retrieve consultation details",
     });
   }
 };

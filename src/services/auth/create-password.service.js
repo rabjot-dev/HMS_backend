@@ -56,7 +56,10 @@ const createEmployeePassword = async (passwordData) => {
   }
 
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-  const hashedSecurityAnswer = await bcrypt.hash(securityAnswer.trim().toLowerCase(),10,);
+  const hashedSecurityAnswer = await bcrypt.hash(
+    securityAnswer.trim().toLowerCase(),
+    10,
+  );
 
   user.passwordHash = hashedNewPassword;
 

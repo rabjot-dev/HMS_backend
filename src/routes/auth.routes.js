@@ -27,12 +27,7 @@ router.post(
   createPassword,
 );
 router.get("/me", authMiddleware, getCurrentUser);
-router.post(
-  "/register",
-  registerValidation,
-  validateMiddleware,
-  register
-);
+router.post("/register", registerValidation, validateMiddleware, register);
 router.post(
   "/forgot-password",
   forgotPasswordValidation,

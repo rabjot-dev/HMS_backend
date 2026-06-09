@@ -19,9 +19,7 @@ const createConsultationService = async (data) => {
     throw new Error("Consultation already exists");
   }
 
-  const appointment = await Appointment.findById(
-    appointmentId,
-  );
+  const appointment = await Appointment.findById(appointmentId);
 
   if (!appointment) {
     throw new Error("Appointment not found");
@@ -38,12 +36,9 @@ const createConsultationService = async (data) => {
     prescriptions,
   });
 
-  await Appointment.findByIdAndUpdate(
-    appointmentId,
-    {
-      status: "COMPLETED",
-    },
-  );
+  await Appointment.findByIdAndUpdate(appointmentId, {
+    status: "COMPLETED",
+  });
 
   return consultation;
 };

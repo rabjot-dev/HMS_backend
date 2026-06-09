@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const Employee = require("../models/Employee");
 
 const User = require("../models/User");
@@ -23,45 +22,34 @@ const createEmployee = async (req, res) => {
       data: serviceResponse,
     });
   } catch (error) {
-  console.error(
-    "CREATE EMPLOYEE ERROR:",
-    error,
-  );
+    console.error("CREATE EMPLOYEE ERROR:", error);
 
-  if (
-    error.message ===
-    "Employee already exists with this phone number"
-  ) {
-    return res.status(409).json({
+    if (error.message === "Employee already exists with this phone number") {
+      return res.status(409).json({
+        success: false,
+        message: "Employee already exists with this phone number",
+      });
+    }
+
+    if (error.message === "Employee already exists with this email") {
+      return res.status(409).json({
+        success: false,
+        message: "Employee already exists with this email",
+      });
+    }
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "Duplicate record found",
+      });
+    }
+
+    return res.status(500).json({
       success: false,
-      message:
-        "Employee already exists with this phone number",
+      message: "Failed to register employee",
     });
   }
-
-  if (
-    error.message ===
-    "Employee already exists with this email"
-  ) {
-    return res.status(409).json({
-      success: false,
-      message:
-        "Employee already exists with this email",
-    });
-  }
-
-  if (error.code === 11000) {
-    return res.status(409).json({
-      success: false,
-      message: "Duplicate record found",
-    });
-  }
-
-  return res.status(500).json({
-    success: false,
-    message: "Failed to register employee",
-  });
-}
 };
 
 /*
@@ -144,38 +132,25 @@ const updateEmployee = async (req, res) => {
       });
     }
 
-    const {
-  email,
-  employeeCode,
-  ...updateData
-} = req.body;
-if (
-  req.body.medicalRegistrationNo
-) {
-  const existingDoctor =
-    await Employee.findOne({
-      medicalRegistrationNo:
-        req.body.medicalRegistrationNo,
-      _id: { $ne: id },
-    });
+    const { email, employeeCode, ...updateData } = req.body;
+    if (req.body.medicalRegistrationNo) {
+      const existingDoctor = await Employee.findOne({
+        medicalRegistrationNo: req.body.medicalRegistrationNo,
+        _id: { $ne: id },
+      });
 
-  if (existingDoctor) {
-    return res.status(409).json({
-      success: false,
-      message:
-        "Medical registration number already exists",
-    });
-  }
-}
+      if (existingDoctor) {
+        return res.status(409).json({
+          success: false,
+          message: "Medical registration number already exists",
+        });
+      }
+    }
 
-const employee = await Employee.findByIdAndUpdate(
-  id,
-  updateData,
-  {
-    new: true,
-    runValidators: true,
-  },
-);
+    const employee = await Employee.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!employee) {
       return res.status(404).json({
@@ -199,22 +174,17 @@ const employee = await Employee.findByIdAndUpdate(
       });
     }
 
-    if (
-  error.message ===
-  "Medical registration number already exists"
-) {
-  return res.status(409).json({
-    success: false,
-    message:
-      "Medical registration number already exists",
-  });
-}
+    if (error.message === "Medical registration number already exists") {
+      return res.status(409).json({
+        success: false,
+        message: "Medical registration number already exists",
+      });
+    }
 
     return res.status(500).json({
       success: false,
       message: "Failed to update employee",
     });
-
   }
 };
 
@@ -243,15 +213,9 @@ const deactivateEmployee = async (req, res) => {
       });
     }
 
-    await User.findOneAndUpdate(
-      { employeeId },
-      { status: STATUS.INACTIVE },
-    );
+    await User.findOneAndUpdate({ employeeId }, { status: STATUS.INACTIVE });
 
-    await Employee.findByIdAndUpdate(
-      employeeId,
-      { status: STATUS.INACTIVE },
-    );
+    await Employee.findByIdAndUpdate(employeeId, { status: STATUS.INACTIVE });
 
     return res.status(200).json({
       success: true,
@@ -292,15 +256,9 @@ const activateEmployee = async (req, res) => {
       });
     }
 
-    await User.findOneAndUpdate(
-      { employeeId },
-      { status: STATUS.ACTIVE },
-    );
+    await User.findOneAndUpdate({ employeeId }, { status: STATUS.ACTIVE });
 
-    await Employee.findByIdAndUpdate(
-      employeeId,
-      { status: STATUS.ACTIVE },
-    );
+    await Employee.findByIdAndUpdate(employeeId, { status: STATUS.ACTIVE });
 
     return res.status(200).json({
       success: true,
@@ -376,9 +334,7 @@ const approveEmployee = async (req, res) => {
       });
     }
 
-    const employee = await Employee.findById(
-      employeeId
-    );
+    const employee = await Employee.findById(employeeId);
 
     if (!employee) {
       return res.status(404).json({
@@ -394,16 +350,13 @@ const approveEmployee = async (req, res) => {
     */
     if (
       employee.designation === "DOCTOR" &&
-      (
-        consultationFee === undefined ||
+      (consultationFee === undefined ||
         consultationFee === null ||
-        consultationFee === ""
-      )
+        consultationFee === "")
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Consultation fee is required for doctors",
+        message: "Consultation fee is required for doctors",
       });
     }
 
@@ -413,8 +366,7 @@ const approveEmployee = async (req, res) => {
     |--------------------------------------------------------------------------
     */
     if (employee.designation === "DOCTOR") {
-      employee.consultationFee =
-        Number(consultationFee);
+      employee.consultationFee = Number(consultationFee);
     }
 
     /*
@@ -436,10 +388,7 @@ const approveEmployee = async (req, res) => {
       data: employee,
     });
   } catch (error) {
-    console.error(
-      "APPROVE EMPLOYEE ERROR:",
-      error
-    );
+    console.error("APPROVE EMPLOYEE ERROR:", error);
 
     return res.status(500).json({
       success: false,
@@ -473,17 +422,11 @@ const rejectEmployee = async (req, res) => {
       });
     }
 
-    await User.findOneAndUpdate(
-      { employeeId },
-      { status: STATUS.REJECTED },
-    );
+    await User.findOneAndUpdate({ employeeId }, { status: STATUS.REJECTED });
 
-    await Employee.findByIdAndUpdate(
-      employeeId,
-      {
-        status: STATUS.REJECTED,
-      },
-    );
+    await Employee.findByIdAndUpdate(employeeId, {
+      status: STATUS.REJECTED,
+    });
 
     return res.status(200).json({
       success: true,
@@ -508,9 +451,7 @@ const getDoctors = async (req, res) => {
     const doctors = await Employee.find({
       designation: "DOCTOR",
     })
-      .select(
-        "name department specialization availability consultationFee",
-      )
+      .select("name department specialization availability consultationFee")
       .sort({
         name: 1,
       });
@@ -613,10 +554,7 @@ const updateDoctorAvailability = async (req, res) => {
       data: doctor,
     });
   } catch (error) {
-    console.error(
-      "UPDATE DOCTOR AVAILABILITY ERROR:",
-      error,
-    );
+    console.error("UPDATE DOCTOR AVAILABILITY ERROR:", error);
 
     if (error.name === "ValidationError") {
       return res.status(400).json({
@@ -680,10 +618,7 @@ const getDoctorAvailability = async (req, res) => {
       data: doctor.availability,
     });
   } catch (error) {
-    console.error(
-      "GET DOCTOR AVAILABILITY ERROR:",
-      error,
-    );
+    console.error("GET DOCTOR AVAILABILITY ERROR:", error);
 
     return res.status(500).json({
       success: false,

@@ -7,22 +7,22 @@ const { body } = require("express-validator");
 */
 const createPatientValidation = [
   body("firstName")
-  .trim()
-  .notEmpty()
-  .withMessage("First name is required")
-  .matches(/^[A-Za-z\s'-]+$/)
-  .withMessage(
-    "First name can contain only letters, spaces, apostrophes and hyphens",
-  ),
+    .trim()
+    .notEmpty()
+    .withMessage("First name is required")
+    .matches(/^[A-Za-z\s'-]+$/)
+    .withMessage(
+      "First name can contain only letters, spaces, apostrophes and hyphens",
+    ),
 
   body("lastName")
-  .trim()
-  .notEmpty()
-  .withMessage("Last name is required")
-  .matches(/^[A-Za-z\s'-]+$/)
-  .withMessage(
-    "Last name can contain only letters, spaces, apostrophes and hyphens",
-  ),
+    .trim()
+    .notEmpty()
+    .withMessage("Last name is required")
+    .matches(/^[A-Za-z\s'-]+$/)
+    .withMessage(
+      "Last name can contain only letters, spaces, apostrophes and hyphens",
+    ),
 
   body("dateOfBirth")
     .notEmpty()
@@ -38,16 +38,7 @@ const createPatientValidation = [
 
   body("bloodGroup")
     .optional()
-    .isIn([
-      "A+",
-      "A-",
-      "B+",
-      "B-",
-      "AB+",
-      "AB-",
-      "O+",
-      "O-",
-    ])
+    .isIn(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"])
     .withMessage("Invalid blood group"),
 
   body("maritalStatus")
@@ -105,41 +96,32 @@ const createPatientValidation = [
     .optional()
     .trim()
     .isLength({ min: 2, max: 100 })
-    .withMessage(
-      "Emergency contact name must be between 2 and 100 characters",
-    ),
+    .withMessage("Emergency contact name must be between 2 and 100 characters"),
 
   body("emergencyContactPhone")
     .optional()
     .matches(/^[0-9]{10}$/)
-    .withMessage(
-      "Emergency contact phone must be exactly 10 digits",
-    ),
+    .withMessage("Emergency contact phone must be exactly 10 digits"),
 
   body("relationship")
     .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage(
-      "Relationship must be between 2 and 50 characters",
-    ),
+    .withMessage("Relationship must be between 2 and 50 characters"),
 
   body("insuranceCoverageAmount")
-    .optional()
+    .optional({
+      checkFalsy: true,
+    })
     .isNumeric()
-    .withMessage(
-      "Insurance coverage amount must be numeric",
-    ),
+    .withMessage("Insurance coverage amount must be numeric"),
 
   body("insuranceExpiryDate")
-    .optional()
+    .optional({
+      checkFalsy: true,
+    })
     .isISO8601()
     .withMessage("Invalid insurance expiry date"),
-
-  body("assignedDoctor")
-    .optional()
-    .isMongoId()
-    .withMessage("Invalid doctor ID"),
 
   body("patientType")
     .optional()
@@ -182,16 +164,7 @@ const updatePatientValidation = [
 
   body("bloodGroup")
     .optional()
-    .isIn([
-      "A+",
-      "A-",
-      "B+",
-      "B-",
-      "AB+",
-      "AB-",
-      "O+",
-      "O-",
-    ])
+    .isIn(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"])
     .withMessage("Invalid blood group"),
 
   body("maritalStatus")
@@ -217,27 +190,23 @@ const updatePatientValidation = [
   body("emergencyContactPhone")
     .optional()
     .matches(/^[0-9]{10}$/)
-    .withMessage(
-      "Emergency contact phone must be exactly 10 digits",
-    ),
+    .withMessage("Emergency contact phone must be exactly 10 digits"),
 
   body("insuranceCoverageAmount")
-    .optional()
+    .optional({
+      checkFalsy: true,
+    })
     .isNumeric()
-    .withMessage(
-      "Insurance coverage amount must be numeric",
-    ),
+    .withMessage("Insurance coverage amount must be numeric"),
 
   body("insuranceExpiryDate")
-    .optional()
+    .optional({
+      checkFalsy: true,
+    })
     .isISO8601()
     .withMessage("Invalid insurance expiry date"),
 
-  body("assignedDoctor")
-    .optional()
-    .isMongoId()
-    .withMessage("Invalid doctor ID"),
-
+  ,
   body("patientType")
     .optional()
     .isIn(["OPD", "IPD", "EMERGENCY"])

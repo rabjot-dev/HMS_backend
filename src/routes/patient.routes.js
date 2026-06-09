@@ -29,10 +29,7 @@ router.post(
 
   authMiddleware,
 
-  roleMiddleware(
-    "ADMIN",
-    "RECEPTIONIST",
-  ),
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
 
   createPatientValidation,
 
@@ -77,10 +74,7 @@ router.put(
 
   authMiddleware,
 
-  roleMiddleware(
-    "ADMIN",
-    "RECEPTIONIST",
-  ),
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
 
   updatePatientValidation,
 

@@ -63,7 +63,7 @@ const getRecentEmployees = async (req, res) => {
 */
 const getDoctorStats = async (req, res) => {
   try {
-    const stats = await getDoctorStatsService( req.user.employeeId);
+    const stats = await getDoctorStatsService(req.user.employeeId);
 
     return res.status(200).json({
       success: true,
@@ -95,15 +95,11 @@ const getReceptionistStats = async (req, res) => {
       data: stats,
     });
   } catch (error) {
-    console.error(
-      "GET RECEPTIONIST STATS ERROR:",
-      error,
-    );
+    console.error("GET RECEPTIONIST STATS ERROR:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Failed to retrieve receptionist dashboard statistics",
+      message: "Failed to retrieve receptionist dashboard statistics",
     });
   }
 };
@@ -115,23 +111,16 @@ const getReceptionistStats = async (req, res) => {
 */
 const getTodayAppointments = async (req, res) => {
   try {
-    const appointments =
-      await getTodayAppointmentsService( req.user);
+    const appointments = await getTodayAppointmentsService(req.user);
 
-console.log(
-  "TODAY APPOINTMENTS =>",
-  appointments
-);
+    console.log("TODAY APPOINTMENTS =>", appointments);
     return res.status(200).json({
       success: true,
       message: "Appointments retrieved successfully",
       data: appointments,
     });
   } catch (error) {
-    console.error(
-      "GET TODAY APPOINTMENTS ERROR:",
-      error,
-    );
+    console.error("GET TODAY APPOINTMENTS ERROR:", error);
 
     return res.status(500).json({
       success: false,

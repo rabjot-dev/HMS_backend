@@ -1,6 +1,5 @@
 const express = require("express");
-const authMiddleware =
-  require("../middleware/auth.middleware");
+const authMiddleware = require("../middleware/auth.middleware");
 const router = express.Router();
 
 const {
@@ -39,11 +38,7 @@ router.get(
 | Doctor
 |--------------------------------------------------------------------------
 */
-router.get(
-  "/doctor-stats",
-  authMiddleware,
-  getDoctorStats,
-);
+router.get("/doctor-stats", authMiddleware, getDoctorStats);
 
 /*
 |--------------------------------------------------------------------------
@@ -56,10 +51,6 @@ router.get(
   getReceptionistStats,
 );
 
-router.get(
-  "/today-appointments",
-  authMiddleware,
-  getTodayAppointments,
-);
+router.get("/today-appointments", authMiddleware, getTodayAppointments);
 
 module.exports = router;
