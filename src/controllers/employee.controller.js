@@ -37,6 +37,12 @@ const createEmployee = async (req, res) => {
         message: "Employee already exists with this email",
       });
     }
+    if ( error.message === "Employee already exists with this medical registration number") {
+  return res.status(409).json({
+    success: false,
+    message: error.message,
+  });
+}
 
     if (error.code === 11000) {
       return res.status(409).json({
