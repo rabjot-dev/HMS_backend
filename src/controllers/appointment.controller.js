@@ -3,28 +3,17 @@ const mongoose = require("mongoose");
 const getAvailableSlotsService = require("../services/appointment/get-available-slots.service");
 const bookAppointmentService = require("../services/appointment/book-appointment.service");
 
-/*
-|--------------------------------------------------------------------------
-| Get Available Slots
-|--------------------------------------------------------------------------
-*/
 const getAvailableSlots = async (req, res) => {
   try {
-    const {
-      doctorId,
-
-      appointmentDate,
-    } = req.query;
+    const { doctorId, appointmentDate } = req.query;
 
     const availableSlots = await getAvailableSlotsService(
       doctorId,
-
-      appointmentDate,
+      appointmentDate
     );
 
     return res.status(200).json({
       success: true,
-
       data: availableSlots,
     });
   } catch (error) {
@@ -37,24 +26,13 @@ const getAvailableSlots = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Book Appointment
-|--------------------------------------------------------------------------
-*/
 const bookAppointment = async (req, res) => {
   try {
-    const appointment = await bookAppointmentService(
-      req.body,
-
-      req.user,
-    );
+    const appointment = await bookAppointmentService(req.body, req.user);
 
     return res.status(201).json({
       success: true,
-
       message: "Appointment booked successfully",
-
       data: appointment,
     });
   } catch (error) {
@@ -95,20 +73,10 @@ const bookAppointment = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get Appointments
-|--------------------------------------------------------------------------
-*/
 const getAppointments = async (req, res) => {
   try {
-    let filter = {};
+    const filter = {};
 
-    /*
-    |---------------------------------------------------
-    | Doctor Can See Only Own Appointments
-    |---------------------------------------------------
-    */
     if (req.user.roles?.includes("DOCTOR")) {
       filter.doctorEmployeeId = req.user.employeeId;
     }
@@ -135,12 +103,6 @@ const getAppointments = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Delete Appointment
-|--------------------------------------------------------------------------
-*/
-
 const deleteAppointment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -160,11 +122,11 @@ const deleteAppointment = async (req, res) => {
         message: "Appointment not found for the provided ID",
       });
     }
+
     await Appointment.findByIdAndDelete(id);
 
     return res.status(200).json({
       success: true,
-
       message: "Appointment deleted successfully",
     });
   } catch (error) {
@@ -177,15 +139,10 @@ const deleteAppointment = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get Appointment By ID
-|--------------------------------------------------------------------------
-*/
-
 const getAppointmentById = async (req, res) => {
   try {
     const { id } = req.params;
+
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -194,9 +151,7 @@ const getAppointmentById = async (req, res) => {
     }
 
     const appointment = await Appointment.findById(id)
-
       .populate("patientId")
-
       .populate("doctorEmployeeId");
 
     if (!appointment) {
@@ -208,7 +163,6 @@ const getAppointmentById = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-
       data: appointment,
     });
   } catch (error) {
@@ -221,16 +175,10 @@ const getAppointmentById = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Update Appointment
-|--------------------------------------------------------------------------
-*/
 const updateAppointment = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate Appointment ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         success: false,
@@ -261,7 +209,6 @@ const updateAppointment = async (req, res) => {
       });
     }
 
-    // Validate appointment date
     if (appointmentDate) {
       const [year, month, day] = appointmentDate.split("-").map(Number);
 
@@ -279,15 +226,14 @@ const updateAppointment = async (req, res) => {
       }
     }
 
-    // Determine updated values
-    const updatedDoctorId = doctorEmployeeId || appointment.doctorEmployeeId;
+    const updatedDoctorId =
+      doctorEmployeeId || appointment.doctorEmployeeId;
 
     const updatedAppointmentDate =
       appointmentDate || appointment.appointmentDate;
 
     const updatedTimeSlot = timeSlot || appointment.timeSlot;
 
-    // Check slot conflict
     const conflictingAppointment = await Appointment.findOne({
       _id: { $ne: id },
       doctorEmployeeId: updatedDoctorId,
@@ -302,7 +248,6 @@ const updateAppointment = async (req, res) => {
       });
     }
 
-    // Update fields
     let formattedDate = appointment.appointmentDate;
 
     if (appointmentDate) {
@@ -322,6 +267,7 @@ const updateAppointment = async (req, res) => {
       notes,
       symptoms,
     });
+
     await appointment.save();
 
     return res.status(200).json({
@@ -345,21 +291,15 @@ const updateAppointment = async (req, res) => {
     });
   }
 };
-/*
-|--------------------------------------------------------------------------
-| Get Doctor Queue
-|--------------------------------------------------------------------------
-*/
+
 const getDoctorQueue = async (req, res) => {
   try {
     const { doctorEmployeeId } = req.query;
 
     const today = new Date();
-
     today.setHours(0, 0, 0, 0);
 
     const tomorrow = new Date(today);
-
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     const appointments = await Appointment.find({
@@ -370,9 +310,7 @@ const getDoctorQueue = async (req, res) => {
       },
     })
       .populate("patientId")
-      .sort({
-        tokenNumber: 1,
-      });
+      .sort({ tokenNumber: 1 });
 
     return res.status(200).json({
       success: true,
@@ -394,16 +332,10 @@ const getDoctorQueue = async (req, res) => {
 
 module.exports = {
   getAvailableSlots,
-
   bookAppointment,
-
   getAppointments,
-
   deleteAppointment,
-
   getAppointmentById,
-
   updateAppointment,
-
   getDoctorQueue,
 };

@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
 
 const User = require("../../models/User");
-
 const Employee = require("../../models/Employee");
 
 const generateToken = require("../../utils/generateToken");
@@ -11,23 +10,14 @@ const loginUser = async (loginData) => {
 
   let user = null;
 
+  // Allow login using email or employee code
   const isEmailLogin = loginId.includes("@");
 
-  /*
-    |--------------------------------------------------------------------------
-    | Login Using Email
-    |--------------------------------------------------------------------------
-    */
   if (isEmailLogin) {
     user = await User.findOne({
       email: loginId.toLowerCase(),
     });
   } else {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Using Employee Code
-    |--------------------------------------------------------------------------
-    */
     const employee = await Employee.findOne({
       employeeCode: loginId,
     });
@@ -41,20 +31,12 @@ const loginUser = async (loginData) => {
     });
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | User Not Found
-    |--------------------------------------------------------------------------
-    */
+  // Validate user account
   if (!user) {
     throw new Error("Invalid credentials");
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Account Status Checks
-    |--------------------------------------------------------------------------
-    */
+  // Check account status
   if (user.status === "PENDING") {
     throw new Error("Your account is pending admin approval");
   }
@@ -69,74 +51,40 @@ const loginUser = async (loginData) => {
 
   let isPasswordValid = false;
 
-  /*
-    |--------------------------------------------------------------------------
-    | First Login
-    |--------------------------------------------------------------------------
-    */
+  // Validate password based on login stage
   if (user.isFirstLogin) {
-    console.log("FIRST LOGIN");
-
-    console.log(user.temporaryPasswordHash);
-
     isPasswordValid = await bcrypt.compare(
       password,
-
-      user.temporaryPasswordHash,
+      user.temporaryPasswordHash
     );
   } else {
-    /*
-    |--------------------------------------------------------------------------
-    | Normal Login
-    |--------------------------------------------------------------------------
-    */
-    console.log("NORMAL LOGIN");
-
-    console.log(user.passwordHash);
-
     isPasswordValid = await bcrypt.compare(
       password,
-
-      user.passwordHash,
+      user.passwordHash
     );
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Invalid Password
-    |--------------------------------------------------------------------------
-    */
+  // Reject invalid password
   if (!isPasswordValid) {
     throw new Error("Invalid credentials");
   }
 
-  //Generate Token
+  // Generate JWT token
   const tokenPayload = {
     userId: user._id,
-
     employeeId: user.employeeId,
-
     roles: user.roles,
   };
+
   const token = generateToken(tokenPayload);
 
-  /*
-    |--------------------------------------------------------------------------
-    | Update Last Login
-    |--------------------------------------------------------------------------
-    */
+  // Update last login timestamp
   user.lastLoginAt = new Date();
 
   await user.save();
 
-  /*
-    |--------------------------------------------------------------------------
-    | Final Response
-    |--------------------------------------------------------------------------
-    */
   return {
     token,
-
     user,
   };
 };

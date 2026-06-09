@@ -1,62 +1,34 @@
 const Patient = require("../models/Patient");
 
 const generatePatientId = async () => {
-  /*
-    |--------------------------------------------------------------------------
-    | Current Date
-    |--------------------------------------------------------------------------
-    */
+  // Generate prefix using current year and month
   const now = new Date();
 
-  /*
-    |--------------------------------------------------------------------------
-    | Year + Month
-    |--------------------------------------------------------------------------
-    */
   const year = now.getFullYear().toString().slice(-2);
-
   const month = String(now.getMonth() + 1).padStart(2, "0");
 
-  /*
-    |--------------------------------------------------------------------------
-    | Prefix
-    |--------------------------------------------------------------------------
-    */
   const prefix = `PAT-${year}${month}`;
 
-  /*
-    |--------------------------------------------------------------------------
-    | Find Latest Patient
-    |--------------------------------------------------------------------------
-    */
+  // Find latest patient registered this month
   const latestPatient = await Patient.findOne({
     patientId: {
       $regex: `^${prefix}`,
     },
-  })
+  }).sort({
+    createdAt: -1,
+  });
 
-    .sort({
-      createdAt: -1,
-    });
-
-  /*
-    |--------------------------------------------------------------------------
-    | Sequence Number
-    |--------------------------------------------------------------------------
-    */
   let sequence = 1;
 
+  // Increment sequence if previous patient exists
   if (latestPatient) {
-    const lastSequence = parseInt(latestPatient.patientId.slice(-5));
+    const lastSequence = parseInt(
+      latestPatient.patientId.slice(-5)
+    );
 
     sequence = lastSequence + 1;
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Final Patient ID
-    |--------------------------------------------------------------------------
-    */
   const formattedSequence = String(sequence).padStart(5, "0");
 
   return `${prefix}${formattedSequence}`;

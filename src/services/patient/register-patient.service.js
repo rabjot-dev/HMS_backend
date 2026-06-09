@@ -4,11 +4,7 @@ const generatePatientId = require("../../utils/generatePatientId");
 
 const registerPatient = async (patientData) => {
   const {
-    /*
-        |--------------------------------------------------------------------------
-        | Basic Information
-        |--------------------------------------------------------------------------
-        */
+    // Basic information
     firstName,
     lastName,
     dateOfBirth,
@@ -16,11 +12,7 @@ const registerPatient = async (patientData) => {
     bloodGroup,
     maritalStatus,
 
-    /*
-        |--------------------------------------------------------------------------
-        | Contact Information
-        |--------------------------------------------------------------------------
-        */
+    // Contact information
     phone,
     email,
     address,
@@ -29,20 +21,12 @@ const registerPatient = async (patientData) => {
     pincode,
     country,
 
-    /*
-        |--------------------------------------------------------------------------
-        | Emergency Contact
-        |--------------------------------------------------------------------------
-        */
+    // Emergency contact
     emergencyContactName,
     emergencyContactPhone,
     relationship,
 
-    /*
-        |--------------------------------------------------------------------------
-        | Medical Information
-        |--------------------------------------------------------------------------
-        */
+    // Medical information
     allergies,
     chronicDiseases,
     currentMedications,
@@ -50,46 +34,25 @@ const registerPatient = async (patientData) => {
     medicalHistory,
     familyMedicalHistory,
 
-    /*
-        |--------------------------------------------------------------------------
-        | Insurance Information
-        |--------------------------------------------------------------------------
-        */
+    // Insurance information
     insuranceProvider,
     insurancePolicyNumber,
     insuranceExpiryDate,
     insuranceCoverageAmount,
 
-    /*
-        |--------------------------------------------------------------------------
-        | Hospital Information
-        |--------------------------------------------------------------------------
-        */
+    // Hospital information
     assignedDoctor,
     department,
     patientType,
   } = patientData;
 
-  /*
-    |--------------------------------------------------------------------------
-    | Generate Patient ID
-    |--------------------------------------------------------------------------
-    */
+  // Generate unique patient ID
   const patientId = await generatePatientId();
 
-  /*
-    |--------------------------------------------------------------------------
-    | Create Patient
-    |--------------------------------------------------------------------------
-    */
+  // Create patient record
   const patient = await Patient.create({
     patientId,
 
-    /*
-            |--------------------------------------------------------------------------
-            | Basic Information
-            |--------------------------------------------------------------------------
-            */
     firstName,
     lastName,
     dateOfBirth,
@@ -97,11 +60,6 @@ const registerPatient = async (patientData) => {
     bloodGroup,
     maritalStatus,
 
-    /*
-            |--------------------------------------------------------------------------
-            | Contact Information
-            |--------------------------------------------------------------------------
-            */
     phone,
     email,
     address,
@@ -110,20 +68,10 @@ const registerPatient = async (patientData) => {
     pincode,
     country,
 
-    /*
-            |--------------------------------------------------------------------------
-            | Emergency Contact
-            |--------------------------------------------------------------------------
-            */
     emergencyContactName,
     emergencyContactPhone,
     relationship,
 
-    /*
-            |--------------------------------------------------------------------------
-            | Medical Information
-            |--------------------------------------------------------------------------
-            */
     allergies,
     chronicDiseases,
     currentMedications,
@@ -131,34 +79,18 @@ const registerPatient = async (patientData) => {
     medicalHistory,
     familyMedicalHistory,
 
-    /*
-            |--------------------------------------------------------------------------
-            | Insurance Information
-            |--------------------------------------------------------------------------
-            */
     insuranceProvider,
     insurancePolicyNumber,
     insuranceExpiryDate,
     insuranceCoverageAmount,
 
-    /*
-            |--------------------------------------------------------------------------
-            | Hospital Information
-            |--------------------------------------------------------------------------
-            */
     assignedDoctor,
     department,
     patientType,
   });
 
-  /*
-    |--------------------------------------------------------------------------
-    | Final Response
-    |--------------------------------------------------------------------------
-    */
   return {
     message: "Patient registered successfully",
-
     patient,
   };
 };

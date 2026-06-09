@@ -11,7 +11,6 @@ const {
 
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
-
 const validateMiddleware = require("../middleware/validate.middleware");
 
 const {
@@ -19,68 +18,38 @@ const {
   updatePatientValidation,
 } = require("../validations/patient.validation");
 
-/*
-|--------------------------------------------------------------------------
-| Register Patient
-|--------------------------------------------------------------------------
-*/
+// Register a new patient
 router.post(
   "/",
-
   authMiddleware,
-
   roleMiddleware("ADMIN", "RECEPTIONIST"),
-
   createPatientValidation,
-
   validateMiddleware,
-
-  createPatient,
+  createPatient
 );
 
-/*
-|--------------------------------------------------------------------------
-| Get All Patients
-|--------------------------------------------------------------------------
-*/
+// Get all patients
 router.get(
   "/",
-
   authMiddleware,
-
-  getPatients,
+  getPatients
 );
 
-/*
-|--------------------------------------------------------------------------
-| Get Patient By ID
-|--------------------------------------------------------------------------
-*/
+// Get patient details by ID
 router.get(
   "/:id",
-
   authMiddleware,
-
-  getPatientById,
+  getPatientById
 );
 
-/*
-|--------------------------------------------------------------------------
-| Update Patient
-|--------------------------------------------------------------------------
-*/
+// Update patient information
 router.put(
   "/:id",
-
   authMiddleware,
-
   roleMiddleware("ADMIN", "RECEPTIONIST"),
-
   updatePatientValidation,
-
   validateMiddleware,
-
-  updatePatient,
+  updatePatient
 );
 
 module.exports = router;

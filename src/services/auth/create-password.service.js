@@ -11,8 +11,10 @@ const createEmployeePassword = async (passwordData) => {
     securityQuestion,
     securityAnswer,
   } = passwordData;
+
   let user = null;
 
+  // Allow login using email or employee code
   const isEmailLogin = loginId.includes("@");
 
   if (isEmailLogin) {
@@ -33,44 +35,43 @@ const createEmployeePassword = async (passwordData) => {
     });
   }
 
+  // Ensure user account exists
   if (!user) {
     throw new Error("User not found");
   }
 
+  // Prevent password recreation after first login
   if (!user.isFirstLogin) {
     throw new Error("Password is already created for this account");
   }
 
-  console.log(typeof user.passwordHash);
-
-  console.log(user.passwordHash);
-
+  // Verify temporary password
   const isTemporaryPasswordValid = await bcrypt.compare(
     temporaryPassword,
-
-    user.temporaryPasswordHash,
+    user.temporaryPasswordHash
   );
 
   if (!isTemporaryPasswordValid) {
     throw new Error("Invalid temporary password");
   }
 
+  // Hash password and security answer
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
   const hashedSecurityAnswer = await bcrypt.hash(
     securityAnswer.trim().toLowerCase(),
-    10,
+    10
   );
 
+  // Update account credentials
   user.passwordHash = hashedNewPassword;
-
   user.temporaryPasswordHash = null;
-
   user.isFirstLogin = false;
   user.securityQuestion = securityQuestion;
-
   user.securityAnswer = hashedSecurityAnswer;
 
   await user.save();
+
   return {
     message: "Password created successfully",
   };

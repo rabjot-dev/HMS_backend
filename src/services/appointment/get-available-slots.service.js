@@ -1,25 +1,16 @@
 const Appointment = require("../../models/Appointment");
-
 const Employee = require("../../models/Employee");
 
 const generateSlots = require("../../utils/generateSlots");
 
 const getAvailableSlots = async (doctorId, appointmentDate) => {
-  /*
-  |--------------------------------------------------------------------------
-  | Validation
-  |--------------------------------------------------------------------------
-  */
+  // Validate required fields
   if (!doctorId || !appointmentDate) {
     throw new Error("Doctor ID and appointment date are required");
   }
-  /*
-|--------------------------------------------------------------------------
-| Past Date Validation
-|--------------------------------------------------------------------------
-*/
-  const selectedDate = new Date(appointmentDate);
 
+  // Prevent slot lookup for past dates
+  const selectedDate = new Date(appointmentDate);
   const today = new Date();
 
   today.setHours(0, 0, 0, 0);
@@ -28,106 +19,64 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
     throw new Error("Cannot select past dates");
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Find Doctor
-  |--------------------------------------------------------------------------
-  */
+  // Find doctor record
   const doctor = await Employee.findById(doctorId);
 
   if (!doctor) {
     throw new Error("Doctor not found");
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Doctor Availability
-  |--------------------------------------------------------------------------
-  */
+  // Check doctor availability status
   if (!doctor?.availability?.isAvailable) {
     throw new Error("Doctor is currently unavailable");
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Working Day Validation
-  |--------------------------------------------------------------------------
-  */
+  // Verify doctor works on selected day
   const appointmentDay = new Date(appointmentDate)
-
     .toLocaleDateString("en-US", {
       weekday: "long",
     })
-
     .toUpperCase();
 
   if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
     throw new Error(`Doctor is not available on ${appointmentDay}`);
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Generate All Slots
-  |--------------------------------------------------------------------------
-  */
+  // Generate all possible slots
   const allSlots = generateSlots(
     doctor?.availability?.startTime,
-
     doctor?.availability?.endTime,
-
     doctor?.availability?.slotDuration,
-
     doctor?.availability?.breakStartTime,
-
-    doctor?.availability?.breakEndTime,
+    doctor?.availability?.breakEndTime
   );
 
-  /*
-  |--------------------------------------------------------------------------
-  | Normalize Date
-  |--------------------------------------------------------------------------
-  */
+  // Normalize date for appointment search
   const normalizedDate = new Date(appointmentDate);
 
   normalizedDate.setHours(0, 0, 0, 0);
 
   const nextDay = new Date(normalizedDate);
-
   nextDay.setDate(nextDay.getDate() + 1);
 
-  /*
-  |--------------------------------------------------------------------------
-  | Existing Appointments
-  |--------------------------------------------------------------------------
-  */
+  // Fetch existing appointments
   const bookedAppointments = await Appointment.find({
     doctorEmployeeId: doctorId,
-
     appointmentDate: {
       $gte: normalizedDate,
-
       $lt: nextDay,
     },
-
     status: {
       $nin: ["CANCELLED", "NO_SHOW"],
     },
   });
 
-  /*
-  |--------------------------------------------------------------------------
-  | Booked Slots
-  |--------------------------------------------------------------------------
-  */
+  // Create set of booked time slots
   const bookedSlots = new Set(
-    bookedAppointments.map((appointment) => appointment.timeSlot),
+    bookedAppointments.map((appointment) => appointment.timeSlot)
   );
 
-  /*
-  |--------------------------------------------------------------------------
-  | Available Slots
-  |--------------------------------------------------------------------------
-  */
+  // Return only available slots
   return allSlots.filter((slot) => !bookedSlots.has(slot));
 };
 

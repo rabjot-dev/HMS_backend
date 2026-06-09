@@ -1,72 +1,119 @@
 const express = require("express");
+
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
+
 const {
   registerEmployeeValidation,
 } = require("../validations/employee.validation");
-const { createEmployee } = require("../controllers/employee.controller");
-const { getEmployees } = require("../controllers/employee.controller");
-const { getEmployeeById } = require("../controllers/employee.controller");
-const { updateEmployee } = require("../controllers/employee.controller");
-const { deactivateEmployee } = require("../controllers/employee.controller");
-const { getDoctors } = require("../controllers/employee.controller");
-const { activateEmployee } = require("../controllers/employee.controller");
+
 const {
+  createEmployee,
+  getEmployees,
+  getEmployeeById,
+  updateEmployee,
+  deactivateEmployee,
+  getDoctors,
+  activateEmployee,
   getPendingEmployees,
   updateDoctorAvailability,
-
   getDoctorAvailability,
   approveEmployee,
   rejectEmployee,
 } = require("../controllers/employee.controller");
+
 const router = express.Router();
 
+// Create a new employee
 router.post(
   "/",
   authMiddleware,
   roleMiddleware("ADMIN"),
   registerEmployeeValidation,
   validateMiddleware,
-  createEmployee,
+  createEmployee
 );
-router.get("/doctors", getDoctors);
-/*
-|--------------------------------------------------------------------------
-| Doctor Availability
-|--------------------------------------------------------------------------
-*/
+
+// Get all doctors
+router.get(
+  "/doctors",
+  getDoctors
+);
+
+// Get doctor's availability
 router.get(
   "/doctor/availability",
-
   authMiddleware,
-
-  getDoctorAvailability,
+  getDoctorAvailability
 );
 
+// Update doctor's availability
 router.patch(
   "/doctor/availability",
-
   authMiddleware,
-
-  updateDoctorAvailability,
+  updateDoctorAvailability
 );
-router.get("/", authMiddleware, roleMiddleware("ADMIN"), getEmployees);
-router.get("/pending-employees", authMiddleware, getPendingEmployees);
-router.patch("/:id/approve-employee", authMiddleware, approveEmployee);
-router.patch("/:id/reject-employee", authMiddleware, rejectEmployee);
+
+// Get all employees
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  getEmployees
+);
+
+// Get pending employee approvals
+router.get(
+  "/pending-employees",
+  authMiddleware,
+  getPendingEmployees
+);
+
+// Approve employee registration
+router.patch(
+  "/:id/approve-employee",
+  authMiddleware,
+  approveEmployee
+);
+
+// Reject employee registration
+router.patch(
+  "/:id/reject-employee",
+  authMiddleware,
+  rejectEmployee
+);
+
+// Deactivate employee account
 router.patch(
   "/:id/deactivate",
   authMiddleware,
   roleMiddleware("ADMIN"),
-  deactivateEmployee,
+  deactivateEmployee
 );
-router.get("/:id", authMiddleware, roleMiddleware("ADMIN"), getEmployeeById);
-router.put("/:id", authMiddleware, roleMiddleware("ADMIN"), updateEmployee);
+
+// Get employee details by ID
+router.get(
+  "/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  getEmployeeById
+);
+
+// Update employee information
+router.put(
+  "/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  updateEmployee
+);
+
+// Activate employee account
 router.patch(
   "/:id/activate",
   authMiddleware,
   roleMiddleware("ADMIN"),
-  activateEmployee,
+  activateEmployee
 );
+
 module.exports = router;

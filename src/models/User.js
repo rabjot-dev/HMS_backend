@@ -11,47 +11,64 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    passwordHash: { type: String, default: null },
-    temporaryPasswordHash: { type: String, default: null },
-    roles: { type: [String], enum: Object.values(ROLES), required: true },
+
+    passwordHash: {
+      type: String,
+      default: null,
+    },
+
+    temporaryPasswordHash: {
+      type: String,
+      default: null,
+    },
+
+    roles: {
+      type: [String],
+      enum: Object.values(ROLES),
+      required: true,
+    },
+
     employeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
       default: null,
     },
-    isFirstLogin: { type: Boolean, default: true },
+
+    // Tracks whether the user has completed first-time login setup
+    isFirstLogin: {
+      type: Boolean,
+      default: true,
+    },
+
     status: {
       type: String,
       enum: Object.values(STATUS),
       default: STATUS.PENDING,
     },
-    lastLoginAt: { type: Date, default: null },
-    /*
-|--------------------------------------------------------------------------
-| Security Question
-|--------------------------------------------------------------------------
-*/
-    securityQuestion: {
-      type: String,
 
+    lastLoginAt: {
+      type: Date,
       default: null,
     },
 
-    /*
-|--------------------------------------------------------------------------
-| Security Answer
-|--------------------------------------------------------------------------
-*/
+    // Password recovery question
+    securityQuestion: {
+      type: String,
+      default: null,
+    },
+
+    // Hashed answer for password recovery
     securityAnswer: {
       type: String,
-
       default: null,
     },
   },
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
+
 const User = mongoose.model("User", userSchema);
+
 module.exports = User;

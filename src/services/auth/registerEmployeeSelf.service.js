@@ -1,20 +1,12 @@
 const bcrypt = require("bcryptjs");
 
 const User = require("../../models/User");
-
 const Employee = require("../../models/Employee");
 
 const STATUS = require("../../constants/status");
-
 const EMPLOYEE_PREFIX = require("../../constants/employee-prefix");
 
 const generateSequentialId = require("../../utils/generateSequentialId");
-
-/*
-|--------------------------------------------------------------------------
-| Email Utils
-|--------------------------------------------------------------------------
-*/
 const sendEmail = require("../../utils/sendEmail");
 
 const pendingApprovalTemplate = require("../../templates/pendingApprovalTemplate");
@@ -37,11 +29,7 @@ const registerEmployeeSelf = async (employeeData) => {
     securityAnswer,
   } = employeeData;
 
-  /*
-    |--------------------------------------------------------------------------
-    | Existing User Check
-    |--------------------------------------------------------------------------
-    */
+  // Check if email is already registered
   const existingUser = await User.findOne({
     email: email.toLowerCase(),
   });
@@ -49,6 +37,8 @@ const registerEmployeeSelf = async (employeeData) => {
   if (existingUser) {
     throw new Error("Email is already registered");
   }
+
+  // Check if phone number is already registered
   const existingPhone = await Employee.findOne({
     phone,
   });
@@ -56,6 +46,8 @@ const registerEmployeeSelf = async (employeeData) => {
   if (existingPhone) {
     throw new Error("Phone number is already registered");
   }
+
+  // Check doctor registration number
   if (designation === "DOCTOR") {
     const existingDoctor = await Employee.findOne({
       medicalRegistrationNo,
@@ -66,122 +58,66 @@ const registerEmployeeSelf = async (employeeData) => {
     }
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Employee Prefix
-    |--------------------------------------------------------------------------
-    */
+  // Generate employee code
   const prefix = EMPLOYEE_PREFIX[designation];
 
   if (!prefix) {
     throw new Error("Invalid designation");
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Employee Code
-    |--------------------------------------------------------------------------
-    */
   const employeeCode = await generateSequentialId(prefix);
 
-  /*
-    |--------------------------------------------------------------------------
-    | Hash Password
-    |--------------------------------------------------------------------------
-    */
-  const hashedPassword = await bcrypt.hash(
-    password,
+  // Hash password and security answer
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    10,
-  );
   const hashedSecurityAnswer = await bcrypt.hash(
     securityAnswer.trim().toLowerCase(),
-    10,
+    10
   );
 
-  /*
-    |--------------------------------------------------------------------------
-    | Create Employee
-    |--------------------------------------------------------------------------
-    */
+  // Create employee record
   const employee = await Employee.create({
     employeeCode,
-
     name,
-
     email: email.toLowerCase(),
-
     phone,
-
     gender,
-
     department,
-
     designation,
-
     joiningDate,
-
     qualification,
-
     specialization,
-
     medicalRegistrationNo,
-
     consultationFee,
-
     status: STATUS.PENDING,
   });
 
-  /*
-    |--------------------------------------------------------------------------
-    | Create User
-    |--------------------------------------------------------------------------
-    */
+  // Create user account
   await User.create({
     email: email.toLowerCase(),
-
     passwordHash: hashedPassword,
-
     roles: [designation],
-
     employeeId: employee._id,
-
     status: STATUS.PENDING,
-
     isFirstLogin: false,
     securityQuestion,
-
     securityAnswer: hashedSecurityAnswer,
   });
 
-  /*
-    |--------------------------------------------------------------------------
-    | Send Admin Notification Email
-    |--------------------------------------------------------------------------
-    */
+  // Notify admin about pending approval
   const htmlContent = pendingApprovalTemplate({
     name,
-
     email,
-
     designation,
-
     department,
   });
 
   await sendEmail({
     to: process.env.ADMIN_EMAIL,
-
     subject: "New Employee Registration Pending Approval",
-
     htmlContent,
   });
 
-  /*
-    |--------------------------------------------------------------------------
-    | Final Response
-    |--------------------------------------------------------------------------
-    */
   return {
     message: "Registration submitted successfully. Wait for admin approval.",
   };

@@ -2,42 +2,31 @@ const mongoose = require("mongoose");
 
 const patientSchema = new mongoose.Schema(
   {
-    /*
-            |--------------------------------------------------------------------------
-            | Basic Information
-            |--------------------------------------------------------------------------
-            */
+    // Basic patient information
     patientId: {
       type: String,
-
       required: true,
-
       unique: true,
     },
 
     firstName: {
       type: String,
-
       required: true,
     },
 
     lastName: {
       type: String,
-
       required: true,
     },
 
     dateOfBirth: {
       type: Date,
-
       required: true,
     },
 
     gender: {
       type: String,
-
       enum: ["MALE", "FEMALE", "OTHER"],
-
       required: true,
     },
 
@@ -47,31 +36,21 @@ const patientSchema = new mongoose.Schema(
 
     maritalStatus: {
       type: String,
-
       enum: ["SINGLE", "MARRIED", "DIVORCED"],
     },
 
-    /*
-            |--------------------------------------------------------------------------
-            | Contact Information
-            |--------------------------------------------------------------------------
-            */
+    // Contact information
     countryCode: {
       type: String,
-
       required: true,
-
       default: "+91",
     },
+
     phone: {
       type: String,
-
       required: true,
-
       trim: true,
-
       unique: true,
-
       match: /^[0-9]{10}$/,
     },
 
@@ -99,11 +78,7 @@ const patientSchema = new mongoose.Schema(
       type: String,
     },
 
-    /*
-            |--------------------------------------------------------------------------
-            | Emergency Contact
-            |--------------------------------------------------------------------------
-            */
+    // Emergency contact details
     emergencyContactName: {
       type: String,
     },
@@ -116,11 +91,7 @@ const patientSchema = new mongoose.Schema(
       type: String,
     },
 
-    /*
-            |--------------------------------------------------------------------------
-            | Medical Information
-            |--------------------------------------------------------------------------
-            */
+    // Medical information
     allergies: [
       {
         type: String,
@@ -153,11 +124,7 @@ const patientSchema = new mongoose.Schema(
       type: String,
     },
 
-    /*
-            |--------------------------------------------------------------------------
-            | Insurance Information
-            |--------------------------------------------------------------------------
-            */
+    // Insurance information
     insuranceProvider: {
       type: String,
     },
@@ -174,14 +141,9 @@ const patientSchema = new mongoose.Schema(
       type: Number,
     },
 
-    /*
-            |--------------------------------------------------------------------------
-            | Hospital Information
-            |--------------------------------------------------------------------------
-            */
+    // Hospital-related information
     assignedDoctor: {
       type: mongoose.Schema.Types.ObjectId,
-
       ref: "Employee",
     },
 
@@ -191,28 +153,19 @@ const patientSchema = new mongoose.Schema(
 
     patientType: {
       type: String,
-
       enum: ["OPD", "IPD", "EMERGENCY"],
-
       default: "OPD",
     },
 
     status: {
       type: String,
-
       enum: ["ACTIVE", "DISCHARGED", "INACTIVE"],
-
       default: "ACTIVE",
     },
   },
-
   {
     timestamps: true,
-  },
+  }
 );
 
-module.exports = mongoose.model(
-  "Patient",
-
-  patientSchema,
-);
+module.exports = mongoose.model("Patient", patientSchema);

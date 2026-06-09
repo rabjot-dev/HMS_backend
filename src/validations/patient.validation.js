@@ -1,10 +1,6 @@
 const { body } = require("express-validator");
 
-/*
-|--------------------------------------------------------------------------
-| Create Patient Validation
-|--------------------------------------------------------------------------
-*/
+// Validation for creating a patient
 const createPatientValidation = [
   body("firstName")
     .trim()
@@ -12,7 +8,7 @@ const createPatientValidation = [
     .withMessage("First name is required")
     .matches(/^[A-Za-z\s'-]+$/)
     .withMessage(
-      "First name can contain only letters, spaces, apostrophes and hyphens",
+      "First name can contain only letters, spaces, apostrophes and hyphens"
     ),
 
   body("lastName")
@@ -21,7 +17,7 @@ const createPatientValidation = [
     .withMessage("Last name is required")
     .matches(/^[A-Za-z\s'-]+$/)
     .withMessage(
-      "Last name can contain only letters, spaces, apostrophes and hyphens",
+      "Last name can contain only letters, spaces, apostrophes and hyphens"
     ),
 
   body("dateOfBirth")
@@ -96,7 +92,9 @@ const createPatientValidation = [
     .optional()
     .trim()
     .isLength({ min: 2, max: 100 })
-    .withMessage("Emergency contact name must be between 2 and 100 characters"),
+    .withMessage(
+      "Emergency contact name must be between 2 and 100 characters"
+    ),
 
   body("emergencyContactPhone")
     .optional()
@@ -110,16 +108,12 @@ const createPatientValidation = [
     .withMessage("Relationship must be between 2 and 50 characters"),
 
   body("insuranceCoverageAmount")
-    .optional({
-      checkFalsy: true,
-    })
+    .optional({ checkFalsy: true })
     .isNumeric()
     .withMessage("Insurance coverage amount must be numeric"),
 
   body("insuranceExpiryDate")
-    .optional({
-      checkFalsy: true,
-    })
+    .optional({ checkFalsy: true })
     .isISO8601()
     .withMessage("Invalid insurance expiry date"),
 
@@ -134,11 +128,7 @@ const createPatientValidation = [
     .withMessage("Invalid patient status"),
 ];
 
-/*
-|--------------------------------------------------------------------------
-| Update Patient Validation
-|--------------------------------------------------------------------------
-*/
+// Validation for updating a patient
 const updatePatientValidation = [
   body("firstName")
     .optional()
@@ -193,16 +183,12 @@ const updatePatientValidation = [
     .withMessage("Emergency contact phone must be exactly 10 digits"),
 
   body("insuranceCoverageAmount")
-    .optional({
-      checkFalsy: true,
-    })
+    .optional({ checkFalsy: true })
     .isNumeric()
     .withMessage("Insurance coverage amount must be numeric"),
 
   body("insuranceExpiryDate")
-    .optional({
-      checkFalsy: true,
-    })
+    .optional({ checkFalsy: true })
     .isISO8601()
     .withMessage("Invalid insurance expiry date"),
 

@@ -1,120 +1,71 @@
 const mongoose = require("mongoose");
 
-/*
-|--------------------------------------------------------------------------
-| Prescription Schema
-|--------------------------------------------------------------------------
-*/
+// Medicine prescribed during consultation
 const prescriptionSchema = new mongoose.Schema({
   medicineName: {
     type: String,
-
     required: true,
   },
 
   dosage: {
     type: String,
-
     required: true,
   },
 
   frequency: {
     type: String,
-
     required: true,
   },
 
   duration: {
     type: String,
-
     required: true,
   },
 });
 
-/*
-|--------------------------------------------------------------------------
-| Consultation Schema
-|--------------------------------------------------------------------------
-*/
 const consultationSchema = new mongoose.Schema(
   {
-    /*
-        |--------------------------------------------------------------------------
-        | Appointment
-        |--------------------------------------------------------------------------
-        */
+    // Linked appointment
     appointmentId: {
       type: mongoose.Schema.Types.ObjectId,
-
       ref: "Appointment",
-
       required: true,
     },
 
-    /*
-        |--------------------------------------------------------------------------
-        | Patient
-        |--------------------------------------------------------------------------
-        */
+    // Patient details
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
-
       ref: "Patient",
-
       required: true,
     },
 
-    /*
-        |--------------------------------------------------------------------------
-        | Doctor
-        |--------------------------------------------------------------------------
-        */
+    // Doctor handling the consultation
     doctorEmployeeId: {
       type: mongoose.Schema.Types.ObjectId,
-
       ref: "Employee",
-
       required: true,
     },
 
-    /*
-        |--------------------------------------------------------------------------
-        | Diagnosis
-        |--------------------------------------------------------------------------
-        */
+    // Doctor's diagnosis
     diagnosis: {
       type: String,
-
       trim: true,
     },
 
-    /*
-        |--------------------------------------------------------------------------
-        | Symptoms
-        |--------------------------------------------------------------------------
-        */
+    // Reported symptoms
     symptoms: [
       {
         type: String,
       },
     ],
 
-    /*
-        |--------------------------------------------------------------------------
-        | Doctor Notes
-        |--------------------------------------------------------------------------
-        */
+    // Additional notes from the doctor
     doctorNotes: {
       type: String,
-
       trim: true,
     },
 
-    /*
-        |--------------------------------------------------------------------------
-        | Vitals
-        |--------------------------------------------------------------------------
-        */
+    // Patient vitals recorded during consultation
     vitals: {
       bloodPressure: {
         type: String,
@@ -137,38 +88,25 @@ const consultationSchema = new mongoose.Schema(
       },
     },
 
-    /*
-        |--------------------------------------------------------------------------
-        | Prescription
-        |--------------------------------------------------------------------------
-        */
+    // Prescribed medicines
     prescriptions: [prescriptionSchema],
 
-    /*
-        |--------------------------------------------------------------------------
-        | Consultation Status
-        |--------------------------------------------------------------------------
-        */
+    // Current consultation status
     status: {
       type: String,
-
       enum: ["IN_PROGRESS", "COMPLETED"],
-
       default: "IN_PROGRESS",
     },
   },
-
   {
     timestamps: true,
-
     versionKey: false,
-  },
+  }
 );
 
 const Consultation = mongoose.model(
   "Consultation",
-
-  consultationSchema,
+  consultationSchema
 );
 
 module.exports = Consultation;

@@ -9,11 +9,6 @@ const getPrescriptionDataService = require("../services/consultation/download-pr
 
 const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
 
-/*
-|--------------------------------------------------------------------------
-| Create Consultation
-|--------------------------------------------------------------------------
-*/
 const createConsultation = async (req, res) => {
   try {
     const consultation = await createConsultationService(req.body);
@@ -54,11 +49,6 @@ const createConsultation = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get Consultation By Appointment
-|--------------------------------------------------------------------------
-*/
 const getConsultationByAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
@@ -95,11 +85,6 @@ const getConsultationByAppointment = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Update Consultation
-|--------------------------------------------------------------------------
-*/
 const updateConsultation = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,11 +127,6 @@ const updateConsultation = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get All Consultations
-|--------------------------------------------------------------------------
-*/
 const getConsultations = async (req, res) => {
   try {
     const consultations = await getConsultationsService();
@@ -166,11 +146,6 @@ const getConsultations = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Download Prescription PDF
-|--------------------------------------------------------------------------
-*/
 const downloadPrescriptionPdf = async (req, res) => {
   try {
     const { consultationId } = req.params;
@@ -202,11 +177,6 @@ const downloadPrescriptionPdf = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get Consultation By ID
-|--------------------------------------------------------------------------
-*/
 const getConsultationById = async (req, res) => {
   try {
     const { id } = req.params;

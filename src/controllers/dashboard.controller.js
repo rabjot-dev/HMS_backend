@@ -1,18 +1,9 @@
 const getAdminStatsService = require("../services/dashboard/get-admin-stats.service");
-
 const getRecentEmployeesService = require("../services/dashboard/get-recent-employees.service");
-
 const getDoctorStatsService = require("../services/dashboard/get-doctor-stats.service");
-
 const getReceptionistStatsService = require("../services/dashboard/get-receptionist-stats.service");
-
 const getTodayAppointmentsService = require("../services/dashboard/get-today-appointments.service");
 
-/*
-|--------------------------------------------------------------------------
-| Admin Stats
-|--------------------------------------------------------------------------
-*/
 const getAdminStats = async (req, res) => {
   try {
     const stats = await getAdminStatsService();
@@ -32,11 +23,6 @@ const getAdminStats = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Recent Employees
-|--------------------------------------------------------------------------
-*/
 const getRecentEmployees = async (req, res) => {
   try {
     const employees = await getRecentEmployeesService();
@@ -56,11 +42,6 @@ const getRecentEmployees = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Doctor Stats
-|--------------------------------------------------------------------------
-*/
 const getDoctorStats = async (req, res) => {
   try {
     const stats = await getDoctorStatsService(req.user.employeeId);
@@ -80,11 +61,6 @@ const getDoctorStats = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Receptionist Stats
-|--------------------------------------------------------------------------
-*/
 const getReceptionistStats = async (req, res) => {
   try {
     const stats = await getReceptionistStatsService();
@@ -104,16 +80,10 @@ const getReceptionistStats = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Today Appointments
-|--------------------------------------------------------------------------
-*/
 const getTodayAppointments = async (req, res) => {
   try {
     const appointments = await getTodayAppointmentsService(req.user);
 
-    console.log("TODAY APPOINTMENTS =>", appointments);
     return res.status(200).json({
       success: true,
       message: "Appointments retrieved successfully",

@@ -4,11 +4,7 @@ const Patient = require("../models/Patient");
 const Appointment = require("../models/Appointment");
 const registerPatient = require("../services/patient/register-patient.service");
 
-/*
-|--------------------------------------------------------------------------
-| Register Patient
-|--------------------------------------------------------------------------
-*/
+// Register a new patient
 const createPatient = async (req, res) => {
   try {
     const serviceResponse = await registerPatient(req.body);
@@ -42,15 +38,12 @@ const createPatient = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get All Patients
-|--------------------------------------------------------------------------
-*/
+// Get all patients
 const getPatients = async (req, res) => {
   try {
     let patients = [];
 
+    // Doctors can only view patients linked to their appointments
     if (req.user.roles?.includes("DOCTOR")) {
       const appointments = await Appointment.find({
         doctorEmployeeId: req.user.employeeId,
@@ -58,7 +51,9 @@ const getPatients = async (req, res) => {
 
       const patientIds = [
         ...new Set(
-          appointments.map((appointment) => appointment.patientId.toString()),
+          appointments.map((appointment) =>
+            appointment.patientId.toString()
+          )
         ),
       ];
 
@@ -72,9 +67,11 @@ const getPatients = async (req, res) => {
           createdAt: -1,
         });
     } else {
-      patients = await Patient.find().populate("assignedDoctor").sort({
-        createdAt: -1,
-      });
+      patients = await Patient.find()
+        .populate("assignedDoctor")
+        .sort({
+          createdAt: -1,
+        });
     }
 
     return res.status(200).json({
@@ -92,11 +89,7 @@ const getPatients = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Get Patient By ID
-|--------------------------------------------------------------------------
-*/
+// Get patient details by ID
 const getPatientById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -132,11 +125,7 @@ const getPatientById = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Update Patient
-|--------------------------------------------------------------------------
-*/
+// Update patient information
 const updatePatient = async (req, res) => {
   try {
     const { id } = req.params;

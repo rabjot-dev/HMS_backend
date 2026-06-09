@@ -4,121 +4,68 @@ const router = express.Router();
 
 const {
   getAvailableSlots,
-
   bookAppointment,
-
   getAppointments,
-
   deleteAppointment,
-
   getAppointmentById,
-
   updateAppointment,
-
   getDoctorQueue,
 } = require("../controllers/appointment.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
-
 const roleMiddleware = require("../middleware/role.middleware");
 
-/*
-|--------------------------------------------------------------------------
-| Doctor Queue
-|--------------------------------------------------------------------------
-*/
+// Get today's queue for a doctor
 router.get(
   "/doctor-queue",
-
   authMiddleware,
-
   roleMiddleware("DOCTOR"),
-
-  getDoctorQueue,
+  getDoctorQueue
 );
 
-/*
-|--------------------------------------------------------------------------
-| Available Slots
-|--------------------------------------------------------------------------
-*/
+// Get available slots for a doctor
 router.get(
   "/available-slots",
-
   authMiddleware,
-
-  getAvailableSlots,
+  getAvailableSlots
 );
 
-/*
-|--------------------------------------------------------------------------
-| Get All Appointments
-|--------------------------------------------------------------------------
-*/
+// Get all appointments
 router.get(
   "/",
-
   authMiddleware,
-
-  getAppointments,
+  getAppointments
 );
 
-/*
-|--------------------------------------------------------------------------
-| Get Appointment By ID
-|--------------------------------------------------------------------------
-*/
+// Get appointment details by ID
 router.get(
   "/:id",
-
   authMiddleware,
-
-  getAppointmentById,
+  getAppointmentById
 );
 
-/*
-|--------------------------------------------------------------------------
-| Book Appointment
-|--------------------------------------------------------------------------
-*/
+// Book a new appointment
 router.post(
   "/",
-
   authMiddleware,
-
   roleMiddleware("ADMIN", "RECEPTIONIST"),
-
-  bookAppointment,
+  bookAppointment
 );
 
-/*
-|--------------------------------------------------------------------------
-| Update Appointment
-|--------------------------------------------------------------------------
-*/
+// Update appointment details
 router.put(
   "/:id",
-
   authMiddleware,
-
   roleMiddleware("ADMIN", "RECEPTIONIST"),
-
-  updateAppointment,
+  updateAppointment
 );
 
-/*
-|--------------------------------------------------------------------------
-| Delete Appointment
-|--------------------------------------------------------------------------
-*/
+// Delete an appointment
 router.delete(
   "/:id",
-
   authMiddleware,
-
   roleMiddleware("ADMIN", "RECEPTIONIST"),
-
-  deleteAppointment,
+  deleteAppointment
 );
 
 module.exports = router;

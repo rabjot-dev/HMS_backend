@@ -1,56 +1,49 @@
 const express = require("express");
+
 const authMiddleware = require("../middleware/auth.middleware");
-const router = express.Router();
 
 const {
   getAdminStats,
-
   getRecentEmployees,
-
   getDoctorStats,
-
   getReceptionistStats,
-
   getTodayAppointments,
 } = require("../controllers/dashboard.controller");
 
-/*
-|--------------------------------------------------------------------------
-| Admin
-|--------------------------------------------------------------------------
-*/
+const router = express.Router();
+
+// Get admin dashboard statistics
 router.get(
   "/admin-stats",
-
   authMiddleware,
-  getAdminStats,
+  getAdminStats
 );
 
+// Get recently added employees
 router.get(
   "/recent-employees",
-
   authMiddleware,
-  getRecentEmployees,
+  getRecentEmployees
 );
 
-/*
-|--------------------------------------------------------------------------
-| Doctor
-|--------------------------------------------------------------------------
-*/
-router.get("/doctor-stats", authMiddleware, getDoctorStats);
+// Get doctor dashboard statistics
+router.get(
+  "/doctor-stats",
+  authMiddleware,
+  getDoctorStats
+);
 
-/*
-|--------------------------------------------------------------------------
-| Receptionist
-|--------------------------------------------------------------------------
-*/
+// Get receptionist dashboard statistics
 router.get(
   "/receptionist-stats",
-
-  getReceptionistStats,
+  getReceptionistStats
 );
 
-router.get("/today-appointments", authMiddleware, getTodayAppointments);
+// Get today's appointments
+router.get(
+  "/today-appointments",
+  authMiddleware,
+  getTodayAppointments
+);
 
 module.exports = router;

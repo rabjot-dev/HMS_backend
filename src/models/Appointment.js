@@ -1,21 +1,42 @@
 const mongoose = require("mongoose");
 const STATUS = require("../constants/status");
+
 const appointmentSchema = new mongoose.Schema(
   {
-    appointmentId: { type: String, required: true, unique: true, trim: true },
+    appointmentId: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patient",
       required: true,
     },
+
     doctorEmployeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
       required: true,
     },
-    appointmentDate: { type: Date, required: true },
-    timeSlot: { type: String, required: true, trim: true },
-    tokenNumber: { type: Number },
+
+    appointmentDate: {
+      type: Date,
+      required: true,
+    },
+
+    timeSlot: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    tokenNumber: {
+      type: Number,
+    },
+
     status: {
       type: String,
       enum: [
@@ -27,73 +48,48 @@ const appointmentSchema = new mongoose.Schema(
       ],
       default: STATUS.BOOKED,
     },
+
     createdByEmployeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
       required: true,
     },
+
+    // Type of appointment
     appointmentType: {
       type: String,
-
       enum: [
         "CONSULTATION",
-
         "FOLLOW_UP",
-
         "EMERGENCY",
-
         "VIDEO_CONSULTATION",
-
         "ROUTINE_CHECKUP",
       ],
-
       default: "CONSULTATION",
     },
 
-    /*
-|--------------------------------------------------------------------------
-| Priority
-|--------------------------------------------------------------------------
-*/
+    // Appointment priority level
     priority: {
       type: String,
-
       enum: ["NORMAL", "URGENT", "CRITICAL"],
-
       default: "NORMAL",
     },
 
-    /*
-|--------------------------------------------------------------------------
-| Payment Status
-|--------------------------------------------------------------------------
-*/
+    // Payment status of the appointment
     paymentStatus: {
       type: String,
-
       enum: ["PENDING", "PAID", "INSURANCE"],
-
       default: "PENDING",
     },
 
-    /*
-|--------------------------------------------------------------------------
-| Visit Mode
-|--------------------------------------------------------------------------
-*/
+    // Consultation mode
     visitMode: {
       type: String,
-
       enum: ["OFFLINE", "ONLINE", "HOME_VISIT"],
-
       default: "OFFLINE",
     },
 
-    /*
-|--------------------------------------------------------------------------
-| Symptoms
-|--------------------------------------------------------------------------
-*/
+    // Patient symptoms
     symptoms: [
       {
         type: String,
@@ -103,14 +99,11 @@ const appointmentSchema = new mongoose.Schema(
   {
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
 const Appointment =
   mongoose.models.Appointment ||
-  mongoose.model(
-    "Appointment",
+  mongoose.model("Appointment", appointmentSchema);
 
-    appointmentSchema,
-  );
 module.exports = Appointment;

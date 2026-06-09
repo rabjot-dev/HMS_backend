@@ -4,9 +4,7 @@ const createEmployeePassword = require("../services/auth/create-password.service
 const registerEmployeeSelf = require("../services/auth/registerEmployeeSelf.service");
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
-const Employee = require("../models/Employee");
 
-//login
 const login = async (req, res) => {
   try {
     const loginResponse = await loginUser(req.body);
@@ -36,7 +34,6 @@ const login = async (req, res) => {
   }
 };
 
-//create password
 const createPassword = async (req, res) => {
   try {
     const serviceResponse = await createEmployeePassword(req.body);
@@ -68,7 +65,6 @@ const createPassword = async (req, res) => {
     });
   }
 };
-//get current logged in user
 
 const getCurrentUser = async (req, res) => {
   try {
@@ -95,6 +91,7 @@ const getCurrentUser = async (req, res) => {
     });
   }
 };
+
 const register = async (req, res) => {
   try {
     const result = await registerEmployeeSelf(req.body);
@@ -104,9 +101,6 @@ const register = async (req, res) => {
       message: result.message,
     });
   } catch (error) {
-    console.log("ERROR MESSAGE =>", error.message);
-    console.log("ERROR CODE =>", error.code);
-    console.log("FULL ERROR =>", error);
     console.error("REGISTER ERROR:", error.message);
 
     if (error.message === "Medical registration number already exists") {
@@ -136,18 +130,12 @@ const register = async (req, res) => {
     });
   }
 };
-/*
-|--------------------------------------------------------------------------
-| Forgot Password
-|--------------------------------------------------------------------------
-*/
+
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const user = await User.findOne({
-      email,
-    });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({
@@ -170,18 +158,12 @@ const forgotPassword = async (req, res) => {
     });
   }
 };
-/*
-|--------------------------------------------------------------------------
-| Reset Password
-|--------------------------------------------------------------------------
-*/
+
 const resetPassword = async (req, res) => {
   try {
     const { email, securityAnswer, newPassword } = req.body;
 
-    const user = await User.findOne({
-      email,
-    });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({
@@ -192,7 +174,7 @@ const resetPassword = async (req, res) => {
 
     const isValidAnswer = await bcrypt.compare(
       securityAnswer.trim().toLowerCase(),
-      user.securityAnswer,
+      user.securityAnswer
     );
 
     if (!isValidAnswer) {
@@ -202,7 +184,10 @@ const resetPassword = async (req, res) => {
       });
     }
 
-    const isSamePassword = await bcrypt.compare(newPassword, user.passwordHash);
+    const isSamePassword = await bcrypt.compare(
+      newPassword,
+      user.passwordHash
+    );
 
     if (isSamePassword) {
       return res.status(409).json({
@@ -214,7 +199,6 @@ const resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     user.passwordHash = hashedPassword;
-
     await user.save();
 
     return res.status(200).json({
@@ -230,6 +214,7 @@ const resetPassword = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   login,
   createPassword,
