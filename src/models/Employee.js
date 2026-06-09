@@ -23,7 +23,7 @@ const employeeSchema = new mongoose.Schema(
     department: { type: String, required: true, trim: true },
     designation: { type: String, required: true, trim: true },
     joiningDate: { type: Date, required: true },
-    medicalRegistrationNo: { type: String, trim: true, default: null },
+    medicalRegistrationNo: { type: String, trim: true, default: null, unique: true, sparse: true },
     specialization: { type: String, trim: true, default: null },
     qualification: { type: [String], default: [] },
     status: {

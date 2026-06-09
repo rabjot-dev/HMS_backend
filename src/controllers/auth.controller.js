@@ -104,20 +104,46 @@ const register = async (req, res) => {
       message: result.message,
     });
   }catch (error) {
+    console.log("ERROR MESSAGE =>", error.message);
+console.log("ERROR CODE =>", error.code);
+console.log("FULL ERROR =>", error);
+  console.error(
+    "REGISTER ERROR:",
+    error.message
+  );
 
   if (
-    error.message === "Phone number is already registered" ||
-    error.message === "User already exists"
+    error.message ===
+    "Medical registration number already exists"
   ) {
-    console.log("REGISTER VALIDATION:", error.message);
-
     return res.status(409).json({
       success: false,
-      message: error.message,
+      message:
+        "Medical registration number already exists",
     });
   }
 
-  console.error("REGISTER ERROR:", error.message);
+  if (
+    error.message ===
+    "Phone number is already registered"
+  ) {
+    return res.status(409).json({
+      success: false,
+      message:
+        "Phone number is already registered",
+    });
+  }
+
+  if (
+    error.message ===
+    "Email is already registered"
+  ) {
+    return res.status(409).json({
+      success: false,
+      message:
+        "Email is already registered",
+    });
+  }
 
   return res.status(500).json({
     success: false,

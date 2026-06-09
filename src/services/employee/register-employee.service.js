@@ -82,6 +82,18 @@ if (existingPhone) {
     "Employee already exists with this phone number",
   );
 }
+if (designation === 'DOCTOR') {
+  const existingDoctor =
+    await Employee.findOne({
+      medicalRegistrationNo
+    });
+
+  if (existingDoctor) {
+    throw new Error(
+      'Medical registration number already exists'
+    );
+  }
+}
   /*
         |--------------------------------------------------------------------------
         | Employee Prefix

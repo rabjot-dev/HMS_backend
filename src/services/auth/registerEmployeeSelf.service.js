@@ -47,7 +47,7 @@ const registerEmployeeSelf = async (employeeData) => {
   });
 
   if (existingUser) {
-    throw new Error("User already exists");
+    throw new Error("Email is already registered");
   }
   const existingPhone = await Employee.findOne({
   phone,
@@ -57,6 +57,18 @@ if (existingPhone) {
   throw new Error(
     "Phone number is already registered"
   );
+}
+if (designation === 'DOCTOR') {
+  const existingDoctor =
+    await Employee.findOne({
+      medicalRegistrationNo
+    });
+
+  if (existingDoctor) {
+    throw new Error(
+      'Medical registration number already exists'
+    );
+  }
 }
 
   /*

@@ -149,6 +149,24 @@ const updateEmployee = async (req, res) => {
   employeeCode,
   ...updateData
 } = req.body;
+if (
+  req.body.medicalRegistrationNo
+) {
+  const existingDoctor =
+    await Employee.findOne({
+      medicalRegistrationNo:
+        req.body.medicalRegistrationNo,
+      _id: { $ne: id },
+    });
+
+  if (existingDoctor) {
+    return res.status(409).json({
+      success: false,
+      message:
+        "Medical registration number already exists",
+    });
+  }
+}
 
 const employee = await Employee.findByIdAndUpdate(
   id,
@@ -181,10 +199,22 @@ const employee = await Employee.findByIdAndUpdate(
       });
     }
 
+    if (
+  error.message ===
+  "Medical registration number already exists"
+) {
+  return res.status(409).json({
+    success: false,
+    message:
+      "Medical registration number already exists",
+  });
+}
+
     return res.status(500).json({
       success: false,
       message: "Failed to update employee",
     });
+
   }
 };
 
@@ -317,9 +347,16 @@ const getPendingEmployees = async (req, res) => {
 | Approve Employee
 |--------------------------------------------------------------------------
 */
+/*
+|--------------------------------------------------------------------------
+| Approve Employee
+|--------------------------------------------------------------------------
+*/
 const approveEmployee = async (req, res) => {
   try {
     const { id: employeeId } = req.params;
+
+    const { consultationFee } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(employeeId)) {
       return res.status(400).json({
@@ -339,23 +376,70 @@ const approveEmployee = async (req, res) => {
       });
     }
 
+    const employee = await Employee.findById(
+      employeeId
+    );
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found",
+      });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Doctor Consultation Fee Validation
+    |--------------------------------------------------------------------------
+    */
+    if (
+      employee.designation === "DOCTOR" &&
+      (
+        consultationFee === undefined ||
+        consultationFee === null ||
+        consultationFee === ""
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Consultation fee is required for doctors",
+      });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Set Consultation Fee
+    |--------------------------------------------------------------------------
+    */
+    if (employee.designation === "DOCTOR") {
+      employee.consultationFee =
+        Number(consultationFee);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Activate Employee
+    |--------------------------------------------------------------------------
+    */
+    employee.status = STATUS.ACTIVE;
+
+    await employee.save();
+
     user.status = STATUS.ACTIVE;
 
     await user.save();
 
-    await Employee.findByIdAndUpdate(
-      employeeId,
-      {
-        status: STATUS.ACTIVE,
-      },
-    );
-
     return res.status(200).json({
       success: true,
       message: "Employee approved successfully",
+      data: employee,
     });
   } catch (error) {
-    console.error("APPROVE EMPLOYEE ERROR:", error);
+    console.error(
+      "APPROVE EMPLOYEE ERROR:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
