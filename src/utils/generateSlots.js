@@ -11,7 +11,7 @@ const generateSlots = (
   const convertToMinutes = (time) => {
     const [hours, minutes] = time.split(":");
 
-    return parseInt(hours) * 60 + parseInt(minutes);
+    return Number.parseInt(hours) * 60 + Number.parseInt(minutes);
   };
 
   // Convert total minutes back to HH:mm format

@@ -22,7 +22,7 @@ const generateAppointmentId = async () => {
 
   // Increment sequence if previous records exist
   if (latestAppointment) {
-    const lastSequence = parseInt(
+    const lastSequence = Number.parseInt(
       latestAppointment.appointmentId.slice(-5)
     );
 

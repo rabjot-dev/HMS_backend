@@ -22,7 +22,7 @@ const generatePatientId = async () => {
 
   // Increment sequence if previous patient exists
   if (latestPatient) {
-    const lastSequence = parseInt(
+    const lastSequence = Number.parseInt(
       latestPatient.patientId.slice(-5)
     );
 

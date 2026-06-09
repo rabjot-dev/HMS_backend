@@ -51,7 +51,7 @@ const patientSchema = new mongoose.Schema(
       required: true,
       trim: true,
       unique: true,
-      match: /^[0-9]{10}$/,
+      match: /^\d{10}$/,
     },
 
     email: {
