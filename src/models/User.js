@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    
 
     passwordHash: {
       type: String,
@@ -50,6 +51,11 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    //refresh tokens 
+    refreshToken: {
+  type: String,
+  default: null,
+},
 
     // Password recovery question
     securityQuestion: {

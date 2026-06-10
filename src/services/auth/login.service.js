@@ -2,8 +2,8 @@ const bcrypt = require("bcryptjs");
 
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
-
-const generateToken = require("../../utils/generateToken");
+const generateAccessToken = require("../../utils/generateAccessToken");
+const generateRefreshToken = require("../../utils/generateRefreshToken");
 
 const loginUser = async (loginData) => {
   const { loginId, password } = loginData;
@@ -76,17 +76,22 @@ const loginUser = async (loginData) => {
     roles: user.roles,
   };
 
-  const token = generateToken(tokenPayload);
+const accessToken = generateAccessToken(tokenPayload);
 
-  // Update last login timestamp
-  user.lastLoginAt = new Date();
+const refreshToken = generateRefreshToken(tokenPayload);
 
-  await user.save();
+// Save refresh token in DB
+user.refreshToken = refreshToken;
 
-  return {
-    token,
-    user,
-  };
+user.lastLoginAt = new Date();
+
+await user.save();
+
+return {
+  accessToken,
+  refreshToken,
+  user
+};
 };
 
 module.exports = loginUser;
