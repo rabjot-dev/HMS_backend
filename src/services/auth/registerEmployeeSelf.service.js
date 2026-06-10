@@ -72,7 +72,7 @@ const registerEmployeeSelf = async (employeeData) => {
 
   const hashedSecurityAnswer = await bcrypt.hash(
     securityAnswer.trim().toLowerCase(),
-    10
+    10,
   );
 
   // Create employee record
@@ -110,12 +110,6 @@ const registerEmployeeSelf = async (employeeData) => {
     email,
     designation,
     department,
-  });
-
-  await sendEmail({
-    to: process.env.ADMIN_EMAIL,
-    subject: "New Employee Registration Pending Approval",
-    htmlContent,
   });
 
   return {
