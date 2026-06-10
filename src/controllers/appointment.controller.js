@@ -76,7 +76,7 @@ const bookAppointment = async (req, res) => {
 const getAppointments = async (req, res) => {
   try {
     const filter = {};
-
+// Only to view appointments related to doctor 
     if (req.user.roles?.includes("DOCTOR")) {
       filter.doctorEmployeeId = req.user.employeeId;
     }
