@@ -2,6 +2,13 @@ const Appointment = require("../models/Appointment");
 const mongoose = require("mongoose");
 const getAvailableSlotsService = require("../services/appointment/get-available-slots.service");
 const bookAppointmentService = require("../services/appointment/book-appointment.service");
+const bookPatientAppointmentService =require("../services/appointment/book-patient-appointment.service");
+const getMyAppointmentsService =require("../services/appointment/get-my-appointments.service");
+const getPendingAppointmentsService =require("../services/appointment/get-pending-appointments.service");
+const approveAppointmentService =require( "../services/appointment/approve-appointment.service");
+const rejectAppointmentService =require("../services/appointment/reject-appointment.service");
+const updateMyAppointmentService =require("../services/appointment/update-my-appointment.service");
+const cancelMyAppointmentService =require("../services/appointment/cancel-my-appointment.service");
 
 const getAvailableSlots = async (req, res) => {
   try {
@@ -329,6 +336,234 @@ const getDoctorQueue = async (req, res) => {
     });
   }
 };
+// Patient book 
+const bookPatientAppointment =
+async (req, res) => {
+
+  try {
+
+    const appointment =
+      await bookPatientAppointmentService(
+        req.body,
+        req.user
+      );
+
+    return res.status(201).json({
+      success: true,
+
+      message:
+        "Appointment request submitted successfully",
+
+      data: appointment,
+    });
+
+  } catch (error) {
+
+    return res.status(400).json({
+      success: false,
+
+      message:
+        error.message,
+    });
+  }
+};
+
+//Patient can see only there appointments 
+const getMyAppointments =
+async (req, res) => {
+
+  try {
+
+    const appointments =
+      await getMyAppointmentsService(
+        req.user.patientId
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      data: appointments,
+    });
+
+  } catch (error) {
+
+    return res.status(500).json({
+      success: false,
+
+      message:
+        "Failed to fetch appointments",
+    });
+  }
+};
+
+// Pending Appointments
+const getPendingAppointments =
+async (req, res) => {
+
+  try {
+
+    const appointments =
+      await getPendingAppointmentsService();
+
+    return res.status(200).json({
+      success: true,
+
+      data: appointments,
+    });
+
+  } catch (error) {
+
+    return res.status(500).json({
+      success: false,
+
+      message:
+        "Failed to fetch pending appointments",
+    });
+  }
+};
+
+// Appointment approval
+const approveAppointment =
+async (req, res) => {
+
+  try {
+
+    const appointment =
+      await approveAppointmentService(
+        req.params.id
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Appointment approved successfully",
+
+      data: appointment,
+    });
+
+  } catch (error) {
+
+    return res.status(400).json({
+      success: false,
+
+      message:
+        error.message,
+    });
+  }
+};
+
+// Reject appointment
+const rejectAppointment =
+async (req, res) => {
+
+  try {
+
+    const appointment =
+      await rejectAppointmentService(
+        req.params.id
+      );
+
+    return res.status(200).json({
+      success: true,
+
+      message:
+        "Appointment rejected successfully",
+
+      data: appointment,
+    });
+
+  } catch (error) {
+
+    return res.status(400).json({
+      success: false,
+
+      message:
+        error.message,
+    });
+  }
+};
+
+// Update Appointment
+const updateMyAppointment =
+async (
+  req,
+  res
+) => {
+
+  try {
+
+    const appointment =
+      await updateMyAppointmentService(
+
+        req.params.id,
+
+        req.user.patientId,
+
+        req.body
+      );
+
+    return res.status(200).json({
+
+      success: true,
+
+      message:
+        "Appointment updated successfully",
+
+      data:
+        appointment,
+    });
+
+  } catch (error) {
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+        error.message,
+    });
+  }
+};
+// Cancel Appointment 
+const cancelMyAppointment =
+async (
+  req,
+  res
+) => {
+
+  try {
+
+    const appointment =
+      await cancelMyAppointmentService(
+
+        req.params.id,
+
+        req.user.patientId
+      );
+
+    return res.status(200).json({
+
+      success: true,
+
+      message:
+        "Appointment cancelled successfully",
+
+      data:
+        appointment,
+    });
+
+  } catch (error) {
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+        error.message,
+    });
+  }
+};
 
 module.exports = {
   getAvailableSlots,
@@ -338,4 +573,11 @@ module.exports = {
   getAppointmentById,
   updateAppointment,
   getDoctorQueue,
+  bookPatientAppointment,
+  getMyAppointments,
+  getPendingAppointments,
+  approveAppointment,
+  rejectAppointment,
+  updateMyAppointment,
+  cancelMyAppointment,
 };

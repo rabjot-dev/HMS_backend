@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema(
       ref: "Employee",
       default: null,
     },
+    patientId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Patient",
+  default: null,
+},
 
     // Tracks whether the user has completed first-time login setup
     isFirstLogin: {

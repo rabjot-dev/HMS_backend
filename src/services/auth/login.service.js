@@ -73,6 +73,7 @@ const loginUser = async (loginData) => {
   const tokenPayload = {
     userId: user._id,
     employeeId: user.employeeId,
+    patientId: user.patientId,
     roles: user.roles,
   };
 
