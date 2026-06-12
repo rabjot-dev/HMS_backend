@@ -11,7 +11,10 @@ const patientRoutes = require("./routes/patient.routes");
 const cors = require("cors");
 const app = express();
 app.disable("x-powered-by");
-app.use(cors({ origin: ["http://localhost:4200"], credentials: true }));
+
+// Allow web app + mobile app (mobile has no origin, so allow null/undefined too)
+app.use(cors({ origin: true, credentials: true }));
+
 app.use(express.json());
 
 app.use(
@@ -28,29 +31,11 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-
 app.use("/api/employees", employeeRoutes);
-app.use(
-  "/api/dashboard",
-
-  dashboardRoutes,
-);
-app.use(
-  "/api/appointments",
-
-  appointmentRoutes,
-);
-
-app.use(
-  "/api/patients",
-
-  patientRoutes,
-);
-app.use(
-  "/api/consultations",
-
-  consultationRoutes,
-);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/patients", patientRoutes);
+app.use("/api/consultations", consultationRoutes);
 
 app.use((error, req, res, next) => {
   return res.status(500).json({

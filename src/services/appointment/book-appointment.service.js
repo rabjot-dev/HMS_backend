@@ -6,10 +6,11 @@ const generateAppointmentId = require("../../utils/generateAppointmentId");
 
 const bookAppointment = async (appointmentData, user) => {
   const {
-    patientId,
-    doctorId,
+    doctorEmployeeId,
+    doctorId, // fallback for web
     appointmentDate,
-    appointmentTime,
+    timeSlot,
+    appointmentTime, // fallback for web
     reason,
     notes,
     appointmentType,
@@ -19,10 +20,38 @@ const bookAppointment = async (appointmentData, user) => {
     symptoms,
   } = appointmentData;
 
-  // Prevent booking appointments for past dates
+  // Support both field names (mobile sends doctorEmployeeId, web sends doctorId)
+  const resolvedDoctorId = doctorEmployeeId || doctorId;
+
+  // Support both field names (mobile sends timeSlot, web sends appointmentTime)
+  const resolvedTime = timeSlot || appointmentTime;
+
+  // ── Resolve patientId ──────────────────────────────────────────────────────
+  // Web (ADMIN/RECEPTIONIST) sends patientId (MongoDB _id) explicitly.
+  // Mobile (PATIENT role) does NOT — look up via the token's patientId string
+  // (e.g. "PAT-001") or fall back to userId → Patient lookup.
+  let resolvedPatientId = appointmentData.patientId;
+
+  if (!resolvedPatientId) {
+    let patient = null;
+
+    // token has patientId = "PAT-001" (the string ID) — use it to find the doc
+    if (user.patientId) {
+      patient = await Patient.findOne({ patientId: user.patientId });
+    }
+
+    // fallback: look up by userId (User._id stored in Patient.userId)
+    if (!patient) {
+      patient = await Patient.findOne({ userId: user.userId });
+    }
+
+    if (!patient) throw new Error("Patient not found");
+    resolvedPatientId = patient._id; // MongoDB ObjectId for the Appointment doc
+  }
+
+  // ── Past date check ────────────────────────────────────────────────────────
   const selectedDate = new Date(appointmentDate);
   const today = new Date();
-
   today.setHours(0, 0, 0, 0);
   selectedDate.setHours(0, 0, 0, 0);
 
@@ -30,125 +59,94 @@ const bookAppointment = async (appointmentData, user) => {
     throw new Error("Cannot book appointment for past dates");
   }
 
-  // Verify patient exists
-  const patient = await Patient.findById(patientId);
+  // ── Verify patient exists ──────────────────────────────────────────────────
+  const patient = await Patient.findById(resolvedPatientId);
+  if (!patient) throw new Error("Patient not found");
 
-  if (!patient) {
-    throw new Error("Patient not found");
-  }
+  // ── Verify doctor exists ───────────────────────────────────────────────────
+  const doctor = await Employee.findById(resolvedDoctorId);
+  if (!doctor) throw new Error("Doctor not found");
 
-  // Verify doctor exists
-  const doctor = await Employee.findById(doctorId);
-
-  if (!doctor) {
-    throw new Error("Doctor not found");
-  }
-
-  // Check if doctor is currently available
+  // ── Doctor availability checks ────────────────────────────────────────────
   if (!doctor?.availability?.isAvailable) {
     throw new Error("Doctor is currently unavailable");
   }
 
-  // Ensure appointment is on a doctor's working day
   const appointmentDay = new Date(appointmentDate)
-    .toLocaleDateString("en-US", {
-      weekday: "long",
-    })
+    .toLocaleDateString("en-US", { weekday: "long" })
     .toUpperCase();
 
   if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
     throw new Error(`Doctor is not available on ${appointmentDay}`);
   }
 
-  // Prevent booking during break hours
+  // ── Break time check ───────────────────────────────────────────────────────
   const breakStartTime = doctor?.availability?.breakStartTime;
   const breakEndTime = doctor?.availability?.breakEndTime;
 
   if (breakStartTime && breakEndTime) {
-    if (appointmentTime >= breakStartTime && appointmentTime < breakEndTime) {
+    if (resolvedTime >= breakStartTime && resolvedTime < breakEndTime) {
       throw new Error("Selected slot falls during doctor break time");
     }
   }
 
-  // Normalize date for daily queries
+  // ── Normalize date ─────────────────────────────────────────────────────────
   const [year, month, day] = appointmentDate.split("-").map(Number);
-
   const normalizedDate = new Date(year, month - 1, day, 12, 0, 0);
-
   const nextDay = new Date(normalizedDate);
   nextDay.setDate(nextDay.getDate() + 1);
 
-  // Check doctor's daily appointment limit
+  // ── Daily limit check ──────────────────────────────────────────────────────
   const totalAppointments = await Appointment.countDocuments({
-    doctorEmployeeId: doctorId,
-    appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
-    },
-    status: {
-      $ne: "CANCELLED",
-    },
+    doctorEmployeeId: resolvedDoctorId,
+    appointmentDate: { $gte: normalizedDate, $lt: nextDay },
+    status: { $ne: "CANCELLED" },
   });
 
   if (totalAppointments >= doctor?.availability?.maxPatientsPerDay) {
     throw new Error("Maximum patient limit reached for this doctor");
   }
 
-  // Prevent double-booking of doctor slot
+  // ── Double-booking check ───────────────────────────────────────────────────
   const existingAppointment = await Appointment.findOne({
-    doctorEmployeeId: doctorId,
-    timeSlot: appointmentTime,
-    appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
-    },
-    status: {
-      $nin: ["CANCELLED", "NO_SHOW"],
-    },
+    doctorEmployeeId: resolvedDoctorId,
+    timeSlot: resolvedTime,
+    appointmentDate: { $gte: normalizedDate, $lt: nextDay },
+    status: { $nin: ["CANCELLED", "NO_SHOW"] },
   });
 
-  if (existingAppointment) {
-    throw new Error("Selected slot already booked");
-  }
+  if (existingAppointment) throw new Error("Selected slot already booked");
 
-  // Prevent patient from booking multiple appointments at same time
+  // ── Patient double-booking check ───────────────────────────────────────────
   const existingPatientAppointment = await Appointment.findOne({
-    patientId,
-    timeSlot: appointmentTime,
-    appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
-    },
-    status: {
-      $nin: ["CANCELLED", "NO_SHOW"],
-    },
+    patientId: resolvedPatientId,
+    timeSlot: resolvedTime,
+    appointmentDate: { $gte: normalizedDate, $lt: nextDay },
+    status: { $nin: ["CANCELLED", "NO_SHOW"] },
   });
 
   if (existingPatientAppointment) {
     throw new Error("Patient already has an appointment at this time");
   }
 
-  // Generate unique appointment ID
+  // ── Create appointment ─────────────────────────────────────────────────────
   const appointmentId = await generateAppointmentId();
 
-  // Generate queue token number
   const todayAppointmentsCount = await Appointment.countDocuments({
-    doctorEmployeeId: doctorId,
-    appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
-    },
+    doctorEmployeeId: resolvedDoctorId,
+    appointmentDate: { $gte: normalizedDate, $lt: nextDay },
   });
 
   const tokenNumber = todayAppointmentsCount + 1;
+
   const isPatient = Array.isArray(user.roles) && user.roles.includes("PATIENT");
-  // Create appointment record
+
   const appointment = await Appointment.create({
     appointmentId,
-    patientId,
-    doctorEmployeeId: doctorId,
+    patientId: resolvedPatientId,
+    doctorEmployeeId: resolvedDoctorId,
     appointmentDate,
-    timeSlot: appointmentTime,
+    timeSlot: resolvedTime,
     appointmentType,
     priority,
     paymentStatus,
@@ -157,7 +155,9 @@ const bookAppointment = async (appointmentData, user) => {
     reason,
     notes,
     tokenNumber,
-    createdByEmployeeId: user.userId,
+    // For patients booking via mobile, use their patientId's ObjectId as creator.
+    // For staff (ADMIN/RECEPTIONIST), user.employeeId holds the Employee ObjectId.
+    createdByEmployeeId: user.employeeId || resolvedPatientId,
     status: "BOOKED",
     approvalStatus: isPatient ? "PENDING" : "APPROVED",
   });
