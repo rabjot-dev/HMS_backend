@@ -1,26 +1,34 @@
-const Appointment =
-require("../../models/Appointment");
+const Appointment = require("../../models/Appointment");
 
-const updateMyAppointment =
-async (
+const updateMyAppointment = async (
   appointmentId,
   patientId,
   updateData
 ) => {
 
+  const {
+    appointmentDate,
+    appointmentTime,
+    symptoms,
+  } = updateData;
+
   const appointment =
-    await Appointment.findOne({
-
-      _id:
-        appointmentId,
-
-      patientId,
-    });
+    await Appointment.findById(
+      appointmentId
+    );
 
   if (!appointment) {
-
     throw new Error(
       "Appointment not found"
+    );
+  }
+
+  if (
+    appointment.patientId.toString() !==
+    patientId
+  ) {
+    throw new Error(
+      "Unauthorized access"
     );
   }
 
@@ -28,68 +36,105 @@ async (
     appointment.status !==
     "PENDING"
   ) {
-
     throw new Error(
-      "Appointment can no longer be modified"
+      "Only pending appointments can be modified"
     );
   }
 
-  const {
-    doctorId,
-    appointmentDate,
-    appointmentTime,
-    symptoms,
-    notes,
-    reason,
-  } = updateData;
+  const selectedDate =
+    new Date(
+      appointmentDate
+    );
+
+  const today =
+    new Date();
+
+  today.setHours(
+    0, 0, 0, 0
+  );
+
+  selectedDate.setHours(
+    0, 0, 0, 0
+  );
 
   if (
-    doctorId
+    selectedDate < today
   ) {
-
-    appointment.doctorEmployeeId =
-      doctorId;
+    throw new Error(
+      "Past date not allowed"
+    );
   }
 
-  if (
+  const [year, month, day] =
     appointmentDate
-  ) {
+      .split("-")
+      .map(Number);
 
-    appointment.appointmentDate =
-      appointmentDate;
-  }
+  const normalizedDate =
+    new Date(
+      year,
+      month - 1,
+      day,
+      12,
+      0,
+      0
+    );
+
+  const nextDay =
+    new Date(
+      normalizedDate
+    );
+
+  nextDay.setDate(
+    nextDay.getDate() + 1
+  );
+
+  const existingAppointment =
+    await Appointment.findOne({
+
+      _id: {
+        $ne: appointmentId,
+      },
+
+      doctorEmployeeId:
+        appointment.doctorEmployeeId,
+
+      timeSlot:
+        appointmentTime,
+
+      appointmentDate: {
+        $gte:
+          normalizedDate,
+
+        $lt:
+          nextDay,
+      },
+
+      status: {
+        $nin: [
+          "CANCELLED",
+          "REJECTED",
+          "NO_SHOW",
+        ],
+      },
+    });
 
   if (
-    appointmentTime
+    existingAppointment
   ) {
-
-    appointment.timeSlot =
-      appointmentTime;
+    throw new Error(
+      "Selected slot already booked"
+    );
   }
 
-  if (
-    symptoms
-  ) {
+  appointment.appointmentDate =
+    appointmentDate;
 
-    appointment.symptoms =
-      symptoms;
-  }
+  appointment.timeSlot =
+    appointmentTime;
 
-  if (
-    notes
-  ) {
-
-    appointment.notes =
-      notes;
-  }
-
-  if (
-    reason
-  ) {
-
-    appointment.reason =
-      reason;
-  }
+  appointment.symptoms =
+    symptoms || [];
 
   await appointment.save();
 

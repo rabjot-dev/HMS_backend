@@ -87,6 +87,11 @@ const getAppointments = async (req, res) => {
     if (req.user.roles?.includes("DOCTOR")) {
       filter.doctorEmployeeId = req.user.employeeId;
     }
+    // Only patients view there appointments 
+    if (
+  req.user.roles?.includes("PATIENT")) {
+filter.patientId = req.user.patientId;
+}
 
     const appointments = await Appointment.find(filter)
       .populate("patientId")
@@ -129,6 +134,27 @@ const deleteAppointment = async (req, res) => {
         message: "Appointment not found for the provided ID",
       });
     }
+    if (
+  req.user.roles?.includes(
+    "PATIENT"
+  )
+) {
+
+  if (
+    appointment.patientId.toString()
+    !==
+    req.user.patientId.toString()
+  ) {
+
+    return res.status(403).json({
+
+      success: false,
+
+      message:
+        "Unauthorized",
+    });
+  }
+}
 
     await Appointment.findByIdAndDelete(id);
 

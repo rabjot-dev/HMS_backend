@@ -124,7 +124,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  roleMiddleware("ADMIN", "RECEPTIONIST", "PATIENT"),
   deleteAppointment
 );
 
