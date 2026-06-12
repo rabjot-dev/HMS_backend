@@ -13,6 +13,10 @@ const patientSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
 
     firstName: {
       type: String,
@@ -175,5 +179,11 @@ const patientSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+patientSchema.pre("validate", function () {
+  if (!this.userId && this.user) {
+    this.userId = this.user;
+  }
+});
 
 module.exports = mongoose.model("Patient", patientSchema);

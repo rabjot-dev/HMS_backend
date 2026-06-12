@@ -2,10 +2,14 @@ const Patient = require("../../models/Patient");
 const User = require("../../models/User");
 const bcrypt = require("bcryptjs");
 const generatePatientId = require("../../utils/generatePatientId");
-const sendEmail = require("../../utils/sendEmail"); // 🔥 ADD THIS
+const sendEmail = require("../../utils/sendEmail");
 
 const generateRandomPassword = () => {
   return Math.random().toString(36).slice(-8); // simple temp password
+};
+
+const emptyToUndefined = (value) => {
+  return value === "" ? undefined : value;
 };
 
 const registerPatient = async (patientData) => {
@@ -49,20 +53,16 @@ const registerPatient = async (patientData) => {
   // -------------------------
   // CHECK EXISTING USER
   // -------------------------
-  const existingUser = await User.findOne({
-    $or: [{ email }, { phone }],
-  });
+  const existingUser = await User.findOne({ email });
 
   if (existingUser) {
-    if (existingUser.email === email) {
-      throw new Error("Email already registered");
-    }
+    throw new Error("Email already registered");
+  }
 
-    if (existingUser.phone === phone) {
-      throw new Error("Phone number already registered");
-    }
+  const existingPatient = await Patient.findOne({ phone });
 
-    throw new Error("User already exists");
+  if (existingPatient) {
+    throw new Error("Phone number already registered");
   }
 
   // -------------------------
@@ -74,16 +74,16 @@ const registerPatient = async (patientData) => {
   // -------------------------
   // CREATE USER
   // -------------------------
+  const patientId = await generatePatientId();
+
   const user = await User.create({
-    firstName,
-    lastName,
     email,
-    phone,
 
     passwordHash: null,
     temporaryPasswordHash: hashedTempPassword,
 
-    role: "PATIENT",
+    roles: ["PATIENT"],
+    patientId,
     status: "ACTIVE",
     isFirstLogin: true,
   });
@@ -91,10 +91,9 @@ const registerPatient = async (patientData) => {
   // -------------------------
   // CREATE PATIENT
   // -------------------------
-  const patientId = await generatePatientId();
-
   const patient = await Patient.create({
     patientId,
+    userId: user._id,
 
     firstName,
     lastName,
@@ -124,14 +123,13 @@ const registerPatient = async (patientData) => {
 
     insuranceProvider,
     insurancePolicyNumber,
-    insuranceExpiryDate,
-    insuranceCoverageAmount,
+    insuranceExpiryDate: emptyToUndefined(insuranceExpiryDate),
+    insuranceCoverageAmount: emptyToUndefined(insuranceCoverageAmount),
 
     assignedDoctor,
     department,
     patientType,
 
-    user: user._id,
   });
 
   // -------------------------

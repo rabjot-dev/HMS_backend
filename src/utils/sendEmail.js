@@ -11,6 +11,10 @@ const sendEmail = async ({ to, subject, htmlContent }) => {
   try {
     console.log("Sending email...");
 
+    if (!process.env.BREVO_API_KEY || !process.env.SENDER_EMAIL) {
+      throw new Error("Email configuration is missing");
+    }
+
     const sender = {
       email: process.env.SENDER_EMAIL,
       name: "HMS System",

@@ -6,25 +6,33 @@ const createPatientValidation = [
     .trim()
     .notEmpty()
     .withMessage("First name is required")
-    .matches(/^[A-Za-z\s'-]+$/)
-    .withMessage(
-      "First name can contain only letters, spaces, apostrophes and hyphens"
-    ),
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("First name can contain only letters"),
 
   body("lastName")
     .trim()
     .notEmpty()
     .withMessage("Last name is required")
-    .matches(/^[A-Za-z\s'-]+$/)
-    .withMessage(
-      "Last name can contain only letters, spaces, apostrophes and hyphens"
-    ),
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Last name can contain only letters"),
 
   body("dateOfBirth")
     .notEmpty()
     .withMessage("Date of birth is required")
     .isISO8601()
-    .withMessage("Invalid date of birth"),
+    .withMessage("Invalid date of birth")
+    .custom((value) => {
+      const dateOfBirth = new Date(value);
+      const today = new Date();
+
+      today.setHours(23, 59, 59, 999);
+
+      if (dateOfBirth > today) {
+        throw new Error("Date of birth cannot be in the future");
+      }
+
+      return true;
+    }),
 
   body("gender")
     .notEmpty()
@@ -63,19 +71,25 @@ const createPatientValidation = [
     .optional()
     .trim()
     .isLength({ max: 250 })
-    .withMessage("Address cannot exceed 250 characters"),
+    .withMessage("Address cannot exceed 250 characters")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Address can contain only letters"),
 
   body("city")
     .optional()
     .trim()
     .isLength({ max: 100 })
-    .withMessage("City cannot exceed 100 characters"),
+    .withMessage("City cannot exceed 100 characters")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("City can contain only letters"),
 
   body("state")
     .optional()
     .trim()
     .isLength({ max: 100 })
-    .withMessage("State cannot exceed 100 characters"),
+    .withMessage("State cannot exceed 100 characters")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("State can contain only letters"),
 
   body("pincode")
     .optional()
@@ -94,7 +108,9 @@ const createPatientValidation = [
     .isLength({ min: 2, max: 100 })
     .withMessage(
       "Emergency contact name must be between 2 and 100 characters"
-    ),
+    )
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Emergency contact name can contain only letters"),
 
   body("emergencyContactPhone")
     .optional()
@@ -134,18 +150,34 @@ const updatePatientValidation = [
     .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage("First name must be between 2 and 50 characters"),
+    .withMessage("First name must be between 2 and 50 characters")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("First name can contain only letters"),
 
   body("lastName")
     .optional()
     .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage("Last name must be between 2 and 50 characters"),
+    .withMessage("Last name must be between 2 and 50 characters")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Last name can contain only letters"),
 
   body("dateOfBirth")
     .optional()
     .isISO8601()
-    .withMessage("Invalid date of birth"),
+    .withMessage("Invalid date of birth")
+    .custom((value) => {
+      const dateOfBirth = new Date(value);
+      const today = new Date();
+
+      today.setHours(23, 59, 59, 999);
+
+      if (dateOfBirth > today) {
+        throw new Error("Date of birth cannot be in the future");
+      }
+
+      return true;
+    }),
 
   body("gender")
     .optional()
@@ -172,10 +204,44 @@ const updatePatientValidation = [
     .isEmail()
     .withMessage("Invalid email address"),
 
+  body("address")
+    .optional()
+    .trim()
+    .isLength({ max: 250 })
+    .withMessage("Address cannot exceed 250 characters")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Address can contain only letters"),
+
+  body("city")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("City cannot exceed 100 characters")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("City can contain only letters"),
+
+  body("state")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("State cannot exceed 100 characters")
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("State can contain only letters"),
+
   body("pincode")
     .optional()
     .matches(/^\d{6}$/)
     .withMessage("Pincode must be 6 digits"),
+
+  body("emergencyContactName")
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage(
+      "Emergency contact name must be between 2 and 100 characters"
+    )
+    .matches(/^[A-Za-z\s]+$/)
+    .withMessage("Emergency contact name can contain only letters"),
 
   body("emergencyContactPhone")
     .optional()
