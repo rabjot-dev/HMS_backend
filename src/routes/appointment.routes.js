@@ -29,12 +29,7 @@ const roleMiddleware = require("../middleware/role.middleware");
 // =========================
 // DOCTOR DASHBOARD
 // =========================
-router.get(
-  "/doctor-queue",
-  authMiddleware,
-  roleMiddleware("DOCTOR"),
-  getDoctorQueue,
-);
+router.get("/doctor-queue", authMiddleware, roleMiddleware("DOCTOR"), getDoctorQueue);
 
 // =========================
 // SLOT MANAGEMENT
@@ -42,7 +37,7 @@ router.get(
 router.get("/available-slots", authMiddleware, getAvailableSlots);
 
 // =========================
-// APPOINTMENT READ
+// SPECIFIC NAMED ROUTES — must all come BEFORE /:id
 // =========================
 router.get("/", authMiddleware, getAppointments);
 
@@ -52,6 +47,16 @@ router.get(
   roleMiddleware("ADMIN", "RECEPTIONIST"),
   getPendingAppointments,
 );
+
+// IMPORTANT: /patient/:patientId must be before /:id
+// otherwise Express matches "patient" as the :id param
+router.get("/patient/:patientId", authMiddleware, getAppointmentsByPatientId);
+
+// =========================
+// GENERIC /:id ROUTES — always last
+// =========================
+router.get("/:id", authMiddleware, getAppointmentById);
+
 router.put(
   "/:id",
   authMiddleware,
@@ -59,23 +64,6 @@ router.put(
   updatePatientAppointment,
 );
 
-router.get("/:id", authMiddleware, getAppointmentById);
-
-router.get("/patient/:patientId", authMiddleware, getAppointmentsByPatientId);
-
-// =========================
-// BOOK APPOINTMENT (BOTH WEB + MOBILE)
-// =========================
-router.post(
-  "/",
-  authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST", "PATIENT"),
-  bookAppointment,
-);
-
-// =========================
-// ADMIN DIRECT UPDATE (WEB ONLY)
-// =========================
 router.put(
   "/:id/admin-update",
   authMiddleware,
@@ -98,7 +86,17 @@ router.patch(
 );
 
 // =========================
-// DELETE APPOINTMENT (WEB ONLY)
+// BOOK APPOINTMENT
+// =========================
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST", "PATIENT"),
+  bookAppointment,
+);
+
+// =========================
+// DELETE APPOINTMENT
 // =========================
 router.delete(
   "/:id",

@@ -218,10 +218,58 @@ const getMyProfile = async (req, res) => {
     console.error(error);
   }
 };
+const updateMyProfile = async (req, res) => {
+  try {
+    // Fields a patient should NOT be able to change themselves
+    const { status, role, assignedDoctor, userId, ...allowedUpdates } = req.body;
+
+    const patient = await Patient.findOneAndUpdate(
+      { userId: req.user.userId },
+      allowedUpdates,
+      { new: true, runValidators: true }
+    );
+
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient profile not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: patient,
+    });
+  } catch (error) {
+    console.error("UPDATE MY PROFILE ERROR:", error);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "Phone number already exists",
+      });
+    }
+
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+    });
+  }
+};
 module.exports = {
   createPatient,
   getPatients,
   getPatientById,
   updatePatient,
   getMyProfile,
+  updateMyProfile,
 };
+

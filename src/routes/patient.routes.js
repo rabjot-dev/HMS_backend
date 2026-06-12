@@ -8,6 +8,7 @@ const {
   getPatientById,
   updatePatient,
   getMyProfile,
+  updateMyProfile,
 } = require("../controllers/patient.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
@@ -19,6 +20,12 @@ const {
   updatePatientValidation,
 } = require("../validations/patient.validation");
 
+// IMPORTANT: /profile must come BEFORE /:id otherwise Express
+// matches "profile" as an :id parameter
+router.get("/profile", authMiddleware, getMyProfile);
+
+router.put("/profile", authMiddleware, updateMyProfile);
+
 // Register a new patient
 router.post(
   "/",
@@ -29,11 +36,14 @@ router.post(
   createPatient,
 );
 
+
 // Get all patients
 router.get("/", authMiddleware, getPatients);
 
 // Get patient details by ID
 router.get("/:id", authMiddleware, getPatientById);
+
+
 
 // Update patient information
 router.put(
@@ -44,7 +54,5 @@ router.put(
   validateMiddleware,
   updatePatient,
 );
-
-router.get("/profile", authMiddleware, getMyProfile);
 
 module.exports = router;

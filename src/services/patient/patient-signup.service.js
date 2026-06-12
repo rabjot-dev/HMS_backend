@@ -44,6 +44,8 @@ const patientSignup = async (patientData) => {
       phone,
       passwordHash: hashedPassword,
       roles: ["PATIENT"],
+      status: "ACTIVE",
+      isFirstLogin: false,
     });
 
     const user = await userDoc.save();
