@@ -55,6 +55,7 @@ router.put(
   "/profile",
   authMiddleware,
   roleMiddleware("PATIENT"),
+  updatePatientValidation,
   updateProfile
 );
 

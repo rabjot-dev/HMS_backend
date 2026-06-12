@@ -56,6 +56,15 @@ const registerPatient = async (patientData) => {
 
   // Generate unique patient ID
   const patientId = await generatePatientId();
+  if (
+  dateOfBirth &&
+  new Date(dateOfBirth) > new Date()
+) {
+
+  throw new Error(
+    "Date of Birth cannot be in the future"
+  );
+}
 
   // check duplicate 
   const existingUser = await User.findOne({

@@ -5,7 +5,17 @@ const updateMyProfile =
     patientId,
     updateData
   ) => {
+if (
+  updateData.maritalStatus === ""
+) {
+  delete updateData.maritalStatus;
+}
 
+if (
+  updateData.gender === ""
+) {
+  delete updateData.gender;
+}
     const patient =
       await Patient.findByIdAndUpdate(
         patientId,
