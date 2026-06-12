@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
 const generateToken = require("../../utils/generateToken");
+const Patient = require("../../models/Patient");
 
 const loginUser = async (loginData) => {
   const { loginId, password } = loginData;
@@ -75,13 +76,13 @@ const loginUser = async (loginData) => {
   console.log("LOGIN RESPONSE USER:", user.roles);
 
   const roles = user.roles || [];
-
+  const patient = await Patient.findOne({ userId: user._id });
   console.log("TOKEN PAYLOAD ROLES:", roles);
   const tokenPayload = {
     userId: user._id,
     email: user.email,
     employeeId: user.employeeId || null,
-    patientId: user.patientId || null,
+    patientId: patient?._id ?? null,
     roles,
   };
 

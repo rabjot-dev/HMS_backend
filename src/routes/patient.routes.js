@@ -39,7 +39,7 @@ router.get("/:id", authMiddleware, getPatientById);
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  roleMiddleware("ADMIN", "RECEPTIONIST", "PATIENT"),
   updatePatientValidation,
   validateMiddleware,
   updatePatient,

@@ -13,7 +13,10 @@ const bcrypt = require("bcryptjs");
 const login = async (req, res) => {
   try {
     const loginResponse = await loginUser(req.body);
-
+    console.log(
+      "LOGIN SERVICE RESPONSE:",
+      JSON.stringify(loginResponse, null, 2),
+    );
     return res.status(200).json({
       success: true,
       message: "Login successful",

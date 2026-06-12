@@ -83,7 +83,7 @@ const registerPatient = async (patientData) => {
     passwordHash: null,
     temporaryPasswordHash: hashedTempPassword,
 
-    role: "PATIENT",
+    roles: ["PATIENT"],
     status: "ACTIVE",
     isFirstLogin: true,
   });
@@ -95,7 +95,7 @@ const registerPatient = async (patientData) => {
 
   const patient = await Patient.create({
     patientId,
-
+    userId: user._id,
     firstName,
     lastName,
     dateOfBirth,

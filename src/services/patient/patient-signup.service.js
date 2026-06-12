@@ -43,6 +43,8 @@ const patientSignup = async (patientData) => {
       email,
       phone,
       passwordHash: hashedPassword,
+      status: "ACTIVE",
+      isFirstLogin: false,
       roles: ["PATIENT"],
     });
 
