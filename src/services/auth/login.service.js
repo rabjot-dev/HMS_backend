@@ -5,7 +5,7 @@ const generateToken = require("../../utils/generateToken");
 const Patient = require("../../models/Patient");
 
 const loginUser = async (loginData) => {
-  const { loginId, password } = loginData;
+  const { loginId, password, appType } = loginData;
 
   if (!loginId || !password) {
     throw new Error("Login ID and password are required");
@@ -20,6 +20,11 @@ const loginUser = async (loginData) => {
   // -------------------------
   if (isEmailLogin) {
     user = await User.findOne({ email: loginId.toLowerCase() });
+    if (appType === "mobile") {
+      if (!user.roles.includes("PATIENT")) {
+        throw new Error("Only patients are allowed to sign in");
+      }
+    }
   } else {
     const employee = await Employee.findOne({ employeeCode: loginId });
 

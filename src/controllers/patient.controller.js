@@ -153,6 +153,7 @@ const updatePatient = async (req, res) => {
         message: "Invalid patient ID",
       });
     }
+    const { email, ...updateData } = req.body;
 
     const patient = await Patient.findByIdAndUpdate(id, req.body, {
       new: true,
