@@ -8,7 +8,8 @@ const User = require("../../models/User");
 const ROLES = require("../../constants/roles");
 
 const STATUS = require("../../constants/status");
-
+const sendEmail =require("../../utils/sendEmail");
+const patientCreatedTemplate = require("../../templates/patient-created.template");
 const generateTemporaryPassword = require("../../utils/generateTemporaryPassword");
 const registerPatient = async (patientData) => {
   const {
@@ -122,6 +123,7 @@ const temporaryPassword =
     temporaryPassword,
     10,
   );
+  
   await User.create({
   email: email.toLowerCase(),
 
@@ -135,6 +137,31 @@ const temporaryPassword =
 
   status: STATUS.ACTIVE,
 });
+if (patient.email) {
+
+  const htmlContent =
+    patientCreatedTemplate({
+
+      patientName:
+        `${patient.firstName} ${patient.lastName}`,
+
+      email:
+        patient.email,
+
+      temporaryPassword,
+    });
+
+  await sendEmail({
+
+    to: patient.email,
+
+    subject:
+      "Your HMS Account Credentials",
+
+    htmlContent,
+  });
+}
+
   return {
     message: "Patient registered successfully",
     patient,
