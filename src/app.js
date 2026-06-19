@@ -53,12 +53,6 @@ app.use(
   consultationRoutes,
 );
 
-app.use((error, req, res, next) => {
-  return res.status(500).json({
-    success: false,
-    message: error.message || "Internal server error",
-  });
-});
 app.use(errorMiddleware);
 
 module.exports = app;

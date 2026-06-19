@@ -8,6 +8,7 @@ const EMPLOYEE_PREFIX = require("../../constants/employee-prefix");
 
 const generateSequentialId = require("../../utils/generateSequentialId");
 const sendEmail = require("../../utils/sendEmail");
+const ApiError = require("../../utils/ApiError");
 
 const pendingApprovalTemplate = require("../../templates/pendingApprovalTemplate");
 
@@ -35,7 +36,7 @@ const registerEmployeeSelf = async (employeeData) => {
   });
 
   if (existingUser) {
-    throw new Error("Email is already registered");
+    throw new ApiError(409, "Email is already registered", "CONFLICT");
   }
 
   const existingPhone = await Employee.findOne({
@@ -44,7 +45,7 @@ const registerEmployeeSelf = async (employeeData) => {
   });
 
   if (existingPhone) {
-    throw new Error("Phone number is already registered");
+    throw new ApiError(409, "Phone number is already registered", "CONFLICT");
   }
 
   if (
@@ -58,8 +59,10 @@ const registerEmployeeSelf = async (employeeData) => {
       });
 
     if (existingDoctor) {
-      throw new Error(
-        "Medical registration number already exists"
+      throw new ApiError(
+        409,
+        "Medical registration number already exists",
+        "CONFLICT"
       );
     }
   }
@@ -68,7 +71,7 @@ const registerEmployeeSelf = async (employeeData) => {
     EMPLOYEE_PREFIX[designation];
 
   if (!prefix) {
-    throw new Error("Invalid designation");
+    throw new ApiError(400, "Invalid designation", "BAD_REQUEST");
   }
 
   const employeeCode =

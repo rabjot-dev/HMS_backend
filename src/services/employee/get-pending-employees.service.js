@@ -7,9 +7,11 @@ const getPendingEmployeesService =
    return Employee.find({
   status: STATUS.PENDING,
   isDeleted: false,
-}).sort({
+}).select(
+  "employeeCode name email department designation createdAt"
+).sort({
   createdAt: -1,
-});
+}).lean();
   };
 
 module.exports =

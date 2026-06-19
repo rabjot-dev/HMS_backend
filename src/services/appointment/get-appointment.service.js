@@ -1,5 +1,5 @@
-const Consultation =
-  require("../../models/consultation");
+const Appointment =
+  require("../../models/Appointment");
 
 const Patient =
   require("../../models/Patient");
@@ -12,16 +12,19 @@ const {
   buildPaginationMeta,
 } = require("../../utils/pagination");
 
-const getConsultationsService =
+const getAppointmentsService =
   async (
     user,
     query,
   ) => {
     const {
       search,
-      doctor,
-      patient,
       status,
+      doctor,
+      appointmentDate,
+      visitMode,
+      appointmentType,
+      priority,
       page,
       limit,
     } = query;
@@ -32,7 +35,7 @@ const getConsultationsService =
 
     /*
     |--------------------------------------------------------------------------
-    | Doctor Visibility
+    | Role Based Visibility
     |--------------------------------------------------------------------------
     */
 
@@ -45,24 +48,82 @@ const getConsultationsService =
         user.employeeId;
     }
 
+    if (
+      user.roles?.includes(
+        "PATIENT",
+      )
+    ) {
+      filter.patientId =
+        user.patientId;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Filters
     |--------------------------------------------------------------------------
     */
 
+    if (status) {
+      filter.status = status;
+    }
+
     if (doctor) {
       filter.doctorEmployeeId =
         doctor;
     }
 
-    if (patient) {
-      filter.patientId =
-        patient;
+    if (visitMode) {
+      filter.visitMode =
+        visitMode;
     }
 
-    if (status) {
-      filter.status = status;
+    if (
+      appointmentType
+    ) {
+      filter.appointmentType =
+        appointmentType;
+    }
+
+    if (priority) {
+      filter.priority =
+        priority;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Appointment Date
+    |--------------------------------------------------------------------------
+    */
+
+    if (appointmentDate) {
+      const selectedDate =
+        new Date(
+          appointmentDate,
+        );
+
+      selectedDate.setHours(
+        0,
+        0,
+        0,
+        0,
+      );
+
+      const nextDay =
+        new Date(
+          selectedDate,
+        );
+
+      nextDay.setDate(
+        nextDay.getDate() +
+          1,
+      );
+
+      filter.appointmentDate =
+        {
+          $gte:
+            selectedDate,
+          $lt: nextDay,
+        };
     }
 
     /*
@@ -123,12 +184,13 @@ const getConsultationsService =
 
       filter.$or = [
         {
-          diagnosis: {
-            $regex:
-              search,
-            $options:
-              "i",
-          },
+          appointmentId:
+            {
+              $regex:
+                search,
+              $options:
+                "i",
+            },
         },
         {
           patientId: {
@@ -169,12 +231,12 @@ const getConsultationsService =
       );
 
     const total =
-      await Consultation.countDocuments(
+      await Appointment.countDocuments(
         filter,
       );
 
-    const consultations =
-      await Consultation.find(
+    const appointments =
+      await Appointment.find(
         filter,
       )
         .populate({
@@ -197,31 +259,25 @@ const getConsultationsService =
               false,
           },
         })
-        .populate({
-          path:
-            "appointmentId",
-          select:
-            "appointmentId appointmentDate timeSlot status",
-          match: {
-            isDeleted:
-              false,
-          },
-        })
         .select(
           `
           appointmentId
           patientId
           doctorEmployeeId
-          diagnosis
-          symptoms
-          doctorNotes
-          prescriptions
+          appointmentDate
+          timeSlot
           status
+          visitMode
+          appointmentType
+          priority
+          tokenNumber
           createdAt
         `,
         )
         .sort({
-          createdAt: -1,
+          appointmentDate:
+            1,
+          timeSlot: 1,
         })
         .skip(
           pagination.skip,
@@ -233,7 +289,7 @@ const getConsultationsService =
 
     return {
       data:
-        consultations,
+        appointments,
       meta:
         buildPaginationMeta(
           pagination.page,
@@ -244,4 +300,4 @@ const getConsultationsService =
   };
 
 module.exports =
-  getConsultationsService;
+  getAppointmentsService;

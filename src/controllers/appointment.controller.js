@@ -9,7 +9,7 @@ const approveAppointmentService =require( "../services/appointment/approve-appoi
 const rejectAppointmentService =require("../services/appointment/reject-appointment.service");
 const updateMyAppointmentService =require("../services/appointment/update-my-appointment.service");
 const cancelMyAppointmentService =require("../services/appointment/cancel-my-appointment.service");
-
+const getAppointmentsService =require("../services/appointment/get-appointments.service");
 const getAvailableSlots = async (req, res) => {
   try {
     const { doctorId, appointmentDate } = req.query;
@@ -80,41 +80,36 @@ const bookAppointment = async (req, res) => {
   }
 };
 
-const getAppointments = async (req, res) => {
-  try {
-    const filter = {};
-// Only to view appointments related to doctor 
-    if (req.user.roles?.includes("DOCTOR")) {
-      filter.doctorEmployeeId = req.user.employeeId;
+const getAppointments =
+  async (
+    req,
+    res,
+    next,
+  ) => {
+    try {
+      const result =
+        await getAppointmentsService(
+          req.user,
+          req.query,
+        );
+
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message:
+            "Appointments retrieved successfully",
+          data:
+            result.data,
+          meta:
+            result.meta,
+        });
+    } catch (
+      error
+    ) {
+      next(error);
     }
-    // Only patients view there appointments 
-    if (
-  req.user.roles?.includes("PATIENT")) {
-filter.patientId = req.user.patientId;
-}
-
-    const appointments = await Appointment.find(filter)
-      .populate("patientId")
-      .populate("doctorEmployeeId")
-      .sort({
-        appointmentDate: 1,
-        timeSlot: 1,
-      });
-
-    return res.status(200).json({
-      success: true,
-      data: appointments,
-    });
-  } catch (error) {
-    console.error("GET APPOINTMENTS ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve appointments",
-    });
-  }
-};
-
+  };
 const deleteAppointment = async (req, res) => {
   try {
     const { id } = req.params;

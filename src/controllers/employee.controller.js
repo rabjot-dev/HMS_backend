@@ -41,24 +41,31 @@ const createEmployee = async (req, res) => {
 };
 
 // Get all employees
-const getEmployees = async (req, res) => {
-  try {
-    const employees = await getEmployeesService();
+const getEmployees =
+  async (
+    req,
+    res,
+    next,
+  ) => {
+    try {
+      const result =
+        await getEmployeesService(
+          req.query,
+        );
 
-    return res.status(200).json({
-      success: true,
-      message: "Employees retrieved successfully",
-      data: employees,
-    });
-  } catch (error) {
-    console.error("GET EMPLOYEES ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve employees",
-    });
-  }
-};
+      return res.status(200).json({
+        success: true,
+        message:
+          "Employees retrieved successfully",
+        data:
+          result.data,
+        meta:
+          result.meta,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
 // Get employee details by ID
 const getEmployeeById = async (req, res) => {

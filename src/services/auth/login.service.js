@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
 const STATUS = require("../../constants/status");
+const ApiError = require("../../utils/ApiError");
 
 const generateAccessToken = require("../../utils/generateAccessToken");
 const generateRefreshToken = require("../../utils/generateRefreshToken");
@@ -26,7 +27,7 @@ const loginUser = async (loginData) => {
     });
 
     if (!employee) {
-      throw new Error("Invalid credentials");
+      throw new ApiError(401, "Invalid credentials", "UNAUTHORIZED");
     }
 
     user = await User.findOne({
@@ -36,19 +37,19 @@ const loginUser = async (loginData) => {
   }
 
   if (!user) {
-    throw new Error("Invalid credentials");
+    throw new ApiError(401, "Invalid credentials", "UNAUTHORIZED");
   }
 
   if (user.status === STATUS.PENDING) {
-    throw new Error("Your account is pending admin approval");
+    throw new ApiError(403, "Your account is pending admin approval", "FORBIDDEN");
   }
 
   if (user.status === STATUS.REJECTED) {
-    throw new Error("Your registration was rejected");
+    throw new ApiError(403, "Your registration was rejected", "FORBIDDEN");
   }
 
   if (user.status === STATUS.INACTIVE) {
-    throw new Error("Account is inactive");
+    throw new ApiError(403, "Account is inactive", "FORBIDDEN");
   }
 
   let isPasswordValid = false;
@@ -66,7 +67,7 @@ const loginUser = async (loginData) => {
   }
 
   if (!isPasswordValid) {
-    throw new Error("Invalid credentials");
+    throw new ApiError(401, "Invalid credentials", "UNAUTHORIZED");
   }
 
   const tokenPayload = {

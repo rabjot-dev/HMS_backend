@@ -127,24 +127,36 @@ const updateConsultation = async (req, res) => {
   }
 };
 
-const getConsultations = async (req, res) => {
-  try {
-    const consultations = await getConsultationsService();
+const getConsultations =
+  async (
+    req,
+    res,
+    next,
+  ) => {
+    try {
+      const result =
+        await getConsultationsService(
+          req.user,
+          req.query,
+        );
 
-    return res.status(200).json({
-      success: true,
-      message: "Consultations retrieved successfully",
-      data: consultations,
-    });
-  } catch (error) {
-    console.error("GET CONSULTATIONS ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve consultations",
-    });
-  }
-};
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message:
+            "Consultations retrieved successfully",
+          data:
+            result.data,
+          meta:
+            result.meta,
+        });
+    } catch (
+      error
+    ) {
+      next(error);
+    }
+  };
 
 const downloadPrescriptionPdf = async (req, res) => {
   try {

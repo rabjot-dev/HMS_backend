@@ -1,4 +1,5 @@
 const User = require("../../models/User");
+const ApiError = require("../../utils/ApiError");
 
 const getCurrentUser = async (userId) => {
   const user = await User.findOne({
@@ -12,7 +13,7 @@ const getCurrentUser = async (userId) => {
   });
 
   if (!user) {
-    throw new Error("User not found");
+    throw new ApiError(404, "User not found", "NOT_FOUND");
   }
 
   return user;

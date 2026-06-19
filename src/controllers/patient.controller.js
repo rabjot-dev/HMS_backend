@@ -8,7 +8,7 @@ const getMyProfile =require("../services/patient/get-my-profile.service");
 const updateMyProfile =require("../services/patient/update-my-profile.service");
 const getPatientDashboardService =require("../services/patient/get-patient-dashboard.service");
 const deletePatientService = require("../services/patient/delete-patient.service")
-
+const getPatientsService =require( "../services/patient/get-patients.service",);
 // Register a new patient
 const createPatient = async (req, res) => {
   try {
@@ -44,55 +44,32 @@ const createPatient = async (req, res) => {
 };
 
 // Get all patients
-const getPatients = async (req, res) => {
-  try {
-    let patients = [];
+const getPatients =
+  async (
+    req,
+    res,
+    next,
+  ) => {
+    try {
+      const result =
+        await getPatientsService(
+          req.user,
+          req.query,
+        );
 
-    // Doctors can only view patients linked to their appointments
-    if (req.user.roles?.includes("DOCTOR")) {
-      const appointments = await Appointment.find({
-        doctorEmployeeId: req.user.employeeId,
+      return res.status(200).json({
+        success: true,
+        message:
+          "Patients retrieved successfully",
+        data:
+          result.data,
+        meta:
+          result.meta,
       });
-
-      const patientIds = [
-        ...new Set(
-          appointments.map((appointment) =>
-            appointment.patientId.toString()
-          )
-        ),
-      ];
-
-      patients = await Patient.find({
-        _id: {
-          $in: patientIds,
-        },
-      })
-        .populate("assignedDoctor")
-        .sort({
-          createdAt: -1,
-        });
-    } else {
-      patients = await Patient.find()
-        .populate("assignedDoctor")
-        .sort({
-          createdAt: -1,
-        });
+    } catch (error) {
+      next(error);
     }
-
-    return res.status(200).json({
-      success: true,
-      message: "Patients retrieved successfully",
-      data: patients,
-    });
-  } catch (error) {
-    console.error("GET PATIENTS ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve patients",
-    });
-  }
-};
+  };
 
 // Get patient details by ID
 const getPatientById = async (req, res) => {
