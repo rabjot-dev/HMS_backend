@@ -1,51 +1,53 @@
 const Appointment =
-require("../../models/Appointment");
+  require("../../models/Appointment");
+
+const STATUS =
+  require("../../constants/status");
 
 const cancelMyAppointment =
-async (
-  appointmentId,
-  patientId
-) => {
+  async (
+    appointmentId,
+    patientId
+  ) => {
+    const appointment =
+      await Appointment.findOne({
+        _id:
+          appointmentId,
 
-  const appointment =
-    await Appointment.findOne({
+        patientId,
 
-      _id: appointmentId,
+        isDeleted: false,
+      });
 
-      patientId,
-    });
+    if (!appointment) {
+      throw new Error(
+        "Appointment not found"
+      );
+    }
 
-  if (!appointment) {
+    if (
+      [
+        STATUS.COMPLETED,
+        STATUS.REJECTED,
+        STATUS.NO_SHOW,
+        STATUS.IN_CONSULTATION,
+        STATUS.CANCELLED,
+      ].includes(
+        appointment.status
+      )
+    ) {
+      throw new Error(
+        "Appointment cannot be cancelled"
+      );
+    }
 
-    throw new Error(
-      "Appointment not found"
-    );
-  }
+    appointment.status =
+      STATUS.CANCELLED;
 
-  if (
-    [
-      "COMPLETED",
-      "REJECTED",
-      "NO_SHOW",
-      "IN_CONSULTATION",
-      "CANCELLED",
-    ].includes(
-      appointment.status
-    )
-  ) {
+    await appointment.save();
 
-    throw new Error(
-      "Appointment cannot be cancelled"
-    );
-  }
-
-  appointment.status =
-    "CANCELLED";
-
-  await appointment.save();
-
-  return appointment;
-};
+    return appointment;
+  };
 
 module.exports =
   cancelMyAppointment;

@@ -1,5 +1,5 @@
 const express = require("express");
-
+const ROLES = require("../constants/roles")
 const router = express.Router();
 
 const {
@@ -10,6 +10,7 @@ const {
   registerPatientMobile,
   getProfile,
 updateProfile,
+deletePatient,
 getPatientDashboard
 } = require("../controllers/patient.controller");
 
@@ -89,7 +90,15 @@ router.post(
   validateMiddleware,
   registerPatientMobile
 );
-
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN
+  ),
+  deletePatient
+);
 
 
 module.exports = router;

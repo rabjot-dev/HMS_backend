@@ -61,7 +61,6 @@ const employeeSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Medical registration number for doctors
     medicalRegistrationNo: {
       type: String,
       trim: true,
@@ -102,44 +101,92 @@ const employeeSchema = new mongoose.Schema(
       default: 0,
     },
 
-    // Doctor availability configuration
     availability: {
       workingDays: [
         {
           type: String,
         },
       ],
-
       startTime: {
         type: String,
       },
-
       endTime: {
         type: String,
       },
-
       slotDuration: {
         type: Number,
         default: 15,
       },
-
       breakStartTime: {
         type: String,
       },
-
       breakEndTime: {
         type: String,
       },
-
       maxPatientsPerDay: {
         type: Number,
         default: 40,
       },
-
       isAvailable: {
         type: Boolean,
         default: true,
       },
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    approvalDate: {
+      type: Date,
+      default: null,
+    },
+
+    rejectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    rejectedDate: {
+      type: Date,
+      default: null,
+    },
+
+    rejectionReason: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
   {
@@ -148,6 +195,19 @@ const employeeSchema = new mongoose.Schema(
   }
 );
 
-const Employee = mongoose.model("Employee", employeeSchema);
 
-module.exports = Employee;
+employeeSchema.index({
+  status: 1,
+  isDeleted: 1,
+});
+employeeSchema.index({
+  designation: 1,
+  isDeleted: 1,
+});
+
+employeeSchema.index({
+  status: 1,
+  department: 1,
+  isDeleted: 1,
+});
+module.exports = mongoose.model("Employee", employeeSchema);

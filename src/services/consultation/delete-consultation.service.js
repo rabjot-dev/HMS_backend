@@ -1,17 +1,15 @@
 const Consultation =
   require("../../models/consultation");
 
-const updateConsultationService =
+const deleteConsultationService =
   async (
     consultationId,
-    data,
-    updatedBy
+    deletedBy
   ) => {
     const consultation =
       await Consultation.findOne({
         _id:
           consultationId,
-
         isDeleted: false,
       });
 
@@ -23,18 +21,22 @@ const updateConsultationService =
       );
     }
 
-    Object.assign(
-      consultation,
-      data
-    );
+    consultation.isDeleted =
+      true;
 
-    consultation.updatedBy =
-      updatedBy;
+    consultation.deletedBy =
+      deletedBy;
+
+    consultation.deletedAt =
+      new Date();
 
     await consultation.save();
 
-    return consultation;
+    return {
+      message:
+        "Consultation deleted successfully",
+    };
   };
 
 module.exports =
-  updateConsultationService;
+  deleteConsultationService;

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const ROLES = require("../constants/roles")
 const {
   createConsultation,
   getConsultationByAppointment,
@@ -7,6 +8,7 @@ const {
   getConsultations,
   downloadPrescriptionPdf,
   getConsultationById,
+  deleteConsultation
 } = require("../controllers/consultation.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
@@ -59,5 +61,15 @@ router.get(
 );
 
 router.get("/:id", getConsultationById);
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN
+  ),
+  deleteConsultation
+);
 
 module.exports = router;

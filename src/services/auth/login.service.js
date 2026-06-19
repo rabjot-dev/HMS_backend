@@ -2,6 +2,8 @@ const bcrypt = require("bcryptjs");
 
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
+const STATUS = require("../../constants/status");
+
 const generateAccessToken = require("../../utils/generateAccessToken");
 const generateRefreshToken = require("../../utils/generateRefreshToken");
 
@@ -10,16 +12,17 @@ const loginUser = async (loginData) => {
 
   let user = null;
 
-  // Allow login using email or employee code
   const isEmailLogin = loginId.includes("@");
 
   if (isEmailLogin) {
     user = await User.findOne({
       email: loginId.toLowerCase(),
+      isDeleted: false,
     });
   } else {
     const employee = await Employee.findOne({
       employeeCode: loginId,
+      isDeleted: false,
     });
 
     if (!employee) {
@@ -28,30 +31,28 @@ const loginUser = async (loginData) => {
 
     user = await User.findOne({
       employeeId: employee._id,
+      isDeleted: false,
     });
   }
 
-  // Validate user account
   if (!user) {
     throw new Error("Invalid credentials");
   }
 
-  // Check account status
-  if (user.status === "PENDING") {
+  if (user.status === STATUS.PENDING) {
     throw new Error("Your account is pending admin approval");
   }
 
-  if (user.status === "REJECTED") {
+  if (user.status === STATUS.REJECTED) {
     throw new Error("Your registration was rejected");
   }
 
-  if (user.status === "INACTIVE") {
+  if (user.status === STATUS.INACTIVE) {
     throw new Error("Account is inactive");
   }
 
   let isPasswordValid = false;
 
-  // Validate password based on login stage
   if (user.isFirstLogin) {
     isPasswordValid = await bcrypt.compare(
       password,
@@ -64,12 +65,10 @@ const loginUser = async (loginData) => {
     );
   }
 
-  // Reject invalid password
   if (!isPasswordValid) {
     throw new Error("Invalid credentials");
   }
 
-  // Generate JWT token
   const tokenPayload = {
     userId: user._id,
     employeeId: user.employeeId,
@@ -77,22 +76,22 @@ const loginUser = async (loginData) => {
     roles: user.roles,
   };
 
-const accessToken = generateAccessToken(tokenPayload);
+  const accessToken =
+    generateAccessToken(tokenPayload);
 
-const refreshToken = generateRefreshToken(tokenPayload);
+  const refreshToken =
+    generateRefreshToken(tokenPayload);
 
-// Save refresh token in DB
-user.refreshToken = refreshToken;
+  user.refreshToken = refreshToken;
+  user.lastLoginAt = new Date();
 
-user.lastLoginAt = new Date();
+  await user.save();
 
-await user.save();
-
-return {
-  accessToken,
-  refreshToken,
-  user
-};
+  return {
+    accessToken,
+    refreshToken,
+    user,
+  };
 };
 
 module.exports = loginUser;

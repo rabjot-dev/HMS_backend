@@ -1,39 +1,46 @@
-const Patient = require("../../models/Patient");
+const Patient =
+  require("../../models/Patient");
 
 const updateMyProfile =
   async (
     patientId,
-    updateData
+    updateData,
+    updatedBy
   ) => {
-if (
-  updateData.maritalStatus === ""
-) {
-  delete updateData.maritalStatus;
-}
+    if (
+      updateData.maritalStatus ===
+      ""
+    ) {
+      delete updateData.maritalStatus;
+    }
 
-if (
-  updateData.gender === ""
-) {
-  delete updateData.gender;
-}
+    if (
+      updateData.gender === ""
+    ) {
+      delete updateData.gender;
+    }
+
     const patient =
-      await Patient.findByIdAndUpdate(
-        patientId,
-
-        updateData,
-
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
+      await Patient.findOne({
+        _id: patientId,
+        isDeleted: false,
+      });
 
     if (!patient) {
-
       throw new Error(
         "Patient not found"
       );
     }
+
+    Object.assign(
+      patient,
+      updateData
+    );
+
+    patient.updatedBy =
+      updatedBy;
+
+    await patient.save();
 
     return patient;
   };

@@ -1,46 +1,83 @@
-const Consultation = require("../../models/consultation");
-const Appointment = require("../../models/appointment");
+const Consultation =
+  require("../../models/consultation");
 
-const createConsultationService = async (data) => {
-  const {
-    appointmentId,
-    diagnosis,
-    symptoms,
-    doctorNotes,
-    vitals,
-    prescriptions,
-  } = data;
+const Appointment =
+  require("../../models/Appointment");
 
-  const existingConsultation = await Consultation.findOne({
-    appointmentId,
-  });
+const STATUS =
+  require("../../constants/status");
 
-  if (existingConsultation) {
-    throw new Error("Consultation already exists");
-  }
+const createConsultationService =
+  async (
+    data,
+    createdBy
+  ) => {
+    const {
+      appointmentId,
+      diagnosis,
+      symptoms,
+      doctorNotes,
+      vitals,
+      prescriptions,
+    } = data;
 
-  const appointment = await Appointment.findById(appointmentId);
+    const existingConsultation =
+      await Consultation.findOne({
+        appointmentId,
+        isDeleted: false,
+      });
 
-  if (!appointment) {
-    throw new Error("Appointment not found");
-  }
+    if (
+      existingConsultation
+    ) {
+      throw new Error(
+        "Consultation already exists"
+      );
+    }
 
-  const consultation = await Consultation.create({
-    appointmentId,
-    patientId: appointment.patientId,
-    doctorEmployeeId: appointment.doctorEmployeeId,
-    diagnosis,
-    symptoms,
-    doctorNotes,
-    vitals,
-    prescriptions,
-  });
+    const appointment =
+      await Appointment.findOne({
+        _id:
+          appointmentId,
 
-  await Appointment.findByIdAndUpdate(appointmentId, {
-    status: "COMPLETED",
-  });
+        isDeleted: false,
+      });
 
-  return consultation;
-};
+    if (!appointment) {
+      throw new Error(
+        "Appointment not found"
+      );
+    }
 
-module.exports = createConsultationService;
+    const consultation =
+      await Consultation.create({
+        appointmentId,
+
+        patientId:
+          appointment.patientId,
+
+        doctorEmployeeId:
+          appointment.doctorEmployeeId,
+
+        diagnosis,
+        symptoms,
+        doctorNotes,
+        vitals,
+        prescriptions,
+
+        createdBy,
+      });
+
+    appointment.status =
+      STATUS.COMPLETED;
+
+    appointment.updatedBy =
+      createdBy;
+
+    await appointment.save();
+
+    return consultation;
+  };
+
+module.exports =
+  createConsultationService;

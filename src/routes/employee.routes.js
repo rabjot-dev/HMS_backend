@@ -3,7 +3,7 @@ const express = require("express");
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
-
+const ROLES= require("../constants/roles")
 const {
   registerEmployeeValidation,
 } = require("../validations/employee.validation");
@@ -21,6 +21,7 @@ const {
   getDoctorAvailability,
   approveEmployee,
   rejectEmployee,
+  deleteEmployee
 } = require("../controllers/employee.controller");
 
 const router = express.Router();
@@ -114,6 +115,15 @@ router.patch(
   authMiddleware,
   roleMiddleware("ADMIN"),
   activateEmployee
+);
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN
+  ),
+  deleteEmployee
 );
 
 module.exports = router;

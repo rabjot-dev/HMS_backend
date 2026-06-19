@@ -1,18 +1,26 @@
-const Appointment =require("../../models/Appointment");
+const Appointment = require("../../models/Appointment");
 
 const getMyAppointments =
-async (
-  patientId
-) => {
-return Appointment.find({
-    patientId,
-  }).populate({
-  path: "doctorEmployeeId",
-  select: "name department specialization",
-})
-    .sort({
-      appointmentDate: -1,
-    });
-};
+  async (patientId) => {
+    return Appointment.find({
+      patientId,
+      isDeleted: false,
+    })
+      .populate({
+        path:
+          "doctorEmployeeId",
 
-module.exports = getMyAppointments;
+        select:
+          "name department specialization",
+
+        match: {
+          isDeleted: false,
+        },
+      })
+      .sort({
+        appointmentDate: -1,
+      });
+  };
+
+module.exports =
+  getMyAppointments;

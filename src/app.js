@@ -7,7 +7,7 @@ const appointmentRoutes = require("./routes/appointment.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const consultationRoutes = require("./routes/consultation.routes");
 const patientRoutes = require("./routes/patient.routes");
-
+const errorMiddleware =require("./middleware/error.middleware");
 const cors = require("cors");
 const app = express();
 app.disable('x-powered-by');
@@ -59,5 +59,6 @@ app.use((error, req, res, next) => {
     message: error.message || "Internal server error",
   });
 });
+app.use(errorMiddleware);
 
 module.exports = app;

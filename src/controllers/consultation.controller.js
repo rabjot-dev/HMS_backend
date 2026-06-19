@@ -6,7 +6,7 @@ const getConsultationByAppointmentService = require("../services/consultation/ge
 const updateConsultationService = require("../services/consultation/update-consultation.service");
 const getConsultationsService = require("../services/consultation/get-consultations.service");
 const getPrescriptionDataService = require("../services/consultation/download-prescription-pdf.service");
-
+const deleteConsultationService = require("../services/consultation/delete-consultation.service")
 const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
 
 const createConsultation = async (req, res) => {
@@ -211,6 +211,27 @@ const getConsultationById = async (req, res) => {
     });
   }
 };
+const deleteConsultation =
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const result =
+        await deleteConsultationService(
+          req.params.id,
+          req.user.userId
+        );
+
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
 module.exports = {
   createConsultation,
@@ -219,4 +240,5 @@ module.exports = {
   updateConsultation,
   getConsultations,
   downloadPrescriptionPdf,
+  deleteConsultation
 };

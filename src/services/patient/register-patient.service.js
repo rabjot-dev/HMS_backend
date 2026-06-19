@@ -69,7 +69,7 @@ const registerPatient = async (patientData) => {
 
   // check duplicate 
   const existingUser = await User.findOne({
-  email: email.toLowerCase(),
+  email: email.toLowerCase(),isDeleted:false,
 });
 
 if (existingUser) {
@@ -114,6 +114,7 @@ if (existingUser) {
     assignedDoctor,
     department,
     patientType,
+    createdBy: null,
   });
 
 const temporaryPassword =

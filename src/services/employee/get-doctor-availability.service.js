@@ -3,11 +3,11 @@ const User = require("../../models/User");
 
 const getDoctorAvailabilityService =
   async (userId) => {
-
     const user =
-      await User.findById(
-        userId
-      );
+      await User.findOne({
+        _id: userId,
+        isDeleted: false,
+      });
 
     if (!user) {
       throw new Error(
@@ -16,9 +16,10 @@ const getDoctorAvailabilityService =
     }
 
     const doctor =
-      await Employee.findById(
-        user.employeeId
-      );
+      await Employee.findOne({
+        _id: user.employeeId,
+        isDeleted: false,
+      });
 
     if (!doctor) {
       throw new Error(

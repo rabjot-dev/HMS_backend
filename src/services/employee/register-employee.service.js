@@ -35,13 +35,13 @@ const registerEmployee = async (employeeData) => {
     breakEndTime,
     maxPatientsPerDay,
     securityQuestion,
-    securityAnswer,
+    securityAnswer: hashedSecurityAnswer,
     role,
   } = employeeData;
 
   // Check if email is already in use
   const existingUser = await User.findOne({
-    email: email.toLowerCase(),
+    email: email.toLowerCase(),isDeleted:false,
   });
 
   if (existingUser) {
@@ -50,7 +50,7 @@ const registerEmployee = async (employeeData) => {
 
   // Check if phone number is already in use
   const existingPhone = await Employee.findOne({
-    phone,
+    phone,isDeleted:false
   });
 
   if (existingPhone) {
@@ -60,7 +60,7 @@ const registerEmployee = async (employeeData) => {
   // Validate doctor's registration number
   if (designation === "DOCTOR") {
     const existingDoctor = await Employee.findOne({
-      medicalRegistrationNo,
+      medicalRegistrationNo,isDeleted:false
     });
 
     if (existingDoctor) {
@@ -101,7 +101,7 @@ const registerEmployee = async (employeeData) => {
       breakEndTime,
       maxPatientsPerDay: maxPatientsPerDay || 40,
     },
-    status: STATUS.ACTIVE,
+    status: STATUS.ACTIVE, createdBy:req.user.userId
   });
 
   // Generate temporary password for first login

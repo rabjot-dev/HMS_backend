@@ -7,7 +7,7 @@ const selfRegisterPatient = require( "../services/patient/self-register-patient.
 const getMyProfile =require("../services/patient/get-my-profile.service");
 const updateMyProfile =require("../services/patient/update-my-profile.service");
 const getPatientDashboardService =require("../services/patient/get-patient-dashboard.service");
-
+const deletePatientService = require("../services/patient/delete-patient.service")
 
 // Register a new patient
 const createPatient = async (req, res) => {
@@ -316,7 +316,27 @@ async (
     });
   }
 };
+const deletePatient =
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const result =
+        await deletePatientService(
+          req.params.id,
+          req.user.userId
+        );
 
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 module.exports = {
   createPatient,
   getPatients,
@@ -326,5 +346,6 @@ module.exports = {
   getProfile,
   updateProfile,
   getPatientDashboard,
+  deletePatient,
 
 };

@@ -1,17 +1,31 @@
 const Appointment = require("../../models/Appointment");
 const Patient = require("../../models/Patient");
-
+const STATUS = require("../../constants/status");
 const getReceptionistStatsService = async () => {
-  const todayAppointments = await Appointment.countDocuments();
-
-  const totalPatients = await Patient.countDocuments();
-
-  const checkedInPatients = await Appointment.countDocuments({
-    status: "IN_CONSULTATION",
+ const todayAppointments =
+  await Appointment.countDocuments({
+    isDeleted: false,
   });
 
-  const pendingAppointments = await Appointment.countDocuments({
-    status: "BOOKED",
+const totalPatients =
+  await Patient.countDocuments({
+    isDeleted: false,
+  });
+
+const checkedInPatients =
+  await Appointment.countDocuments({
+    status:
+      STATUS.IN_CONSULTATION,
+
+    isDeleted: false,
+  });
+
+const pendingAppointments =
+  await Appointment.countDocuments({
+    status:
+      STATUS.BOOKED,
+
+    isDeleted: false,
   });
 
   return {

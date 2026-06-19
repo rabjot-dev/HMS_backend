@@ -97,12 +97,57 @@ const consultationSchema = new mongoose.Schema(
       enum: ["IN_PROGRESS", "COMPLETED"],
       default: "IN_PROGRESS",
     },
+    createdBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+updatedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+isDeleted: {
+  type: Boolean,
+  default: false,
+},
+
+deletedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+deletedAt: {
+  type: Date,
+  default: null,
+},
   },
   {
     timestamps: true,
     versionKey: false,
   }
 );
+consultationSchema.index({
+  patientId: 1,
+  isDeleted: 1,
+});
+
+consultationSchema.index({
+  appointmentId: 1,
+  isDeleted: 1,
+});
+consultationSchema.index({
+  doctorEmployeeId: 1,
+  isDeleted: 1,
+});
+
+consultationSchema.index({
+  status: 1,
+  isDeleted: 1,
+});
 
 const Consultation = mongoose.model(
   "Consultation",

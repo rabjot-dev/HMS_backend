@@ -1,85 +1,79 @@
-const Patient =
-require("../../models/Patient");
+const Patient = require("../../models/Patient");
+const Appointment = require("../../models/Appointment");
+const STATUS = require("../../constants/status");
 
-const Appointment =
-require("../../models/Appointment");
-
-const getPatientDashboard =
-async (patientId) => {
-
+const getPatientDashboard = async (
+  patientId
+) => {
   const patient =
-    await Patient.findById(
-      patientId
-    );
+    await Patient.findOne({
+      _id: patientId,
+      isDeleted: false,
+    });
 
   if (!patient) {
-
     throw new Error(
       "Patient not found"
     );
   }
 
+  const baseFilter = {
+    patientId,
+    isDeleted: false,
+  };
+
   const pendingCount =
     await Appointment.countDocuments({
-
-      patientId,
-
-      status:
-        "PENDING",
+      ...baseFilter,
+      status: STATUS.PENDING,
     });
 
   const bookedCount =
     await Appointment.countDocuments({
-
-      patientId,
-
-      status:
-        "BOOKED",
+      ...baseFilter,
+      status: STATUS.BOOKED,
     });
 
   const completedCount =
     await Appointment.countDocuments({
-
-      patientId,
-
-      status:
-        "COMPLETED",
+      ...baseFilter,
+      status: STATUS.COMPLETED,
     });
 
   const cancelledCount =
     await Appointment.countDocuments({
-
-      patientId,
-
-      status:
-        "CANCELLED",
+      ...baseFilter,
+      status: STATUS.CANCELLED,
     });
 
   const upcomingAppointment =
     await Appointment.findOne({
-
-      patientId,
+      ...baseFilter,
 
       status: {
         $in: [
-          "PENDING",
-          "BOOKED",
+          STATUS.PENDING,
+          STATUS.BOOKED,
         ],
       },
     })
+      .populate({
+        path:
+          "doctorEmployeeId",
 
-      .populate(
-        "doctorEmployeeId"
-      )
+        select:
+          "name department specialization",
 
+        match: {
+          isDeleted: false,
+        },
+      })
       .sort({
         appointmentDate: 1,
       });
 
   return {
-
     patient: {
-
       firstName:
         patient.firstName,
 
@@ -91,7 +85,6 @@ async (patientId) => {
     },
 
     appointmentSummary: {
-
       pending:
         pendingCount,
 

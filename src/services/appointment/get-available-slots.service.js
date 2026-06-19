@@ -20,7 +20,11 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   }
 
   // Find doctor record
-  const doctor = await Employee.findById(doctorId);
+const doctor =
+  await Employee.findOne({
+    _id: doctorId,
+    isDeleted: false,
+  });
 
   if (!doctor) {
     throw new Error("Doctor not found");
@@ -60,17 +64,28 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   nextDay.setDate(nextDay.getDate() + 1);
 
   // Fetch existing appointments
-  const bookedAppointments = await Appointment.find({
-    doctorEmployeeId: doctorId,
+const bookedAppointments =
+  await Appointment.find({
+    doctorEmployeeId:
+      doctorId,
+
     appointmentDate: {
-      $gte: normalizedDate,
+      $gte:
+        normalizedDate,
+
       $lt: nextDay,
     },
-    status: {
-      $nin: ["CANCELLED", "NO_SHOW"],
-    },
-  });
 
+    status: {
+      $nin: [
+        STATUS.CANCELLED,
+        STATUS.REJECTED,
+        STATUS.NO_SHOW,
+      ],
+    },
+
+    isDeleted: false,
+  });
   // Create set of booked time slots
   const bookedSlots = new Set(
     bookedAppointments.map((appointment) => appointment.timeSlot)

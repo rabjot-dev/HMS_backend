@@ -2,18 +2,33 @@ const Employee = require("../../models/Employee");
 const STATUS = require("../../constants/status");
 
 const getAdminStatsService = async () => {
-  const totalEmployees = await Employee.countDocuments();
+  const filter = {
+  isDeleted: false,
+};
+const totalEmployees =
+  await Employee.countDocuments(
+    filter
+  );
 
-  const totalDoctors = await Employee.countDocuments({
-    designation: "DOCTOR",
+const totalDoctors =
+  await Employee.countDocuments({
+    ...filter,
+    designation:
+      "DOCTOR",
   });
 
-  const totalNurses = await Employee.countDocuments({
-    designation: "NURSE",
+const totalNurses =
+  await Employee.countDocuments({
+    ...filter,
+    designation:
+      "NURSE",
   });
 
-  const pendingRequests = await Employee.countDocuments({
-    status: STATUS.PENDING,
+const pendingRequests =
+  await Employee.countDocuments({
+    ...filter,
+    status:
+      STATUS.PENDING,
   });
 
   return {

@@ -1,27 +1,23 @@
-const Appointment =
-require("../../models/Appointment");
-const Patient =
-require("../../models/Patient");
+const Appointment = require("../../models/Appointment");
+const Patient = require("../../models/Patient");
+const Employee = require("../../models/Employee");
 
-const Employee =
-require("../../models/Employee");
+const STATUS = require("../../constants/status");
 
-const sendEmail =
-require("../../utils/sendEmail");
+const sendEmail = require("../../utils/sendEmail");
+const appointmentApprovedTemplate = require("../../templates/appointment-approved.template");
 
-const appointmentApprovedTemplate =
-require("../../templates/appointment-approved.template");
-
-const approveAppointment =
-async (appointmentId) => {
-
+const approveAppointment = async (
+  appointmentId,
+  approvedBy
+) => {
   const appointment =
-    await Appointment.findById(
-      appointmentId
-    );
+    await Appointment.findOne({
+      _id: appointmentId,
+      isDeleted: false,
+    });
 
   if (!appointment) {
-
     throw new Error(
       "Appointment not found"
     );
@@ -29,19 +25,15 @@ async (appointmentId) => {
 
   if (
     appointment.status !==
-    "PENDING"
+    STATUS.PENDING
   ) {
-
     throw new Error(
       "Only pending appointments can be approved"
     );
   }
 
- // Generate Token number
- 
   const todayAppointmentsCount =
     await Appointment.countDocuments({
-
       doctorEmployeeId:
         appointment.doctorEmployeeId,
 
@@ -50,62 +42,75 @@ async (appointmentId) => {
 
       status: {
         $in: [
-          "BOOKED",
-          "IN_CONSULTATION",
-          "COMPLETED",
+          STATUS.BOOKED,
+          STATUS.IN_CONSULTATION,
+          STATUS.COMPLETED,
         ],
       },
+
+      isDeleted: false,
     });
 
   appointment.tokenNumber =
     todayAppointmentsCount + 1;
 
   appointment.status =
-    "BOOKED";
+    STATUS.BOOKED;
+
+  appointment.approvedBy =
+    approvedBy;
+
+  appointment.approvalDate =
+    new Date();
+
+  appointment.rejectedBy = null;
+  appointment.rejectedDate = null;
+  appointment.rejectionReason = null;
 
   await appointment.save();
+
   const patient =
-await Patient.findById(
-  appointment.patientId
-);
-
-const doctor =
-await Employee.findById(
-  appointment.doctorEmployeeId
-);
-
-if (patient?.email) {
-
-  const htmlContent =
-    appointmentApprovedTemplate({
-
-      patientName:
-        `${patient.firstName} ${patient.lastName}`,
-
-      doctorName:
-        doctor?.name,
-
-      appointmentDate:
-        appointment.appointmentDate
-          .toISOString()
-          .split("T")[0],
-
-      appointmentTime:
-        appointment.timeSlot,
-
-      tokenNumber:
-        appointment.tokenNumber,
+    await Patient.findOne({
+      _id:
+        appointment.patientId,
+      isDeleted: false,
     });
 
-  await sendEmail({
-    to: patient.email,
+  const doctor =
+    await Employee.findOne({
+      _id:
+        appointment.doctorEmployeeId,
+      isDeleted: false,
+    });
 
-    subject:
-      "Appointment Approved",
+  if (patient?.email) {
+    const htmlContent =
+      appointmentApprovedTemplate({
+        patientName:
+          `${patient.firstName} ${patient.lastName}`,
 
-    htmlContent,
-  });
-}
+        doctorName:
+          doctor?.name,
+
+        appointmentDate:
+          appointment.appointmentDate
+            .toISOString()
+            .split("T")[0],
+
+        appointmentTime:
+          appointment.timeSlot,
+
+        tokenNumber:
+          appointment.tokenNumber,
+      });
+
+    await sendEmail({
+      to: patient.email,
+      subject:
+        "Appointment Approved",
+      htmlContent,
+    });
+  }
 
   return appointment;
 };

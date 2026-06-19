@@ -1,7 +1,21 @@
 const Employee = require("../../models/Employee");
 
-const getEmployeeByIdService = async (id) => {
-  return Employee.findById(id);
-};
+const getEmployeeByIdService =
+  async (id) => {
+    const employee =
+      await Employee.findOne({
+        _id: id,
+        isDeleted: false,
+      });
 
-module.exports = getEmployeeByIdService;
+    if (!employee) {
+      throw new Error(
+        "Employee not found"
+      );
+    }
+
+    return employee;
+  };
+
+module.exports =
+  getEmployeeByIdService;

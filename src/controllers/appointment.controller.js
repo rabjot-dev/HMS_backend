@@ -412,14 +412,12 @@ async (req, res) => {
     });
 
   } catch (error) {
-
-    return res.status(500).json({
-      success: false,
-
-      message:
-        "Failed to fetch appointments",
-    });
-  }
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch appointments",
+      });
+    }
 };
 
 // Pending Appointments
@@ -438,12 +436,10 @@ async (req, res) => {
     });
 
   } catch (error) {
-
+    console.error(error);
     return res.status(500).json({
       success: false,
-
-      message:
-        "Failed to fetch pending appointments",
+      message: error.message || "Failed to fetch pending appointments",
     });
   }
 };

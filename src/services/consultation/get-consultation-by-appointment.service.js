@@ -1,18 +1,53 @@
-const Consultation = require("../../models/consultation");
+const Consultation =
+  require("../../models/consultation");
 
-const getConsultationByAppointmentService = async (appointmentId) => {
-  const consultation = await Consultation.findOne({
-    appointmentId,
-  })
-    .populate("patientId")
-    .populate("doctorEmployeeId")
-    .populate("appointmentId");
+const getConsultationByAppointmentService =
+  async (
+    appointmentId
+  ) => {
+    const consultation =
+      await Consultation.findOne({
+        appointmentId,
+        isDeleted: false,
+      })
+        .populate({
+          path:
+            "patientId",
 
-  if (!consultation) {
-    throw new Error("Consultation not found");
-  }
+          match: {
+            isDeleted:
+              false,
+          },
+        })
+        .populate({
+          path:
+            "doctorEmployeeId",
 
-  return consultation;
-};
+          match: {
+            isDeleted:
+              false,
+          },
+        })
+        .populate({
+          path:
+            "appointmentId",
 
-module.exports = getConsultationByAppointmentService;
+          match: {
+            isDeleted:
+              false,
+          },
+        });
+
+    if (
+      !consultation
+    ) {
+      throw new Error(
+        "Consultation not found"
+      );
+    }
+
+    return consultation;
+  };
+
+module.exports =
+  getConsultationByAppointmentService;

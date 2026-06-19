@@ -4,13 +4,14 @@ const User = require("../../models/User");
 const updateDoctorAvailabilityService =
   async (
     userId,
-    availabilityData
+    availabilityData,
+    updatedBy
   ) => {
-
     const user =
-      await User.findById(
-        userId
-      );
+      await User.findOne({
+        _id: userId,
+        isDeleted: false,
+      });
 
     if (!user) {
       throw new Error(
@@ -19,25 +20,25 @@ const updateDoctorAvailabilityService =
     }
 
     const doctor =
-      await Employee.findByIdAndUpdate(
-        user.employeeId,
-        {
-          $set: {
-            availability:
-              availabilityData,
-          },
-        },
-        {
-          returnDocument:
-            "after",
-        }
-      );
+      await Employee.findOne({
+        _id:
+          user.employeeId,
+        isDeleted: false,
+      });
 
     if (!doctor) {
       throw new Error(
         "Doctor not found"
       );
     }
+
+    doctor.availability =
+      availabilityData;
+
+    doctor.updatedBy =
+      updatedBy;
+
+    await doctor.save();
 
     return doctor;
   };

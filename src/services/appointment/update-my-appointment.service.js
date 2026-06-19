@@ -13,9 +13,12 @@ const updateMyAppointment = async (
   } = updateData;
 
   const appointment =
-    await Appointment.findById(
-      appointmentId
-    );
+  await Appointment.findOne({
+    _id:
+      appointmentId,
+
+    isDeleted: false,
+  });
 
   if (!appointment) {
     throw new Error(
@@ -34,7 +37,7 @@ const updateMyAppointment = async (
 
   if (
     appointment.status !==
-    "PENDING"
+   STATUS.PENDING
   ) {
     throw new Error(
       "Only pending appointments can be modified"
@@ -110,13 +113,14 @@ const updateMyAppointment = async (
           nextDay,
       },
 
-      status: {
-        $nin: [
-          "CANCELLED",
-          "REJECTED",
-          "NO_SHOW",
-        ],
-      },
+     status: {
+  $nin: [
+    STATUS.CANCELLED,
+    STATUS.REJECTED,
+    STATUS.NO_SHOW,
+  ],
+},
+      isDeleted: false,
     });
 
   if (

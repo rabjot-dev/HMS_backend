@@ -31,14 +31,22 @@ const bookAppointment = async (appointmentData, user) => {
   }
 
   // Verify patient exists
-  const patient = await Patient.findById(patientId);
+const patient =
+  await Patient.findOne({
+    _id: patientId,
+    isDeleted: false,
+  });
 
   if (!patient) {
     throw new Error("Patient not found");
   }
 
   // Verify doctor exists
-  const doctor = await Employee.findById(doctorId);
+const doctor =
+  await Employee.findOne({
+    _id: doctorId,
+    isDeleted: false,
+  });
 
   if (!doctor) {
     throw new Error("Doctor not found");
@@ -88,6 +96,7 @@ const bookAppointment = async (appointmentData, user) => {
     status: {
       $ne: "CANCELLED",
     },
+    isDeleted: false
   });
 
   if (totalAppointments >= doctor?.availability?.maxPatientsPerDay) {
@@ -104,7 +113,8 @@ const bookAppointment = async (appointmentData, user) => {
     },
     status: {
       $nin: ["CANCELLED", "NO_SHOW"],
-    },
+    },isDeleted: false,
+
   });
 
   if (existingAppointment) {
@@ -138,6 +148,7 @@ const bookAppointment = async (appointmentData, user) => {
       $gte: normalizedDate,
       $lt: nextDay,
     },
+    isDeleted:false,
   });
 
   const tokenNumber = todayAppointmentsCount + 1;
@@ -157,7 +168,7 @@ const bookAppointment = async (appointmentData, user) => {
     reason,
     notes,
     tokenNumber,
-    createdByEmployeeId: user.userId,
+    createdByEmployeeId: user.EmployeeId,
     status: "BOOKED",
   });
 

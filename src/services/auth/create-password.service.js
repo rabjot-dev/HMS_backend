@@ -14,16 +14,17 @@ const createEmployeePassword = async (passwordData) => {
 
   let user = null;
 
-  // Allow login using email or employee code
   const isEmailLogin = loginId.includes("@");
 
   if (isEmailLogin) {
     user = await User.findOne({
       email: loginId.toLowerCase(),
+      isDeleted: false,
     });
   } else {
     const employee = await Employee.findOne({
       employeeCode: loginId,
+      isDeleted: false,
     });
 
     if (!employee) {
@@ -32,20 +33,18 @@ const createEmployeePassword = async (passwordData) => {
 
     user = await User.findOne({
       employeeId: employee._id,
+      isDeleted: false,
     });
   }
 
-  // Ensure user account exists
   if (!user) {
     throw new Error("User not found");
   }
 
-  // Prevent password recreation after first login
   if (!user.isFirstLogin) {
     throw new Error("Password is already created for this account");
   }
 
-  // Verify temporary password
   const isTemporaryPasswordValid = await bcrypt.compare(
     temporaryPassword,
     user.temporaryPasswordHash
@@ -55,7 +54,6 @@ const createEmployeePassword = async (passwordData) => {
     throw new Error("Invalid temporary password");
   }
 
-  // Hash password and security answer
   const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
   const hashedSecurityAnswer = await bcrypt.hash(
@@ -63,7 +61,6 @@ const createEmployeePassword = async (passwordData) => {
     10
   );
 
-  // Update account credentials
   user.passwordHash = hashedNewPassword;
   user.temporaryPasswordHash = null;
   user.isFirstLogin = false;

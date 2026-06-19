@@ -102,13 +102,88 @@ const appointmentSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    updatedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+approvedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+approvalDate: {
+  type: Date,
+  default: null,
+},
+
+rejectedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+rejectedDate: {
+  type: Date,
+  default: null,
+},
+
+rejectionReason: {
+  type: String,
+  trim: true,
+  default: null,
+},
+
+isDeleted: {
+  type: Boolean,
+  default: false,
+},
+
+deletedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+deletedAt: {
+  type: Date,
+  default: null,
+},
   },
   {
     timestamps: true,
     versionKey: false,
   }
 );
+appointmentSchema.index({
+  status: 1,
+  isDeleted: 1,
+});
 
+appointmentSchema.index({
+  patientId: 1,
+  status: 1,
+  isDeleted: 1,
+});
+
+appointmentSchema.index({
+  doctorEmployeeId: 1,
+  appointmentDate: 1,
+  isDeleted: 1,
+});
+appointmentSchema.index({
+  status: 1,
+  appointmentDate: 1,
+  isDeleted: 1,
+});
+
+appointmentSchema.index({
+  doctorEmployeeId: 1,
+  status: 1,
+  isDeleted: 1,
+});
 const Appointment =
   mongoose.models.Appointment ||
   mongoose.model("Appointment", appointmentSchema);

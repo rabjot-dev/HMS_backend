@@ -12,7 +12,7 @@ const rejectEmployeeService = require("../services/employee/reject-employee.serv
 const getDoctorsService = require("../services/employee/get-doctors.service");
 const updateDoctorAvailabilityService = require("../services/employee/update-doctor-availability.service");
 const getDoctorAvailabilityService = require("../services/employee/get-doctor-availability.service");
-
+const deleteEmployeeService = require("../services/employee/delete-employee.service");
 // Create a new employee
 const createEmployee = async (req, res) => {
   try {
@@ -300,6 +300,28 @@ const getDoctorAvailability = async (req, res) => {
     });
   }
 };
+// delete employee 
+const deleteEmployee =
+  async (
+    req,
+    res,
+    next
+  ) => {
+    try {
+      const result =
+        await deleteEmployeeService(
+          req.params.id,
+          req.user.userId
+        );
+
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
 module.exports = {
   createEmployee,
@@ -314,4 +336,5 @@ module.exports = {
   getDoctors,
   updateDoctorAvailability,
   getDoctorAvailability,
+  deleteEmployee,
 };
