@@ -9,7 +9,8 @@ const roleMiddleware =
       next,
     ) => {
       const userRoles =
-        req.user.roles;
+        req.user?.roles ||
+        [];
 
       const hasPermission =
         allowedRoles.some(

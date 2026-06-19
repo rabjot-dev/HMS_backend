@@ -8,7 +8,8 @@
     "test": "NODE_ENV=test jest --detectOpenHandles --forceExit --runInBand",
     "test:unit": "NODE_ENV=test jest tests/unit --detectOpenHandles --forceExit --runInBand",
     "test:integration": "NODE_ENV=test jest tests/integration --detectOpenHandles --forceExit --runInBand",
-    "test:coverage": "NODE_ENV=test jest --coverage --detectOpenHandles --forceExit --runInBand"
+    "test:coverage": "NODE_ENV=test jest --coverage --detectOpenHandles --forceExit --runInBand",
+     "seed:nodes": "node src/seeds/seed-nodes.js"
   },
   "keywords": [],
   "author": "",

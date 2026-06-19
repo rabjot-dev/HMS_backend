@@ -1,16 +1,36 @@
-const { validationResult } = require("express-validator");
+const {
+  validationResult,
+} = require(
+  "express-validator",
+);
 
-const validateMiddleware = (req, res, next) => {
-  const errors = validationResult(req);
+const ApiError =
+  require("../utils/ApiError");
 
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      message: "Validation failed",
-      errors: errors.array(),
-    });
-  }
-  next();
-};
+const validateMiddleware =
+  (
+    req,
+    res,
+    next,
+  ) => {
+    const errors =
+      validationResult(req);
 
-module.exports = validateMiddleware;
+    if (
+      !errors.isEmpty()
+    ) {
+      return next(
+        new ApiError(
+          400,
+          "Validation failed",
+          "VALIDATION_ERROR",
+          errors.array(),
+        ),
+      );
+    }
+
+    next();
+  };
+
+module.exports =
+  validateMiddleware;

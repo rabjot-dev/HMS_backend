@@ -1,0 +1,30 @@
+const Node =
+  require("../../models/Node");
+
+const createNodeService =
+  async (
+    nodeData,
+    userId
+  ) => {
+    const existingNode =
+      await Node.findOne({
+        path:
+          nodeData.path,
+        isDeleted: false,
+      });
+
+    if (existingNode) {
+      throw new Error(
+        "Node already exists"
+      );
+    }
+
+    return Node.create({
+      ...nodeData,
+      createdBy:
+        userId,
+    });
+  };
+
+module.exports =
+  createNodeService;

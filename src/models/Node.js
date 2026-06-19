@@ -16,7 +16,6 @@ const nodeSchema =
       path: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
       },
 
@@ -43,6 +42,11 @@ const nodeSchema =
         type: Boolean,
         default: true,
       },
+      parent: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Node",
+  default: null,
+},
 
       createdBy: {
         type:
@@ -80,6 +84,7 @@ const nodeSchema =
         type: Date,
         default: null,
       },
+      
     },
     {
       timestamps: true,
@@ -95,6 +100,10 @@ nodeSchema.index({
   roles: 1,
   isActive: 1,
   isDeleted: 1,
+});
+nodeSchema.index({
+  parent: 1,
+  order: 1,
 });
 
 module.exports =

@@ -8,6 +8,8 @@ const dashboardRoutes = require("./routes/dashboard.routes");
 const consultationRoutes = require("./routes/consultation.routes");
 const patientRoutes = require("./routes/patient.routes");
 const errorMiddleware =require("./middleware/error.middleware");
+const nodeRoutes = require("./routes/node.routes");
+
 const cors = require("cors");
 const app = express();
 app.disable('x-powered-by');
@@ -54,5 +56,6 @@ app.use(
 );
 
 app.use(errorMiddleware);
+app.use( "/api/nodes",nodeRoutes);
 
 module.exports = app;
