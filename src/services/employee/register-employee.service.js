@@ -13,7 +13,7 @@ const generateSequentialId = require("../../utils/generateSequentialId");
 const sendEmail = require("../../utils/sendEmail");
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
 
-const registerEmployee = async (employeeData) => {
+const registerEmployee = async (employeeData,userId) => {
   const {
     name,
     email,
@@ -101,7 +101,7 @@ const registerEmployee = async (employeeData) => {
       breakEndTime,
       maxPatientsPerDay: maxPatientsPerDay || 40,
     },
-    status: STATUS.ACTIVE, createdBy:req.user.userId
+    status: STATUS.ACTIVE, createdBy: userId
   });
 
   // Generate temporary password for first login
@@ -121,7 +121,8 @@ const registerEmployee = async (employeeData) => {
     isFirstLogin: true,
     status: STATUS.ACTIVE,
     securityQuestion,
-    securityAnswer,
+    securityAnswer: hashedSecurityAnswer,
+    createdBy: userId,
   });
 
   // Send welcome email with login details

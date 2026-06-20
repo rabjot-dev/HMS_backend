@@ -3,21 +3,38 @@ const Node =
 
 const getNodesService =
   async (user) => {
-    return Node.find({
-      roles: {
-        $in:
-          user.roles,
-      },
-      isActive: true,
-      isDeleted: false,
-    })
-      .select(
-        "name path icon parent order"
-      )
-      .sort({
-        order: 1,
+    const nodes =
+      await Node.find({
+        isDeleted: false,
+        isActive: true,
+        roles: {
+          $in:
+            user.roles,
+        },
       })
-      .lean();
+        .sort({
+          order: 1,
+        })
+        .lean();
+
+    const parents =
+      nodes.filter(
+        (node) =>
+          !node.parent
+      );
+
+    return parents.map(
+      (parent) => ({
+        ...parent,
+
+        children:
+          nodes.filter(
+            (node) =>
+              node.parent?.toString() ===
+              parent._id.toString()
+          ),
+      })
+    );
   };
 
 module.exports =

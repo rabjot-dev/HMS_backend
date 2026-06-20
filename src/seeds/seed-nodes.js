@@ -14,11 +14,16 @@ const seedNodes =
     try {
       await connectDB();
 
-      await Node.deleteMany({});
+      for (const node of defaultNodes) {
+  const existingNode =
+    await Node.findOne({
+      path: node.path,
+    });
 
-      await Node.insertMany(
-        defaultNodes
-      );
+  if (!existingNode) {
+    await Node.create(node);
+  }
+}
 
       console.log(
         "Default nodes seeded successfully"

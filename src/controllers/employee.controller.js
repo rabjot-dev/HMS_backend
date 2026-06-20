@@ -16,7 +16,7 @@ const deleteEmployeeService = require("../services/employee/delete-employee.serv
 // Create a new employee
 const createEmployee = async (req, res) => {
   try {
-    const employee = await registerEmployee(req.body);
+    const employee = await registerEmployee(req.body, req.user.userId);
 
     return res.status(201).json({
       success: true,
@@ -117,7 +117,7 @@ const updateEmployee = async (req, res) => {
 
     const { email, employeeCode, ...updateData } = req.body;
 
-    const employee = await updateEmployeeService(id, updateData);
+    const employee = await updateEmployeeService(id, updateData, req.user.userId);
 
     if (!employee) {
       return res.status(404).json({

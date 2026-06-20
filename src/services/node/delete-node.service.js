@@ -20,7 +20,7 @@ const deleteNodeService =
             new Date(),
         },
         {
-          new: true,
+           returnDocument: "after",
         }
       );
 

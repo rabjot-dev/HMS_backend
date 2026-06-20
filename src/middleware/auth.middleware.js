@@ -39,28 +39,32 @@ const authMiddleware =
         );
       }
 
-      const decodedToken =
-        jwt.verify(
-          token,
-          process.env.JWT_SECRET,
-        );
+const decodedToken =
+  jwt.verify(
+    token,
+    process.env.JWT_SECRET
+  );
 
       req.user =
         decodedToken;
 
       next();
     } catch (error) {
-      next(
-        error instanceof
-          ApiError
-          ? error
-          : new ApiError(
-              401,
-              "Invalid or expired token",
-              "INVALID_TOKEN",
-            ),
-      );
-    }
+  console.log(
+    "AUTH MIDDLEWARE ERROR:",
+    error
+  );
+
+  next(
+    error instanceof ApiError
+      ? error
+      : new ApiError(
+          401,
+          "Invalid or expired token",
+          "INVALID_TOKEN"
+        )
+  );
+}
   };
 
 module.exports =

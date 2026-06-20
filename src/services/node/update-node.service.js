@@ -18,7 +18,7 @@ const updateNodeService =
           userId,
       },
       {
-        new: true,
+         returnDocument: "after",
         runValidators: true,
       }
     );
