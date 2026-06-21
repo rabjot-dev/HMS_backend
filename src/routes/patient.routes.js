@@ -7,6 +7,7 @@ const {
   getPatients,
   getPatientById,
   updatePatient,
+  deletePatient,
   registerPatientMobile,
   getProfile,
 updateProfile,
@@ -56,6 +57,7 @@ router.put(
   authMiddleware,
   roleMiddleware("PATIENT"),
   updatePatientValidation,
+  validateMiddleware,
   updateProfile
 );
 
@@ -82,6 +84,15 @@ router.put(
   validateMiddleware,
   updatePatient
 );
+
+// Soft delete patient
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  deletePatient
+);
+
 // Mobile register
 router.post(
   "/register",

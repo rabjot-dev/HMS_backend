@@ -1,46 +1,29 @@
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
+const ERR = require("../../utils/errors");
 
-const updateDoctorAvailabilityService =
-  async (
-    userId,
-    availabilityData
-  ) => {
+const updateDoctorAvailabilityService = async (userId, availabilityData) => {
+  const user = await User.findById(userId);
 
-    const user =
-      await User.findById(
-        userId
-      );
+  if (!user) {
+throw ERR.userAccountNotFound();
+  }
+  const doctor = await Employee.findByIdAndUpdate(
+    user.employeeId,
+    {
+      $set: {
+        availability: availabilityData,
+      },
+    },
+    {
+      returnDocument: "after",
+    },
+  );
 
-    if (!user) {
-      throw new Error(
-        "User account not found"
-      );
-    }
+  if (!doctor) {
+throw ERR.doctorNotFound();
+  }
+  return doctor;
+};
 
-    const doctor =
-      await Employee.findByIdAndUpdate(
-        user.employeeId,
-        {
-          $set: {
-            availability:
-              availabilityData,
-          },
-        },
-        {
-          returnDocument:
-            "after",
-        }
-      );
-
-    if (!doctor) {
-      throw new Error(
-        "Doctor not found"
-      );
-    }
-
-    return doctor;
-  };
-
-module.exports =
-  updateDoctorAvailabilityService;
+module.exports = updateDoctorAvailabilityService;

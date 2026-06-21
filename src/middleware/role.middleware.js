@@ -1,17 +1,18 @@
+const ERR = require("../utils/errors");
+
 const roleMiddleware = (...allowedRoles) => {
   return (req, res, next) => {
-    const userRoles = req.user.roles;
+    const userRoles = req.user?.roles || [];
 
-    const hasPermission = allowedRoles.some((role) => userRoles.includes(role));
+    const hasPermission = allowedRoles.some((role) =>
+      userRoles.includes(role)
+    );
 
     if (!hasPermission) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-      });
+      return next(ERR.accessDenied());
     }
 
-    next();
+    return next();
   };
 };
 

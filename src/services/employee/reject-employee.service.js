@@ -1,23 +1,33 @@
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
 const STATUS = require("../../constants/status");
+const ERR = require("../../utils/errors");
 
-const rejectEmployeeService =
-  async (employeeId) => {
+const rejectEmployeeService = async (employeeId, rejectedBy) => {
+  const employee = await Employee.findOneAndUpdate(
+    {
+      _id: employeeId,
+      isDeleted: { $ne: true },
+    },
+    {
+      status: STATUS.REJECTED,
+      rejectedBy,
+      rejectedDate: new Date(),
+    },
+    { new: true }
+  );
 
-    await User.findOneAndUpdate(
-      { employeeId },
-      { status: STATUS.REJECTED }
-    );
+  if (!employee) {
+    throw ERR.employeeNotFound();
+  }
 
-    return Employee.findByIdAndUpdate(
-      employeeId,
-      {
-        status: STATUS.REJECTED,
-      },
-      { new: true }
-    );
-  };
+  await User.findOneAndUpdate(
+    { employeeId },
+    { status: STATUS.REJECTED }
+  );
 
-module.exports =
-  rejectEmployeeService;
+  return employee;
+};
+
+module.exports = rejectEmployeeService;
+

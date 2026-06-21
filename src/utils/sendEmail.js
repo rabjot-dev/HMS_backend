@@ -39,7 +39,10 @@ const sendEmail = async ({ to, subject, htmlContent }) => {
       console.error(error.response.body);
     }
 
-    throw error;
+    return {
+      success: false,
+      error: error.message,
+    };
   }
 };
 

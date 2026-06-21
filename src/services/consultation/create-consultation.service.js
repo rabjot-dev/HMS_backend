@@ -1,5 +1,6 @@
-const Consultation = require("../../models/consultation");
-const Appointment = require("../../models/appointment");
+const Consultation = require("../../models/Consultation");
+const Appointment = require("../../models/Appointment");
+const ERR = require("../../utils/errors");
 
 const createConsultationService = async (data) => {
   const {
@@ -16,14 +17,17 @@ const createConsultationService = async (data) => {
   });
 
   if (existingConsultation) {
-    throw new Error("Consultation already exists");
-  }
+throw ERR.consultationAlreadyExists();
+}
 
-  const appointment = await Appointment.findById(appointmentId);
+  const appointment = await Appointment.findOne({
+    _id: appointmentId,
+    isDeleted: { $ne: true },
+  });
 
   if (!appointment) {
-    throw new Error("Appointment not found");
-  }
+throw ERR.appointmentNotFound();
+ }
 
   const consultation = await Consultation.create({
     appointmentId,
@@ -34,13 +38,21 @@ const createConsultationService = async (data) => {
     doctorNotes,
     vitals,
     prescriptions,
-  });
-
-  await Appointment.findByIdAndUpdate(appointmentId, {
     status: "COMPLETED",
   });
+
+  await Appointment.findOneAndUpdate(
+    {
+      _id: appointmentId,
+      isDeleted: { $ne: true },
+    },
+    {
+      status: "COMPLETED",
+    }
+  );
 
   return consultation;
 };
 
 module.exports = createConsultationService;
+

@@ -1,66 +1,50 @@
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
 const STATUS = require("../../constants/status");
+const ERR = require("../../utils/errors");
 
-const approveEmployeeService =
-  async (
+const approveEmployeeService = async (
+  employeeId,
+  consultationFee,
+  approvedBy,
+) => {
+  const user = await User.findOne({
     employeeId,
-    consultationFee
-  ) => {
+  });
 
-    const user =
-      await User.findOne({
-        employeeId,
-      });
+  if (!user) {
+    throw ERR.employeeAccountNotFound();
+  }
 
-    if (!user) {
-      throw new Error(
-        "Employee account not found"
-      );
-    }
+  const employee = await Employee.findOne({
+    _id: employeeId,
+    isDeleted: { $ne: true },
+  });
 
-    const employee =
-      await Employee.findById(
-        employeeId
-      );
+  if (!employee) {
+    throw ERR.employeeNotFound();
+  }
 
-    if (!employee) {
-      throw new Error(
-        "Employee not found"
-      );
-    }
+  if (employee.designation === "DOCTOR" && !consultationFee) {
+    throw ERR.consultationFeeRequired();
+  }
+  if (employee.designation === "DOCTOR") {
+    employee.consultationFee = Number(consultationFee);
+  }
 
-    if (
-      employee.designation ===
-        "DOCTOR" &&
-      !consultationFee
-    ) {
-      throw new Error(
-        "Consultation fee is required for doctors"
-      );
-    }
+  employee.status = STATUS.ACTIVE;
+  employee.approvedBy = approvedBy;
+  employee.approvedDate = new Date();
+  employee.rejectedBy = null;
+  employee.rejectedDate = null;
 
-    if (
-      employee.designation ===
-      "DOCTOR"
-    ) {
-      employee.consultationFee =
-        Number(
-          consultationFee
-        );
-    }
+  user.status = STATUS.ACTIVE;
 
-    employee.status =
-      STATUS.ACTIVE;
+  await employee.save();
+  await user.save();
 
-    user.status =
-      STATUS.ACTIVE;
+  return employee;
+};
 
-    await employee.save();
-    await user.save();
+module.exports = approveEmployeeService;
 
-    return employee;
-  };
-
-module.exports =
-  approveEmployeeService;

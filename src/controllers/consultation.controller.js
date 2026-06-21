@@ -8,209 +8,106 @@ const getConsultationsService = require("../services/consultation/get-consultati
 const getPrescriptionDataService = require("../services/consultation/download-prescription-pdf.service");
 
 const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
+const asyncHandler = require("../utils/asyncHandler");
+const ERR = require("../utils/errors");
+const { getPagination, getPaginationMeta } = require("../utils/pagination");
 
-const createConsultation = async (req, res) => {
-  try {
-    const consultation = await createConsultationService(req.body);
+const createConsultation = asyncHandler(async (req, res) => {
+  const consultation = await createConsultationService(req.body);
 
-    return res.status(201).json({
-      success: true,
-      message: "Consultation created successfully",
-      data: consultation,
-    });
-  } catch (error) {
-    console.error("CREATE CONSULTATION ERROR:", error);
+  return res.status(201).json({
+    success: true,
+    message: "Consultation created successfully",
+    data: consultation,
+  });
+});
+const getConsultationByAppointment = asyncHandler(async (req, res) => {
+  const { appointmentId } = req.params;
 
-    if (error.message === "Consultation already exists") {
-      return res.status(409).json({
-        success: false,
-        message: "A consultation already exists for this appointment",
-      });
-    }
-
-    if (error.message === "Appointment not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Appointment not found",
-      });
-    }
-
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to create consultation",
-    });
+  if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
+    throw ERR.invalidAppointmentId();
   }
-};
 
-const getConsultationByAppointment = async (req, res) => {
-  try {
-    const { appointmentId } = req.params;
+  const consultation = await getConsultationByAppointmentService(appointmentId);
 
-    if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid appointment ID",
-      });
-    }
+  return res.status(200).json({
+    success: true,
+    message: "Consultation retrieved successfully",
+    data: consultation,
+  });
+});
+const updateConsultation = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-    const consultation =
-      await getConsultationByAppointmentService(appointmentId);
-
-    return res.status(200).json({
-      success: true,
-      message: "Consultation retrieved successfully",
-      data: consultation,
-    });
-  } catch (error) {
-    console.error("GET CONSULTATION BY APPOINTMENT ERROR:", error);
-
-    if (error.message === "Consultation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "No consultation found for the provided appointment",
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve consultation details",
-    });
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw ERR.invalidConsultationId();
   }
-};
 
-const updateConsultation = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const consultation = await updateConsultationService(id, req.body);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid consultation ID",
-      });
-    }
+  return res.status(200).json({
+    success: true,
+    message: "Consultation updated successfully",
+    data: consultation,
+  });
+});
 
-    const consultation = await updateConsultationService(id, req.body);
-
-    return res.status(200).json({
-      success: true,
-      message: "Consultation updated successfully",
-      data: consultation,
+const getConsultations = asyncHandler(async (req, res) => {
+  const { page, limit, skip, sort, search, status, fromDate, toDate } =
+    getPagination(req.query, {
+      allowedSortFields: ["createdAt", "updatedAt", "status"],
+      defaultSort: { createdAt: -1 },
     });
-  } catch (error) {
-    console.error("UPDATE CONSULTATION ERROR:", error);
 
-    if (error.message === "Consultation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Consultation not found",
-      });
-    }
+  const { consultations, total } = await getConsultationsService({
+    skip,
+    limit,
+    sort,
+    search,
+    status,
+    fromDate,
+    toDate,
+  });
 
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
+  return res.status(200).json({
+    success: true,
+    message: "Consultations retrieved successfully",
+    data: consultations,
+    pagination: getPaginationMeta({
+      page,
+      limit,
+      total,
+    }),
+  });
+});
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to update consultation",
-    });
+const downloadPrescriptionPdf = asyncHandler(async (req, res) => {
+  const { consultationId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(consultationId)) {
+    throw ERR.invalidConsultationId();
   }
-};
 
-const getConsultations = async (req, res) => {
-  try {
-    const consultations = await getConsultationsService();
+  const consultation = await getPrescriptionDataService(consultationId);
 
-    return res.status(200).json({
-      success: true,
-      message: "Consultations retrieved successfully",
-      data: consultations,
-    });
-  } catch (error) {
-    console.error("GET CONSULTATIONS ERROR:", error);
+  generatePrescriptionPdf(consultation, res);
+});
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve consultations",
-    });
+const getConsultationById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw ERR.invalidConsultationId();
   }
-};
 
-const downloadPrescriptionPdf = async (req, res) => {
-  try {
-    const { consultationId } = req.params;
+  const consultation = await getConsultationByIdService(id);
 
-    if (!mongoose.Types.ObjectId.isValid(consultationId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid consultation ID",
-      });
-    }
-
-    const consultation = await getPrescriptionDataService(consultationId);
-
-    generatePrescriptionPdf(consultation, res);
-  } catch (error) {
-    console.error("DOWNLOAD PRESCRIPTION PDF ERROR:", error);
-
-    if (error.message === "Consultation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Consultation not found",
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to generate prescription PDF",
-    });
-  }
-};
-
-const getConsultationById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid consultation ID",
-      });
-    }
-
-    const consultation = await getConsultationByIdService(id);
-
-    return res.status(200).json({
-      success: true,
-      message: "Consultation retrieved successfully",
-      data: consultation,
-    });
-  } catch (error) {
-    console.error("GET CONSULTATION BY ID ERROR:", error);
-
-    if (error.message === "Consultation not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Consultation not found",
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve consultation details",
-    });
-  }
-};
+  return res.status(200).json({
+    success: true,
+    message: "Consultation retrieved successfully",
+    data: consultation,
+  });
+});
 
 module.exports = {
   createConsultation,

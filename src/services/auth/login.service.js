@@ -2,15 +2,17 @@ const bcrypt = require("bcryptjs");
 
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
+const Patient = require("../../models/Patient");
 const generateAccessToken = require("../../utils/generateAccessToken");
 const generateRefreshToken = require("../../utils/generateRefreshToken");
+const ERR = require("../../utils/errors");
 
 const loginUser = async (loginData) => {
   const { loginId, password } = loginData;
 
   let user = null;
 
-  // Allow login using email or employee code
+  // login using email or employee code
   const isEmailLogin = loginId.includes("@");
 
   if (isEmailLogin) {
@@ -20,11 +22,11 @@ const loginUser = async (loginData) => {
   } else {
     const employee = await Employee.findOne({
       employeeCode: loginId,
+      isDeleted: { $ne: true },
     });
 
     if (!employee) {
-      throw new Error("Invalid credentials");
-    }
+throw ERR.invalidCredentials();    }
 
     user = await User.findOne({
       employeeId: employee._id,
@@ -33,21 +35,39 @@ const loginUser = async (loginData) => {
 
   // Validate user account
   if (!user) {
-    throw new Error("Invalid credentials");
+throw ERR.invalidCredentials();  }
+
+  if (user.employeeId) {
+    const employee = await Employee.findOne({
+      _id: user.employeeId,
+      isDeleted: { $ne: true },
+    });
+
+    if (!employee) {
+      throw ERR.invalidCredentials();
+    }
   }
 
-  // Check account status
-  if (user.status === "PENDING") {
-    throw new Error("Your account is pending admin approval");
+  if (user.patientId) {
+    const patient = await Patient.findOne({
+      _id: user.patientId,
+      isDeleted: { $ne: true },
+    });
+
+    if (!patient) {
+      throw ERR.invalidCredentials();
+    }
   }
 
-  if (user.status === "REJECTED") {
-    throw new Error("Your registration was rejected");
-  }
+  //  account status
+ if (user.status === "PENDING") {
+throw ERR.accountPendingApproval();}
 
-  if (user.status === "INACTIVE") {
-    throw new Error("Account is inactive");
-  }
+if (user.status === "REJECTED") {
+throw ERR.registrationRejected();}
+
+if (user.status === "INACTIVE") {
+throw ERR.accountInactive();}
 
   let isPasswordValid = false;
 
@@ -55,19 +75,15 @@ const loginUser = async (loginData) => {
   if (user.isFirstLogin) {
     isPasswordValid = await bcrypt.compare(
       password,
-      user.temporaryPasswordHash
+      user.temporaryPasswordHash,
     );
   } else {
-    isPasswordValid = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
+    isPasswordValid = await bcrypt.compare(password, user.passwordHash);
   }
 
   // Reject invalid password
   if (!isPasswordValid) {
-    throw new Error("Invalid credentials");
-  }
+throw ERR.invalidCredentials();  }
 
   // Generate JWT token
   const tokenPayload = {
@@ -77,22 +93,23 @@ const loginUser = async (loginData) => {
     roles: user.roles,
   };
 
-const accessToken = generateAccessToken(tokenPayload);
+  const accessToken = generateAccessToken(tokenPayload);
 
-const refreshToken = generateRefreshToken(tokenPayload);
+  const refreshToken = generateRefreshToken(tokenPayload);
 
-// Save refresh token in DB
-user.refreshToken = refreshToken;
+  // Save refresh token in DB
+  user.refreshToken = refreshToken;
 
-user.lastLoginAt = new Date();
+  user.lastLoginAt = new Date();
 
-await user.save();
+  await user.save();
 
-return {
-  accessToken,
-  refreshToken,
-  user
-};
+  return {
+    accessToken,
+    refreshToken,
+    user,
+  };
 };
 
 module.exports = loginUser;
+

@@ -1,33 +1,21 @@
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
+const ERR = require("../../utils/errors");
 
-const getDoctorAvailabilityService =
-  async (userId) => {
+const getDoctorAvailabilityService = async (userId) => {
+  const user = await User.findById(userId);
 
-    const user =
-      await User.findById(
-        userId
-      );
+  if (!user) {
+throw ERR.userAccountNotFound();
+  }
 
-    if (!user) {
-      throw new Error(
-        "User account not found"
-      );
-    }
+  const doctor = await Employee.findById(user.employeeId);
 
-    const doctor =
-      await Employee.findById(
-        user.employeeId
-      );
+  if (!doctor) {
+throw ERR.doctorNotFound();
+  }
 
-    if (!doctor) {
-      throw new Error(
-        "Doctor not found"
-      );
-    }
+  return doctor.availability;
+};
 
-    return doctor.availability;
-  };
-
-module.exports =
-  getDoctorAvailabilityService;
+module.exports = getDoctorAvailabilityService;

@@ -1,5 +1,4 @@
 const express = require("express");
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 const authRoutes = require("./routes/auth.routes");
 
 const employeeRoutes = require("./routes/employee.routes");
@@ -7,6 +6,8 @@ const appointmentRoutes = require("./routes/appointment.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const consultationRoutes = require("./routes/consultation.routes");
 const patientRoutes = require("./routes/patient.routes");
+const menuNodeRoutes = require("./routes/menu-node.routes");
+const medicalRecordRoutes = require("./routes/medical-record.routes");
 
 const cors = require("cors");
 const app = express();
@@ -53,11 +54,10 @@ app.use(
   consultationRoutes,
 );
 
-app.use((error, req, res, next) => {
-  return res.status(500).json({
-    success: false,
-    message: error.message || "Internal server error",
-  });
-});
+app.use("/api/menu-nodes", menuNodeRoutes);
 
+app.use("/api/medical-records", medicalRecordRoutes);
+
+const errorHandler = require("./middleware/error.middleware");
+app.use(errorHandler);
 module.exports = app;

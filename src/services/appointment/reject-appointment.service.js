@@ -1,88 +1,56 @@
-const Appointment =
-require("../../models/Appointment");
-const Patient =
-require("../../models/Patient");
+const Appointment = require("../../models/Appointment");
+const Patient = require("../../models/Patient");
 
-const Employee =
-require("../../models/Employee");
+const Employee = require("../../models/Employee");
 
-const sendEmail =
-require("../../utils/sendEmail");
+const sendEmail = require("../../utils/sendEmail");
 
-const appointmentRejectedTemplate =
-require("../../templates/appointment-rejected.template");
+const appointmentRejectedTemplate = require("../../templates/appointment-rejected.template");
+const ERR = require("../../utils/errors");
 
-const rejectAppointment =
-async (appointmentId) => {
-
-  const appointment =
-    await Appointment.findById(
-      appointmentId
-    );
+const rejectAppointment = async (appointmentId, rejectedBy) => {
+  const appointment = await Appointment.findOne({
+    _id: appointmentId,
+    isDeleted: { $ne: true },
+  });
 
   if (!appointment) {
+throw ERR.appointmentNotFound(); }
 
-    throw new Error(
-      "Appointment not found"
-    );
-  }
+  if (appointment.status !== "PENDING") {
+throw ERR.appointmentRejectConflict();}
 
-  if (
-    appointment.status !==
-    "PENDING"
-  ) {
-
-    throw new Error(
-      "Only pending appointments can be rejected"
-    );
-  }
-
-  appointment.status =
-    "REJECTED";
+  appointment.status = "REJECTED";
+  appointment.rejectedBy = rejectedBy;
+  appointment.rejectedDate = new Date();
 
   await appointment.save();
-  const patient =
-await Patient.findById(
-  appointment.patientId
-);
+  const patient = await Patient.findById(appointment.patientId);
 
-const doctor =
-await Employee.findById(
-  appointment.doctorEmployeeId
-);
+  const doctor = await Employee.findById(appointment.doctorEmployeeId);
 
-if (patient?.email) {
+  if (patient?.email) {
+    const htmlContent = appointmentRejectedTemplate({
+      patientName: `${patient.firstName} ${patient.lastName}`,
 
-  const htmlContent =
-    appointmentRejectedTemplate({
+      doctorName: doctor?.name,
 
-      patientName:
-        `${patient.firstName} ${patient.lastName}`,
+      appointmentDate: appointment.appointmentDate.toISOString().split("T")[0],
 
-      doctorName:
-        doctor?.name,
-
-      appointmentDate:
-        appointment.appointmentDate
-          .toISOString()
-          .split("T")[0],
-
-      appointmentTime:
-        appointment.timeSlot,
+      appointmentTime: appointment.timeSlot,
     });
 
-  await sendEmail({
-    to: patient.email,
+    await sendEmail({
+      to: patient.email,
 
-    subject:
-      "Appointment Rejected",
+      subject: "Appointment Rejected",
 
-    htmlContent,
-  });
-}
+      htmlContent,
+    });
+  }
 
   return appointment;
 };
 
-module.exports =
-  rejectAppointment;
+module.exports = rejectAppointment;
+

@@ -62,24 +62,21 @@ router.get(
 router.get(
   "/pending",
   authMiddleware,
-  roleMiddleware(
-    "ADMIN",
-    "RECEPTIONIST"
-  ),
+  roleMiddleware("ADMIN"),
   getPendingAppointments
 );
 // Approve appointment 
 router.patch(
   "/:id/approve",
   authMiddleware,
-  roleMiddleware("ADMIN","RECEPTIONIST"),
+  roleMiddleware("ADMIN"),
   approveAppointment
 );
 // Reject appointment 
 router.patch(
   "/:id/reject",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  roleMiddleware("ADMIN"),
   rejectAppointment
 );
 //update patient
@@ -124,7 +121,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST", "PATIENT"),
+  roleMiddleware("ADMIN"),
   deleteAppointment
 );
 

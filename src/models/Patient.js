@@ -160,6 +160,22 @@ const patientSchema = new mongoose.Schema(
       enum: ["ACTIVE", "DISCHARGED", "INACTIVE"],
       default: "ACTIVE",
     },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    deletedDate: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

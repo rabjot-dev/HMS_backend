@@ -2,12 +2,12 @@ const Appointment = require("../../models/Appointment");
 const Employee = require("../../models/Employee");
 
 const generateSlots = require("../../utils/generateSlots");
+const ERR = require("../../utils/errors");
 
 const getAvailableSlots = async (doctorId, appointmentDate) => {
   // Validate required fields
   if (!doctorId || !appointmentDate) {
-    throw new Error("Doctor ID and appointment date are required");
-  }
+throw ERR.doctorAndDateRequired();}
 
   // Prevent slot lookup for past dates
   const selectedDate = new Date(appointmentDate);
@@ -16,20 +16,20 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   today.setHours(0, 0, 0, 0);
 
   if (selectedDate < today) {
-    throw new Error("Cannot select past dates");
-  }
+throw ERR.cannotSelectPastDates(); }
 
   // Find doctor record
-  const doctor = await Employee.findById(doctorId);
+  const doctor = await Employee.findOne({
+    _id: doctorId,
+    isDeleted: { $ne: true },
+  });
 
   if (!doctor) {
-    throw new Error("Doctor not found");
-  }
+throw ERR.doctorNotFound();  }
 
   // Check doctor availability status
   if (!doctor?.availability?.isAvailable) {
-    throw new Error("Doctor is currently unavailable");
-  }
+throw ERR.doctorUnavailable();}
 
   // Verify doctor works on selected day
   const appointmentDay = new Date(appointmentDate)
@@ -39,8 +39,7 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
     .toUpperCase();
 
   if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
-    throw new Error(`Doctor is not available on ${appointmentDay}`);
-  }
+throw ERR.doctorNotAvailableOnDay(appointmentDay);}
 
   // Generate all possible slots
   const allSlots = generateSlots(
@@ -62,6 +61,7 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   // Fetch existing appointments
   const bookedAppointments = await Appointment.find({
     doctorEmployeeId: doctorId,
+    isDeleted: { $ne: true },
     appointmentDate: {
       $gte: normalizedDate,
       $lt: nextDay,
@@ -144,3 +144,4 @@ return availableSlots;
 };
 
 module.exports = getAvailableSlots;
+

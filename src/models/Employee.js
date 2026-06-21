@@ -83,13 +83,68 @@ const employeeSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: [
-        STATUS.ACTIVE,
-        STATUS.INACTIVE,
-        STATUS.PENDING,
-        STATUS.REJECTED,
-      ],
+      enum: [STATUS.ACTIVE, STATUS.INACTIVE, STATUS.PENDING, STATUS.REJECTED],
       default: STATUS.PENDING,
+    },
+
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    approvedDate: {
+      type: Date,
+      default: null,
+    },
+
+    rejectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    rejectedDate: {
+      type: Date,
+      default: null,
+    },
+
+    deactivatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    deactivatedDate: {
+      type: Date,
+      default: null,
+    },
+
+    activatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    activatedDate: {
+      type: Date,
+      default: null,
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    deletedDate: {
+      type: Date,
+      default: null,
     },
 
     availabilitySlots: {
@@ -145,7 +200,7 @@ const employeeSchema = new mongoose.Schema(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 const Employee = mongoose.model("Employee", employeeSchema);

@@ -1,25 +1,24 @@
 const Appointment = require("../../models/Appointment");
 const Employee = require("../../models/Employee");
 const Patient = require("../../models/Patient");
-
+const ERR = require("../../utils/errors");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
 
 const bookPatientAppointment = async (appointmentData, user) => {
- const {
-  doctorId,
-  appointmentDate,
-  appointmentTime,
-  reason,
-  notes,
-  appointmentType,
-  priority,
-  paymentStatus,
-  visitMode,
-  symptoms,
-} = appointmentData;
+  const {
+    doctorId,
+    appointmentDate,
+    appointmentTime,
+    reason,
+    notes,
+    appointmentType,
+    priority,
+    paymentStatus,
+    visitMode,
+    symptoms,
+  } = appointmentData;
 
-const patientId =
-  user.patientId;
+  const patientId = user.patientId;
 
   // Prevent booking appointments for past dates
   const selectedDate = new Date(appointmentDate);
@@ -29,26 +28,30 @@ const patientId =
   selectedDate.setHours(0, 0, 0, 0);
 
   if (selectedDate < today) {
-    throw new Error("Cannot book appointment for past dates");
-  }
+throw ERR.pastAppointmentDate();  }
 
   // Verify patient exists
-  const patient = await Patient.findById(patientId);
+  const patient = await Patient.findOne({
+    _id: patientId,
+    isDeleted: { $ne: true },
+  });
 
   if (!patient) {
-    throw new Error("Patient not found");
-  }
+throw ERR.patientNotFound();  }
 
   // Verify doctor exists
-  const doctor = await Employee.findById(doctorId);
+  const doctor = await Employee.findOne({
+    _id: doctorId,
+    isDeleted: { $ne: true },
+  });
 
   if (!doctor) {
-    throw new Error("Doctor not found");
+throw ERR.doctorNotFound();
   }
 
   // Check if doctor is currently available
   if (!doctor?.availability?.isAvailable) {
-    throw new Error("Doctor is currently unavailable");
+throw ERR.doctorUnavailable();
   }
 
   // Ensure appointment is on a doctor's working day
@@ -59,7 +62,7 @@ const patientId =
     .toUpperCase();
 
   if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
-    throw new Error(`Doctor is not available on ${appointmentDay}`);
+throw ERR.doctorNotAvailableOnDay(appointmentDay);
   }
 
   // Prevent booking during break hours
@@ -68,7 +71,7 @@ const patientId =
 
   if (breakStartTime && breakEndTime) {
     if (appointmentTime >= breakStartTime && appointmentTime < breakEndTime) {
-      throw new Error("Selected slot falls during doctor break time");
+throw ERR.doctorBreakTime();
     }
   }
 
@@ -83,6 +86,7 @@ const patientId =
   // Check doctor's daily appointment limit
   const totalAppointments = await Appointment.countDocuments({
     doctorEmployeeId: doctorId,
+    isDeleted: { $ne: true },
     appointmentDate: {
       $gte: normalizedDate,
       $lt: nextDay,
@@ -93,12 +97,13 @@ const patientId =
   });
 
   if (totalAppointments >= doctor?.availability?.maxPatientsPerDay) {
-    throw new Error("Maximum patient limit reached for this doctor");
+throw ERR.doctorPatientLimitReached();
   }
 
   // Prevent double-booking of doctor slot
   const existingAppointment = await Appointment.findOne({
     doctorEmployeeId: doctorId,
+    isDeleted: { $ne: true },
     timeSlot: appointmentTime,
     appointmentDate: {
       $gte: normalizedDate,
@@ -110,12 +115,13 @@ const patientId =
   });
 
   if (existingAppointment) {
-    throw new Error("Selected slot already booked");
+throw ERR.slotAlreadyBooked();
   }
 
   // Prevent patient from booking multiple appointments at same time
   const existingPatientAppointment = await Appointment.findOne({
     patientId,
+    isDeleted: { $ne: true },
     timeSlot: appointmentTime,
     appointmentDate: {
       $gte: normalizedDate,
@@ -127,22 +133,10 @@ const patientId =
   });
 
   if (existingPatientAppointment) {
-    throw new Error("Patient already has an appointment at this time");
-  }
+throw ERR.patientAlreadyHasAppointment();  }
 
   // Generate unique appointment ID
   const appointmentId = await generateAppointmentId();
-
-  // Generate queue token number
-  const todayAppointmentsCount = await Appointment.countDocuments({
-    doctorEmployeeId: doctorId,
-    appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
-    },
-  });
-
-  const tokenNumber = todayAppointmentsCount + 1;
 
   // Create appointment record
   const appointment = await Appointment.create({
@@ -159,7 +153,7 @@ const patientId =
     reason,
     notes,
     tokenNumber: null,
-   createdByPatientId: user.patientId,
+    createdByPatientId: user.patientId,
     status: "PENDING",
   });
 
@@ -167,3 +161,4 @@ const patientId =
 };
 
 module.exports = bookPatientAppointment;
+

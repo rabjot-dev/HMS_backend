@@ -1,42 +1,32 @@
 const Patient = require("../../models/Patient");
+const ERR = require("../../utils/errors");
 
-const updateMyProfile =
-  async (
-    patientId,
-    updateData
-  ) => {
-if (
-  updateData.maritalStatus === ""
-) {
-  delete updateData.maritalStatus;
-}
+const updateMyProfile = async (patientId, updateData) => {
+  if (updateData.maritalStatus === "") {
+    delete updateData.maritalStatus;
+  }
 
-if (
-  updateData.gender === ""
-) {
-  delete updateData.gender;
-}
-    const patient =
-      await Patient.findByIdAndUpdate(
-        patientId,
+  if (updateData.gender === "") {
+    delete updateData.gender;
+  }
+  const patient = await Patient.findOneAndUpdate(
+    {
+      _id: patientId,
+      isDeleted: { $ne: true },
+    },
+    updateData,
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
 
-        updateData,
+  if (!patient) {
+throw ERR.patientNotFound();
+  }
 
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
+  return patient;
+};
 
-    if (!patient) {
+module.exports = updateMyProfile;
 
-      throw new Error(
-        "Patient not found"
-      );
-    }
-
-    return patient;
-  };
-
-module.exports =
-  updateMyProfile;

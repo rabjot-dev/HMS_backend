@@ -36,6 +36,7 @@ router.get(
 // Get receptionist dashboard statistics
 router.get(
   "/receptionist-stats",
+  authMiddleware,
   getReceptionistStats
 );
 

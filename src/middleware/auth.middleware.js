@@ -1,15 +1,13 @@
 const jwt = require("jsonwebtoken");
 
-// Verify JWT token and attach user details to the request
+const ERR = require("../utils/errors");
+
 const authMiddleware = (req, res, next) => {
   try {
     const authorizationHeader = req.headers.authorization;
 
     if (!authorizationHeader) {
-      return res.status(401).json({
-        success: false,
-        message: "Authorization token is required",
-      });
+      return next(ERR.tokenRequired());
     }
 
     const token = authorizationHeader.startsWith("Bearer ")
@@ -17,22 +15,14 @@ const authMiddleware = (req, res, next) => {
       : null;
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid authorization format",
-      });
+      return next(ERR.invalidAuthorizationFormat());
     }
 
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decodedToken;
-
-    next();
+    return next();
   } catch {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid or expired token",
-    });
+    return next(ERR.invalidToken());
   }
 };
 

@@ -1,4 +1,5 @@
-const Consultation = require("../../models/consultation");
+const Consultation = require("../../models/Consultation");
+const ERR = require("../../utils/errors");
 
 const getPrescriptionDataService = async (consultationId) => {
   const consultation = await Consultation.findById(consultationId)
@@ -7,8 +8,7 @@ const getPrescriptionDataService = async (consultationId) => {
     .populate("appointmentId");
 
   if (!consultation) {
-    throw new Error("Consultation not found");
-  }
+throw ERR.consultationNotFound();  }
 
   return consultation;
 };

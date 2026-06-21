@@ -7,7 +7,7 @@ const ROLES = require("../../constants/roles");
 const STATUS = require("../../constants/status");
 
 const generatePatientId = require("../../utils/generatePatientId");
-
+const ERR = require("../../utils/errors");
 const selfRegisterPatient = async (patientData) => {
   const {
     firstName,
@@ -15,46 +15,30 @@ const selfRegisterPatient = async (patientData) => {
     email,
     phone,
     password,
+    securityQuestion,
+    securityAnswer,
   } = patientData;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Duplicate Email Check
-  |--------------------------------------------------------------------------
-  */
+  //  Duplicate Email Check
   const existingUser = await User.findOne({
     email: email.toLowerCase(),
   });
 
   if (existingUser) {
-    throw new Error("Email already registered");
-  }
+throw ERR.emailAlreadyRegistered(); }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Duplicate Phone Check
-  |--------------------------------------------------------------------------
-  */
+  //  Duplicate Phone Check
   const existingPatient = await Patient.findOne({
     phone,
   });
 
   if (existingPatient) {
-    throw new Error("Phone number already registered");
-  }
+throw ERR.phoneAlreadyRegistered(); }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Generate Patient ID
-  |--------------------------------------------------------------------------
-  */
+  //  Generate Patient ID
   const patientId = await generatePatientId();
 
-  /*
-  |--------------------------------------------------------------------------
-  | Create Patient
-  |--------------------------------------------------------------------------
-  */
+  //  Create Patient
   const patient = await Patient.create({
     patientId,
 
@@ -81,6 +65,11 @@ const selfRegisterPatient = async (patientData) => {
     10,
   );
 
+  const hashedSecurityAnswer = await bcrypt.hash(
+    securityAnswer.trim().toLowerCase(),
+    10,
+  );
+
   /*
   |--------------------------------------------------------------------------
   | Create User
@@ -98,6 +87,10 @@ const selfRegisterPatient = async (patientData) => {
     isFirstLogin: false,
 
     status: STATUS.ACTIVE,
+
+    securityQuestion,
+
+    securityAnswer: hashedSecurityAnswer,
   });
 
   return {

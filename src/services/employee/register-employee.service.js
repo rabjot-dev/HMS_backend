@@ -12,6 +12,7 @@ const generateSequentialId = require("../../utils/generateSequentialId");
 
 const sendEmail = require("../../utils/sendEmail");
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
+const ERR = require("../../utils/errors");
 
 const registerEmployee = async (employeeData) => {
   const {
@@ -45,18 +46,16 @@ const registerEmployee = async (employeeData) => {
   });
 
   if (existingUser) {
-    throw new Error("Employee already exists with this email");
+throw ERR.employeeEmailExists();
   }
-
   // Check if phone number is already in use
   const existingPhone = await Employee.findOne({
     phone,
   });
 
   if (existingPhone) {
-    throw new Error("Employee already exists with this phone number");
+throw ERR.employeePhoneExists();
   }
-
   // Validate doctor's registration number
   if (designation === "DOCTOR") {
     const existingDoctor = await Employee.findOne({
@@ -64,17 +63,15 @@ const registerEmployee = async (employeeData) => {
     });
 
     if (existingDoctor) {
-      throw new Error("Medical registration number already exists");
-    }
-  }
+throw ERR.medicalRegistrationExists();
+      }  }
 
   // Generate employee code
   const prefix = EMPLOYEE_PREFIX[designation];
 
   if (!prefix) {
-    throw new Error("Invalid employee designation");
+throw ERR.invalidDesignation();
   }
-
   const employeeCode = await generateSequentialId(prefix);
 
   // Create employee record

@@ -1,4 +1,5 @@
-const Consultation = require("../../models/consultation");
+const Consultation = require("../../models/Consultation");
+const ERR = require("../../utils/errors");
 
 const updateConsultationService = async (consultationId, data) => {
   const consultation = await Consultation.findByIdAndUpdate(
@@ -11,8 +12,7 @@ const updateConsultationService = async (consultationId, data) => {
   );
 
   if (!consultation) {
-    throw new Error("Consultation not found");
-  }
+throw ERR.consultationNotFound(); }
 
   return consultation;
 };

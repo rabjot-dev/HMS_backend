@@ -55,9 +55,10 @@ router.put(
 
 router.get(
   "/prescription/:consultationId",
+  authMiddleware,
   downloadPrescriptionPdf,
 );
 
-router.get("/:id", getConsultationById);
+router.get("/:id", authMiddleware, getConsultationById);
 
 module.exports = router;

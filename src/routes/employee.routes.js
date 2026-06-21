@@ -13,6 +13,7 @@ const {
   getEmployees,
   getEmployeeById,
   updateEmployee,
+  deleteEmployee,
   deactivateEmployee,
   getDoctors,
   activateEmployee,
@@ -67,6 +68,7 @@ router.get(
 router.get(
   "/pending-employees",
   authMiddleware,
+  roleMiddleware("ADMIN"),
   getPendingEmployees
 );
 
@@ -74,6 +76,7 @@ router.get(
 router.patch(
   "/:id/approve-employee",
   authMiddleware,
+  roleMiddleware("ADMIN"),
   approveEmployee
 );
 
@@ -81,6 +84,7 @@ router.patch(
 router.patch(
   "/:id/reject-employee",
   authMiddleware,
+  roleMiddleware("ADMIN"),
   rejectEmployee
 );
 
@@ -106,6 +110,14 @@ router.put(
   authMiddleware,
   roleMiddleware("ADMIN"),
   updateEmployee
+);
+
+// Soft delete employee
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN"),
+  deleteEmployee
 );
 
 // Activate employee account

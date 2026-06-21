@@ -1,6 +1,8 @@
 const Appointment = require("../../models/Appointment");
 const getTodayAppointmentsService = async (user) => {
-  let filter = {};
+  let filter = {
+    isDeleted: { $ne: true },
+  };
 
   if (user?.roles?.includes("DOCTOR")) {
     filter.doctorEmployeeId = user.employeeId;
@@ -29,3 +31,4 @@ const getTodayAppointmentsService = async (user) => {
   return todayAppointments.sort((a, b) => a.timeSlot.localeCompare(b.timeSlot));
 };
 module.exports = getTodayAppointmentsService;
+

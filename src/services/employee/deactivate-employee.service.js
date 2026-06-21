@@ -1,21 +1,33 @@
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
 const STATUS = require("../../constants/status");
+const ERR = require("../../utils/errors");
 
-const deactivateEmployeeService =
-  async (employeeId) => {
+const deactivateEmployeeService = async (employeeId, deactivatedBy) => {
+  const employee = await Employee.findOneAndUpdate(
+    {
+      _id: employeeId,
+      isDeleted: { $ne: true },
+    },
+    {
+      status: STATUS.INACTIVE,
+      deactivatedBy,
+      deactivatedDate: new Date(),
+    },
+    { new: true }
+  );
 
-    await User.findOneAndUpdate(
-      { employeeId },
-      { status: STATUS.INACTIVE }
-    );
+  if (!employee) {
+    throw ERR.employeeNotFound();
+  }
 
-    return Employee.findByIdAndUpdate(
-      employeeId,
-      { status: STATUS.INACTIVE },
-      { new: true }
-    );
-  };
+  await User.findOneAndUpdate(
+    { employeeId },
+    { status: STATUS.INACTIVE }
+  );
 
-module.exports =
-  deactivateEmployeeService;
+  return employee;
+};
+
+module.exports = deactivateEmployeeService;
+

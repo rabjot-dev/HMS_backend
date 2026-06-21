@@ -44,6 +44,18 @@ const registerPatientMobileValidation = [
       }
       return true;
     }),
+
+  body("securityQuestion")
+    .trim()
+    .notEmpty()
+    .withMessage("Security question is required"),
+
+  body("securityAnswer")
+    .trim()
+    .notEmpty()
+    .withMessage("Security answer is required")
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Security answer must be between 2 and 100 characters"),
 ];
 
 module.exports = {

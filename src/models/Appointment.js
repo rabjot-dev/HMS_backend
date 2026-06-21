@@ -51,6 +51,44 @@ const appointmentSchema = new mongoose.Schema(
       default: STATUS.BOOKED,
     },
 
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    approvedDate: {
+      type: Date,
+      default: null,
+    },
+
+    rejectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    rejectedDate: {
+      type: Date,
+      default: null,
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    deletedDate: {
+      type: Date,
+      default: null,
+    },
+
     createdByEmployeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",

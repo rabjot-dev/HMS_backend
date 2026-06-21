@@ -1,113 +1,82 @@
-const Patient =
-require("../../models/Patient");
+const Patient = require("../../models/Patient");
 
-const Appointment =
-require("../../models/Appointment");
+const Appointment = require("../../models/Appointment");
+const ERR = require("../../utils/errors");
 
-const getPatientDashboard =
-async (patientId) => {
-
-  const patient =
-    await Patient.findById(
-      patientId
-    );
+const getPatientDashboard = async (patientId) => {
+  const patient = await Patient.findOne({
+    _id: patientId,
+    isDeleted: { $ne: true },
+  });
 
   if (!patient) {
-
-    throw new Error(
-      "Patient not found"
-    );
+throw ERR.patientNotFound();
   }
+  const pendingCount = await Appointment.countDocuments({
+    patientId,
+    isDeleted: { $ne: true },
 
-  const pendingCount =
-    await Appointment.countDocuments({
+    status: "PENDING",
+  });
 
-      patientId,
+  const bookedCount = await Appointment.countDocuments({
+    patientId,
+    isDeleted: { $ne: true },
 
-      status:
-        "PENDING",
+    status: "BOOKED",
+  });
+
+  const completedCount = await Appointment.countDocuments({
+    patientId,
+    isDeleted: { $ne: true },
+
+    status: "COMPLETED",
+  });
+
+  const cancelledCount = await Appointment.countDocuments({
+    patientId,
+    isDeleted: { $ne: true },
+
+    status: "CANCELLED",
+  });
+
+  const upcomingAppointment = await Appointment.findOne({
+    patientId,
+    isDeleted: { $ne: true },
+
+    status: {
+      $in: ["PENDING", "BOOKED"],
+    },
+  })
+
+    .populate("doctorEmployeeId")
+
+    .sort({
+      appointmentDate: 1,
     });
-
-  const bookedCount =
-    await Appointment.countDocuments({
-
-      patientId,
-
-      status:
-        "BOOKED",
-    });
-
-  const completedCount =
-    await Appointment.countDocuments({
-
-      patientId,
-
-      status:
-        "COMPLETED",
-    });
-
-  const cancelledCount =
-    await Appointment.countDocuments({
-
-      patientId,
-
-      status:
-        "CANCELLED",
-    });
-
-  const upcomingAppointment =
-    await Appointment.findOne({
-
-      patientId,
-
-      status: {
-        $in: [
-          "PENDING",
-          "BOOKED",
-        ],
-      },
-    })
-
-      .populate(
-        "doctorEmployeeId"
-      )
-
-      .sort({
-        appointmentDate: 1,
-      });
 
   return {
-
     patient: {
+      firstName: patient.firstName,
 
-      firstName:
-        patient.firstName,
+      lastName: patient.lastName,
 
-      lastName:
-        patient.lastName,
-
-      patientId:
-        patient.patientId,
+      patientId: patient.patientId,
     },
 
     appointmentSummary: {
+      pending: pendingCount,
 
-      pending:
-        pendingCount,
+      booked: bookedCount,
 
-      booked:
-        bookedCount,
+      completed: completedCount,
 
-      completed:
-        completedCount,
-
-      cancelled:
-        cancelledCount,
+      cancelled: cancelledCount,
     },
 
     upcomingAppointment,
   };
 };
 
-module.exports =
-  getPatientDashboard;
+module.exports = getPatientDashboard;
+
