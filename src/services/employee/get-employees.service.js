@@ -51,15 +51,19 @@ const getEmployeesService =
       filter.status = status;
     }
 
-    if (department) {
-      filter.department =
-        department;
-    }
+   if (department?.trim()) {
+  filter.department = {
+    $regex: `^${department.trim()}$`,
+    $options: "i",
+  };
+}
 
-    if (designation) {
-      filter.designation =
-        designation;
-    }
+if (designation?.trim()) {
+  filter.designation = {
+    $regex: `^${designation.trim()}$`,
+    $options: "i",
+  };
+}
 
   // pagination
 

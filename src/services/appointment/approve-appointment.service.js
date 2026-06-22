@@ -3,7 +3,7 @@ const Patient = require("../../models/Patient");
 const Employee = require("../../models/Employee");
 
 const STATUS = require("../../constants/status");
-
+const getNextTokenNumber = require("../../utils/getNextTokenNumber")
 const sendEmail = require("../../utils/sendEmail");
 const appointmentApprovedTemplate = require("../../templates/appointment-approved.template");
 
@@ -32,41 +32,18 @@ const approveAppointment = async (
     );
   }
 
-  const todayAppointmentsCount =
-    await Appointment.countDocuments({
-      doctorEmployeeId:
-        appointment.doctorEmployeeId,
+// Generate Token number
+  appointment.tokenNumber = await getNextTokenNumber(
+    appointment.doctorEmployeeId,
+    appointment.appointmentDate
+  );
 
-      appointmentDate:
-        appointment.appointmentDate,
-
-      status: {
-        $in: [
-          STATUS.BOOKED,
-          STATUS.IN_CONSULTATION,
-          STATUS.COMPLETED,
-        ],
-      },
-
-      isDeleted: false,
-    });
-
-  appointment.tokenNumber =
-    todayAppointmentsCount + 1;
-
-  appointment.status =
-    STATUS.BOOKED;
-
-  appointment.approvedBy =
-    approvedBy;
-
-  appointment.approvalDate =
-    new Date();
-
+  appointment.status = "BOOKED";
+  appointment.approvedBy = approvedBy;
+  appointment.approvedDate = new Date();
   appointment.rejectedBy = null;
   appointment.rejectedDate = null;
-  appointment.rejectionReason = null;
-
+ 
   await appointment.save();
 
   const patient =

@@ -19,11 +19,13 @@ const getConsultationsService =
   ) => {
     const {
       search,
-      doctor,
-      patient,
-      status,
-      page,
-      limit,
+  doctor,
+  patient,
+  status,
+  startDate,
+  endDate,
+  page,
+  limit,
     } = query;
 
     const filter = {
@@ -64,6 +66,31 @@ const getConsultationsService =
     if (status) {
       filter.status = status;
     }
+    /*
+|--------------------------------------------------------------------------
+| Date Range Filter
+|--------------------------------------------------------------------------
+*/
+
+if (startDate || endDate) {
+  filter.createdAt = {};
+
+  if (startDate) {
+    filter.createdAt.$gte = new Date(startDate);
+  }
+
+  if (endDate) {
+    const end = new Date(endDate);
+    end.setHours(
+      23,
+      59,
+      59,
+      999
+    );
+
+    filter.createdAt.$lte = end;
+  }
+}
 
     /*
     |--------------------------------------------------------------------------

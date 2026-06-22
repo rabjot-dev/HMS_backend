@@ -20,9 +20,19 @@ const seedNodes =
       path: node.path,
     });
 
-  if (!existingNode) {
-    await Node.create(node);
-  }
+  for (const node of defaultNodes) {
+  await Node.findOneAndUpdate(
+    {
+      path: node.path
+    },
+    node,
+    {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true
+    }
+  );
+}
 }
 
       console.log(

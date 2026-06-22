@@ -1,7 +1,7 @@
 const Appointment = require("../../models/Appointment");
 const Employee = require("../../models/Employee");
 const Patient = require("../../models/Patient");
-
+const getNextTokenNumber = require("../../utils/getNextTokenNumber")
 const generateAppointmentId = require("../../utils/generateAppointmentId");
 
 const bookAppointment = async (appointmentData, user) => {
@@ -142,16 +142,7 @@ const doctor =
   const appointmentId = await generateAppointmentId();
 
   // Generate queue token number
-  const todayAppointmentsCount = await Appointment.countDocuments({
-    doctorEmployeeId: doctorId,
-    appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
-    },
-    isDeleted:false,
-  });
-
-  const tokenNumber = todayAppointmentsCount + 1;
+  const tokenNumber = await getNextTokenNumber(doctorId, appointmentData);
 
   // Create appointment record
   const appointment = await Appointment.create({
