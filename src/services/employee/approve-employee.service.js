@@ -5,7 +5,7 @@ const STATUS = require("../../constants/status");
 const approveEmployeeService = async (
   employeeId,
   consultationFee,
-  approvedBy
+  approvedBy,
 ) => {
   const user = await User.findOne({
     employeeId,
@@ -13,48 +13,33 @@ const approveEmployeeService = async (
   });
 
   if (!user) {
-    throw new Error(
-      "Employee account not found"
-    );
+    throw new Error("Employee account not found");
   }
 
-  const employee =
-    await Employee.findOne({
-      _id: employeeId,
-      isDeleted: false,
-    });
+  const employee = await Employee.findOne({
+    _id: employeeId,
+    isDeleted: false,
+  });
 
   if (!employee) {
     throw new Error("Employee not found");
   }
 
-  if (
-    employee.designation ===
-      "DOCTOR" &&
-    !consultationFee
-  ) {
-    throw new Error(
-      "Consultation fee is required for doctors"
-    );
+  if (employee.designation === "DOCTOR" && !consultationFee) {
+    throw new Error("Consultation fee is required for doctors");
   }
 
-  if (
-    employee.designation ===
-    "DOCTOR"
-  ) {
-    employee.consultationFee =
-      Number(consultationFee);
+  if (employee.designation === "DOCTOR") {
+    employee.consultationFee = Number(consultationFee);
   }
 
   employee.status = STATUS.ACTIVE;
   employee.approvedBy = approvedBy;
-  employee.approvalDate =
-    new Date();
+  employee.approvalDate = new Date();
 
   employee.rejectedBy = null;
   employee.rejectedDate = null;
-  employee.rejectionReason =
-    null;
+  employee.rejectionReason = null;
 
   user.status = STATUS.ACTIVE;
 
@@ -64,5 +49,4 @@ const approveEmployeeService = async (
   return employee;
 };
 
-module.exports =
-  approveEmployeeService;
+module.exports = approveEmployeeService;

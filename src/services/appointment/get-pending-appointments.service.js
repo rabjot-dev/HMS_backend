@@ -1,35 +1,29 @@
-const Appointment =
-  require("../../models/Appointment");
+const Appointment = require("../../models/Appointment");
 
-const STATUS =
-  require("../../constants/status");
+const STATUS = require("../../constants/status");
 
-const getPendingAppointments =
-  async () => {
-    return Appointment.find({
-      status:
-        STATUS.PENDING,
+const getPendingAppointments = async () => {
+  return Appointment.find({
+    status: STATUS.PENDING,
 
-      isDeleted: false,
+    isDeleted: false,
+  })
+    .populate({
+      path: "patientId",
+      match: {
+        isDeleted: false,
+      },
     })
-      .populate({
-        path: "patientId",
-        match: {
-          isDeleted: false,
-        },
-      })
-      .populate({
-        path:
-          "doctorEmployeeId",
+    .populate({
+      path: "doctorEmployeeId",
 
-        match: {
-          isDeleted: false,
-        },
-      })
-      .sort({
-        createdAt: -1,
-      });
-  };
+      match: {
+        isDeleted: false,
+      },
+    })
+    .sort({
+      createdAt: -1,
+    });
+};
 
-module.exports =
-  getPendingAppointments;
+module.exports = getPendingAppointments;

@@ -1,27 +1,26 @@
 const Appointment = require("../../models/Appointment");
 const getTodayAppointmentsService = async (user) => {
   let filter = {
-  isDeleted: false,
-};
+    isDeleted: false,
+  };
   if (user?.roles?.includes("DOCTOR")) {
     filter.doctorEmployeeId = user.employeeId;
   }
 
   const appointments = await Appointment.find(filter)
-   .populate({
-  path: "patientId",
-  match: {
-    isDeleted: false,
-  },
-})
-.populate({
-  path:
-    "doctorEmployeeId",
+    .populate({
+      path: "patientId",
+      match: {
+        isDeleted: false,
+      },
+    })
+    .populate({
+      path: "doctorEmployeeId",
 
-  match: {
-    isDeleted: false,
-  },
-});
+      match: {
+        isDeleted: false,
+      },
+    });
 
   const today = new Date();
 

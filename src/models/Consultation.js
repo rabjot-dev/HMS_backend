@@ -98,90 +98,91 @@ const consultationSchema = new mongoose.Schema(
       default: "IN_PROGRESS",
     },
     createdBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
-updatedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
-isDeleted: {
-  type: Boolean,
-  default: false,
-},
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
 
-deletedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
-deletedAt: {
-  type: Date,
-  default: null,
-},
-followUpDate: {
-  type: Date,
-  default: null,
-},
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    followUpDate: {
+      type: Date,
+      default: null,
+    },
 
-diagnosisCategory: {
-  type: String,
-  trim: true,
-},
-
-labRecommendations: [
-  {
-    type: String,
-    trim: true,
-  },
-],
-
-labReports: [
-  { reportName: {
+    diagnosisCategory: {
       type: String,
       trim: true,
     },
 
-    uploadedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+    labRecommendations: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
 
-    uploadedAt: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-],
+    labReports: [
+      {
+        reportName: {
+          type: String,
+          trim: true,
+        },
 
-attachments: [
-  {
-    fileName: String,
-    fileUrl: String,
-    type: String,
-    trim: true,
+        uploadedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
 
-    uploadedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+        uploadedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
 
-    uploadedAt: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-],
+    attachments: [
+      {
+        fileName: String,
+        fileUrl: String,
+        type: String,
+        trim: true,
+
+        uploadedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        uploadedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 consultationSchema.index({
   patientId: 1,
@@ -202,9 +203,6 @@ consultationSchema.index({
   isDeleted: 1,
 });
 
-const Consultation = mongoose.model(
-  "Consultation",
-  consultationSchema
-);
+const Consultation = mongoose.model("Consultation", consultationSchema);
 
 module.exports = Consultation;

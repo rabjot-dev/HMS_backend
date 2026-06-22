@@ -2,10 +2,7 @@ const Employee = require("../../models/Employee");
 const User = require("../../models/User");
 const STATUS = require("../../constants/status");
 
-const activateEmployeeService = async (
-  employeeId,
-  userId
-) => {
+const activateEmployeeService = async (employeeId, userId) => {
   const employee = await Employee.findOne({
     _id: employeeId,
     isDeleted: false,

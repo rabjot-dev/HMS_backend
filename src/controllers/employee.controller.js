@@ -41,31 +41,20 @@ const createEmployee = async (req, res) => {
 };
 
 // Get all employees
-const getEmployees =
-  async (
-    req,
-    res,
-    next,
-  ) => {
-    try {
-      const result =
-        await getEmployeesService(
-          req.query,
-        );
+const getEmployees = async (req, res, next) => {
+  try {
+    const result = await getEmployeesService(req.query);
 
-      return res.status(200).json({
-        success: true,
-        message:
-          "Employees retrieved successfully",
-        data:
-          result.data,
-        meta:
-          result.meta,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+    return res.status(200).json({
+      success: true,
+      message: "Employees retrieved successfully",
+      data: result.data,
+      meta: result.meta,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // Get employee details by ID
 const getEmployeeById = async (req, res) => {
@@ -117,7 +106,11 @@ const updateEmployee = async (req, res) => {
 
     const { email, employeeCode, ...updateData } = req.body;
 
-    const employee = await updateEmployeeService(id, updateData, req.user.userId);
+    const employee = await updateEmployeeService(
+      id,
+      updateData,
+      req.user.userId,
+    );
 
     if (!employee) {
       return res.status(404).json({
@@ -206,7 +199,7 @@ const approveEmployee = async (req, res) => {
   try {
     const employee = await approveEmployeeService(
       req.params.id,
-      req.body.consultationFee
+      req.body.consultationFee,
     );
 
     return res.status(200).json({
@@ -268,7 +261,7 @@ const updateDoctorAvailability = async (req, res) => {
   try {
     const doctor = await updateDoctorAvailabilityService(
       req.user.userId,
-      req.body
+      req.body,
     );
 
     return res.status(200).json({
@@ -289,9 +282,7 @@ const updateDoctorAvailability = async (req, res) => {
 // Get doctor's current availability
 const getDoctorAvailability = async (req, res) => {
   try {
-    const availability = await getDoctorAvailabilityService(
-      req.user.userId
-    );
+    const availability = await getDoctorAvailabilityService(req.user.userId);
 
     return res.status(200).json({
       success: true,
@@ -307,28 +298,19 @@ const getDoctorAvailability = async (req, res) => {
     });
   }
 };
-// delete employee 
-const deleteEmployee =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const result =
-        await deleteEmployeeService(
-          req.params.id,
-          req.user.userId
-        );
+// delete employee
+const deleteEmployee = async (req, res, next) => {
+  try {
+    const result = await deleteEmployeeService(req.params.id, req.user.userId);
 
-      res.json({
-        success: true,
-        ...result,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+    res.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   createEmployee,

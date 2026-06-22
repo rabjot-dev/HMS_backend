@@ -40,14 +40,14 @@ const appointmentSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-  STATUS.PENDING,
-  STATUS.BOOKED,
-  STATUS.REJECTED,
-  STATUS.CANCELLED,
-  STATUS.COMPLETED,
-  STATUS.IN_CONSULTATION,
-  STATUS.NO_SHOW,
-],
+        STATUS.PENDING,
+        STATUS.BOOKED,
+        STATUS.REJECTED,
+        STATUS.CANCELLED,
+        STATUS.COMPLETED,
+        STATUS.IN_CONSULTATION,
+        STATUS.NO_SHOW,
+      ],
       default: STATUS.BOOKED,
     },
 
@@ -57,10 +57,10 @@ const appointmentSchema = new mongoose.Schema(
       default: null,
     },
     createdByPatientId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Patient",
-  default: null,
-},
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Patient",
+      default: null,
+    },
 
     // Type of appointment
     appointmentType: {
@@ -103,59 +103,59 @@ const appointmentSchema = new mongoose.Schema(
       },
     ],
     updatedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
-approvedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
-approvalDate: {
-  type: Date,
-  default: null,
-},
+    approvalDate: {
+      type: Date,
+      default: null,
+    },
 
-rejectedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+    rejectedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
-rejectedDate: {
-  type: Date,
-  default: null,
-},
+    rejectedDate: {
+      type: Date,
+      default: null,
+    },
 
-rejectionReason: {
-  type: String,
-  trim: true,
-  default: null,
-},
+    rejectionReason: {
+      type: String,
+      trim: true,
+      default: null,
+    },
 
-isDeleted: {
-  type: Boolean,
-  default: false,
-},
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
 
-deletedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
-deletedAt: {
-  type: Date,
-  default: null,
-},
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 appointmentSchema.index({
   status: 1,

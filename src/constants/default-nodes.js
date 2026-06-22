@@ -1,18 +1,14 @@
 const ROLES = require("./roles");
 
 module.exports = [
-
- //dashboards 
+  //dashboards
 
   {
     name: "Admin Dashboard",
     path: "/dashboard/admin",
     icon: "dashboard",
     order: 1,
-    roles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-    ],
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
 
   {
@@ -20,9 +16,7 @@ module.exports = [
     path: "/dashboard/doctor",
     icon: "dashboard",
     order: 2,
-    roles: [
-      ROLES.DOCTOR,
-    ],
+    roles: [ROLES.DOCTOR],
   },
 
   {
@@ -30,22 +24,17 @@ module.exports = [
     path: "/dashboard/receptionist",
     icon: "dashboard",
     order: 3,
-    roles: [
-      ROLES.RECEPTIONIST,
-    ],
+    roles: [ROLES.RECEPTIONIST],
   },
 
-// parent menus 
+  // parent menus
 
   {
     name: "Employees",
     path: "/employees",
     icon: "groups",
     order: 10,
-    roles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-    ],
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
 
   {
@@ -53,12 +42,7 @@ module.exports = [
     path: "/patients",
     icon: "people",
     order: 20,
-    roles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.RECEPTIONIST,
-      ROLES.DOCTOR,
-    ],
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR],
   },
 
   {
@@ -66,25 +50,15 @@ module.exports = [
     path: "/appointments",
     icon: "event",
     order: 30,
-    roles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.RECEPTIONIST,
-      ROLES.DOCTOR,
-    ],
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR],
   },
 
-{
-  name: "Health Records",
-  path: "/health-records",
-  icon: "folder_shared",
-  order: 40,
-  roles: [
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
-  ],
+  {
+    name: "Health Records",
+    path: "/health-records",
+    icon: "folder_shared",
+    order: 40,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR],
   },
 
   {
@@ -92,9 +66,7 @@ module.exports = [
     path: "/doctor-queue",
     icon: "queue",
     order: 50,
-    roles: [
-      ROLES.DOCTOR,
-    ],
+    roles: [ROLES.DOCTOR],
   },
 
   {
@@ -102,9 +74,7 @@ module.exports = [
     path: "/doctor-availability",
     icon: "schedule",
     order: 60,
-    roles: [
-      ROLES.DOCTOR,
-    ],
+    roles: [ROLES.DOCTOR],
   },
 
   {
@@ -112,11 +82,6 @@ module.exports = [
     path: "/my-profile",
     icon: "account_circle",
     order: 100,
-    roles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.RECEPTIONIST,
-      ROLES.DOCTOR,
-    ],
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR],
   },
 ];

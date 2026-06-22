@@ -3,32 +3,23 @@ const STATUS = require("../../constants/status");
 
 const getAdminStatsService = async () => {
   const filter = {
-  isDeleted: false,
-};
-const totalEmployees =
-  await Employee.countDocuments(
-    filter
-  );
+    isDeleted: false,
+  };
+  const totalEmployees = await Employee.countDocuments(filter);
 
-const totalDoctors =
-  await Employee.countDocuments({
+  const totalDoctors = await Employee.countDocuments({
     ...filter,
-    designation:
-      "DOCTOR",
+    designation: "DOCTOR",
   });
 
-const totalNurses =
-  await Employee.countDocuments({
+  const totalNurses = await Employee.countDocuments({
     ...filter,
-    designation:
-      "NURSE",
+    designation: "NURSE",
   });
 
-const pendingRequests =
-  await Employee.countDocuments({
+  const pendingRequests = await Employee.countDocuments({
     ...filter,
-    status:
-      STATUS.PENDING,
+    status: STATUS.PENDING,
   });
 
   return {

@@ -18,4 +18,3 @@ const getNextTokenNumber = async (doctorEmployeeId, appointmentDate) => {
 
   return (latestAppointment?.tokenNumber || 0) + 1;
 };
- 

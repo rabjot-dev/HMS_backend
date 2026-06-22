@@ -13,41 +13,29 @@ const jwt = require("jsonwebtoken");
 const login = asyncHandler(async (req, res) => {
   const loginResponse = await loginUser(req.body);
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Login successful",
-      loginResponse
-    )
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Login successful", loginResponse));
 });
 
 const createPassword = asyncHandler(async (req, res) => {
   const serviceResponse = await createEmployeePassword(req.body);
 
-  return res.status(200).json(
-    new ApiResponse(200, serviceResponse.message)
-  );
+  return res.status(200).json(new ApiResponse(200, serviceResponse.message));
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   const user = await getCurrentLoggedInUser(req.user.userId);
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      "User profile retrieved successfully",
-      user
-    )
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "User profile retrieved successfully", user));
 });
 
 const register = asyncHandler(async (req, res) => {
   const result = await registerEmployeeSelf(req.body);
 
-  return res.status(201).json(
-    new ApiResponse(201, result.message)
-  );
+  return res.status(201).json(new ApiResponse(201, result.message));
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
@@ -58,18 +46,14 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw new ApiError(
       404,
       "No account found with the provided email address",
-      "NOT_FOUND"
+      "NOT_FOUND",
     );
   }
 
   return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Security question retrieved successfully",
-      {
-        securityQuestion: user.securityQuestion,
-      }
-    )
+    new ApiResponse(200, "Security question retrieved successfully", {
+      securityQuestion: user.securityQuestion,
+    }),
   );
 });
 
@@ -81,33 +65,26 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new ApiError(
       404,
       "No account found with the provided email address",
-      "NOT_FOUND"
+      "NOT_FOUND",
     );
   }
 
   const isValidAnswer = await bcrypt.compare(
     securityAnswer.trim().toLowerCase(),
-    user.securityAnswer
+    user.securityAnswer,
   );
 
   if (!isValidAnswer) {
-    throw new ApiError(
-      401,
-      "Security answer is incorrect",
-      "UNAUTHORIZED"
-    );
+    throw new ApiError(401, "Security answer is incorrect", "UNAUTHORIZED");
   }
 
-  const isSamePassword = await bcrypt.compare(
-    newPassword,
-    user.passwordHash
-  );
+  const isSamePassword = await bcrypt.compare(newPassword, user.passwordHash);
 
   if (isSamePassword) {
     throw new ApiError(
       409,
       "New password must be different from the current password",
-      "CONFLICT"
+      "CONFLICT",
     );
   }
 
@@ -115,34 +92,23 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.passwordHash = hashedPassword;
   await user.save();
 
-  return res.status(200).json(
-    new ApiResponse(200, "Password reset successfully")
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Password reset successfully"));
 });
 
 const refreshToken = asyncHandler(async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
-    throw new ApiError(
-      401,
-      "Refresh token is required",
-      "UNAUTHORIZED"
-    );
+    throw new ApiError(401, "Refresh token is required", "UNAUTHORIZED");
   }
 
-  const decoded = jwt.verify(
-    refreshToken,
-    process.env.JWT_REFRESH_SECRET
-  );
+  const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
   const user = await User.findById(decoded.userId);
 
   if (!user || user.refreshToken !== refreshToken) {
-    throw new ApiError(
-      401,
-      "Invalid refresh token",
-      "UNAUTHORIZED"
-    );
+    throw new ApiError(401, "Invalid refresh token", "UNAUTHORIZED");
   }
 
   const accessToken = jwt.sign(
@@ -154,25 +120,25 @@ const refreshToken = asyncHandler(async (req, res) => {
     process.env.JWT_SECRET,
     {
       expiresIn: "15m",
-    }
+    },
   );
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      "Access token refreshed successfully",
-      { accessToken }
-    )
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Access token refreshed successfully", {
+        accessToken,
+      }),
+    );
 });
 
 const logout = asyncHandler(async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
-    return res.status(200).json(
-      new ApiResponse(200, "Logged out successfully")
-    );
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Logged out successfully"));
   }
 
   const user = await User.findOne({ refreshToken });
@@ -182,9 +148,7 @@ const logout = asyncHandler(async (req, res) => {
     await user.save();
   }
 
-  return res.status(200).json(
-    new ApiResponse(200, "Logged out successfully")
-  );
+  return res.status(200).json(new ApiResponse(200, "Logged out successfully"));
 });
 
 module.exports = {

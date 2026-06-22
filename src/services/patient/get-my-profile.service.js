@@ -6,8 +6,7 @@ const getMyProfile = async (patientId) => {
     isDeleted: false,
   }).populate({
     path: "assignedDoctor",
-    select:
-      "name department specialization",
+    select: "name department specialization",
     match: {
       isDeleted: false,
     },

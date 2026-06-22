@@ -11,7 +11,7 @@ const generateSequentialId = async (prefix) => {
     },
 
     {
-       returnDocument: "after",
+      returnDocument: "after",
       upsert: true,
     },
   );

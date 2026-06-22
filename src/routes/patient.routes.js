@@ -1,5 +1,5 @@
 const express = require("express");
-const ROLES = require("../constants/roles")
+const ROLES = require("../constants/roles");
 const router = express.Router();
 
 const {
@@ -9,9 +9,9 @@ const {
   updatePatient,
   registerPatientMobile,
   getProfile,
-updateProfile,
-deletePatient,
-getPatientDashboard
+  updateProfile,
+  deletePatient,
+  getPatientDashboard,
 } = require("../controllers/patient.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
@@ -24,9 +24,7 @@ const {
 } = require("../validations/patient.validation");
 const {
   registerPatientMobileValidation,
-} = require(
-  "../validations/register-patient-mobile.validation"
-);
+} = require("../validations/register-patient-mobile.validation");
 // Register a new patient
 router.post(
   "/",
@@ -34,45 +32,32 @@ router.post(
   roleMiddleware("ADMIN", "RECEPTIONIST"),
   createPatientValidation,
   validateMiddleware,
-  createPatient
+  createPatient,
 );
 
 // Get all patients
-router.get(
-  "/",
-  authMiddleware,
-  getPatients
-);
-// get profile 
-router.get(
-  "/profile",
-  authMiddleware,
-  roleMiddleware("PATIENT"),
-  getProfile
-);
+router.get("/", authMiddleware, getPatients);
+// get profile
+router.get("/profile", authMiddleware, roleMiddleware("PATIENT"), getProfile);
 
-// update profile 
+// update profile
 router.put(
   "/profile",
   authMiddleware,
   roleMiddleware("PATIENT"),
   updatePatientValidation,
-  updateProfile
+  updateProfile,
 );
 
 // Patient dashboard
 router.get(
   "/dashboard",
-authMiddleware,
-roleMiddleware( "PATIENT"),
-  getPatientDashboard
+  authMiddleware,
+  roleMiddleware("PATIENT"),
+  getPatientDashboard,
 );
 // Get patient details by ID
-router.get(
-  "/:id",
-  authMiddleware,
-  getPatientById
-);
+router.get("/:id", authMiddleware, getPatientById);
 
 // Update patient information
 router.put(
@@ -81,24 +66,20 @@ router.put(
   roleMiddleware("ADMIN", "RECEPTIONIST"),
   updatePatientValidation,
   validateMiddleware,
-  updatePatient
+  updatePatient,
 );
 // Mobile register
 router.post(
   "/register",
   registerPatientMobileValidation,
   validateMiddleware,
-  registerPatientMobile
+  registerPatientMobile,
 );
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN
-  ),
-  deletePatient
+  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  deletePatient,
 );
-
 
 module.exports = router;

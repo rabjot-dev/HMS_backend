@@ -3,39 +3,28 @@ const Patient = require("../../models/Patient");
 const Employee = require("../../models/Employee");
 
 const STATUS = require("../../constants/status");
-const getNextTokenNumber = require("../../utils/getNextTokenNumber")
+const getNextTokenNumber = require("../../utils/getNextTokenNumber");
 const sendEmail = require("../../utils/sendEmail");
 const appointmentApprovedTemplate = require("../../templates/appointment-approved.template");
 
-const approveAppointment = async (
-  appointmentId,
-  approvedBy
-) => {
-  const appointment =
-    await Appointment.findOne({
-      _id: appointmentId,
-      isDeleted: false,
-    });
+const approveAppointment = async (appointmentId, approvedBy) => {
+  const appointment = await Appointment.findOne({
+    _id: appointmentId,
+    isDeleted: false,
+  });
 
   if (!appointment) {
-    throw new Error(
-      "Appointment not found"
-    );
+    throw new Error("Appointment not found");
   }
 
-  if (
-    appointment.status !==
-    STATUS.PENDING
-  ) {
-    throw new Error(
-      "Only pending appointments can be approved"
-    );
+  if (appointment.status !== STATUS.PENDING) {
+    throw new Error("Only pending appointments can be approved");
   }
 
-// Generate Token number
+  // Generate Token number
   appointment.tokenNumber = await getNextTokenNumber(
     appointment.doctorEmployeeId,
-    appointment.appointmentDate
+    appointment.appointmentDate,
   );
 
   appointment.status = "BOOKED";
@@ -43,48 +32,35 @@ const approveAppointment = async (
   appointment.approvedDate = new Date();
   appointment.rejectedBy = null;
   appointment.rejectedDate = null;
- 
+
   await appointment.save();
 
-  const patient =
-    await Patient.findOne({
-      _id:
-        appointment.patientId,
-      isDeleted: false,
-    });
+  const patient = await Patient.findOne({
+    _id: appointment.patientId,
+    isDeleted: false,
+  });
 
-  const doctor =
-    await Employee.findOne({
-      _id:
-        appointment.doctorEmployeeId,
-      isDeleted: false,
-    });
+  const doctor = await Employee.findOne({
+    _id: appointment.doctorEmployeeId,
+    isDeleted: false,
+  });
 
   if (patient?.email) {
-    const htmlContent =
-      appointmentApprovedTemplate({
-        patientName:
-          `${patient.firstName} ${patient.lastName}`,
+    const htmlContent = appointmentApprovedTemplate({
+      patientName: `${patient.firstName} ${patient.lastName}`,
 
-        doctorName:
-          doctor?.name,
+      doctorName: doctor?.name,
 
-        appointmentDate:
-          appointment.appointmentDate
-            .toISOString()
-            .split("T")[0],
+      appointmentDate: appointment.appointmentDate.toISOString().split("T")[0],
 
-        appointmentTime:
-          appointment.timeSlot,
+      appointmentTime: appointment.timeSlot,
 
-        tokenNumber:
-          appointment.tokenNumber,
-      });
+      tokenNumber: appointment.tokenNumber,
+    });
 
     await sendEmail({
       to: patient.email,
-      subject:
-        "Appointment Approved",
+      subject: "Appointment Approved",
       htmlContent,
     });
   }
@@ -92,5 +68,4 @@ const approveAppointment = async (
   return appointment;
 };
 
-module.exports =
-  approveAppointment;
+module.exports = approveAppointment;

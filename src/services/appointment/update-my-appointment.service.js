@@ -1,149 +1,80 @@
 const Appointment = require("../../models/Appointment");
 
-const updateMyAppointment = async (
-  appointmentId,
-  patientId,
-  updateData
-) => {
+const updateMyAppointment = async (appointmentId, patientId, updateData) => {
+  const { appointmentDate, appointmentTime, symptoms } = updateData;
 
-  const {
-    appointmentDate,
-    appointmentTime,
-    symptoms,
-  } = updateData;
-
-  const appointment =
-  await Appointment.findOne({
-    _id:
-      appointmentId,
+  const appointment = await Appointment.findOne({
+    _id: appointmentId,
 
     isDeleted: false,
   });
 
   if (!appointment) {
-    throw new Error(
-      "Appointment not found"
-    );
+    throw new Error("Appointment not found");
   }
 
-  if (
-    appointment.patientId.toString() !==
-    patientId
-  ) {
-    throw new Error(
-      "Unauthorized access"
-    );
+  if (appointment.patientId.toString() !== patientId) {
+    throw new Error("Unauthorized access");
   }
 
-  if (
-    appointment.status !==
-   STATUS.PENDING
-  ) {
-    throw new Error(
-      "Only pending appointments can be modified"
-    );
+  if (appointment.status !== STATUS.PENDING) {
+    throw new Error("Only pending appointments can be modified");
   }
 
-  const selectedDate =
-    new Date(
-      appointmentDate
-    );
+  const selectedDate = new Date(appointmentDate);
 
-  const today =
-    new Date();
+  const today = new Date();
 
-  today.setHours(
-    0, 0, 0, 0
-  );
+  today.setHours(0, 0, 0, 0);
 
-  selectedDate.setHours(
-    0, 0, 0, 0
-  );
+  selectedDate.setHours(0, 0, 0, 0);
 
-  if (
-    selectedDate < today
-  ) {
-    throw new Error(
-      "Past date not allowed"
-    );
+  if (selectedDate < today) {
+    throw new Error("Past date not allowed");
   }
 
-  const [year, month, day] =
-    appointmentDate
-      .split("-")
-      .map(Number);
+  const [year, month, day] = appointmentDate.split("-").map(Number);
 
-  const normalizedDate =
-    new Date(
-      year,
-      month - 1,
-      day,
-      12,
-      0,
-      0
-    );
+  const normalizedDate = new Date(year, month - 1, day, 12, 0, 0);
 
-  const nextDay =
-    new Date(
-      normalizedDate
-    );
+  const nextDay = new Date(normalizedDate);
 
-  nextDay.setDate(
-    nextDay.getDate() + 1
-  );
+  nextDay.setDate(nextDay.getDate() + 1);
 
-  const existingAppointment =
-    await Appointment.findOne({
+  const existingAppointment = await Appointment.findOne({
+    _id: {
+      $ne: appointmentId,
+    },
 
-      _id: {
-        $ne: appointmentId,
-      },
+    doctorEmployeeId: appointment.doctorEmployeeId,
 
-      doctorEmployeeId:
-        appointment.doctorEmployeeId,
+    timeSlot: appointmentTime,
 
-      timeSlot:
-        appointmentTime,
+    appointmentDate: {
+      $gte: normalizedDate,
 
-      appointmentDate: {
-        $gte:
-          normalizedDate,
+      $lt: nextDay,
+    },
 
-        $lt:
-          nextDay,
-      },
+    status: {
+      $nin: [STATUS.CANCELLED, STATUS.REJECTED, STATUS.NO_SHOW],
+    },
+    isDeleted: false,
+  });
 
-     status: {
-  $nin: [
-    STATUS.CANCELLED,
-    STATUS.REJECTED,
-    STATUS.NO_SHOW,
-  ],
-},
-      isDeleted: false,
-    });
-
-  if (
-    existingAppointment
-  ) {
-    throw new Error(
-      "Selected slot already booked"
-    );
+  if (existingAppointment) {
+    throw new Error("Selected slot already booked");
   }
 
-  appointment.appointmentDate =
-    appointmentDate;
+  appointment.appointmentDate = appointmentDate;
 
-  appointment.timeSlot =
-    appointmentTime;
+  appointment.timeSlot = appointmentTime;
 
-  appointment.symptoms =
-    symptoms || [];
+  appointment.symptoms = symptoms || [];
 
   await appointment.save();
 
   return appointment;
 };
 
-module.exports =
-  updateMyAppointment;
+module.exports = updateMyAppointment;

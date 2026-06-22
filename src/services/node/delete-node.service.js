@@ -1,40 +1,28 @@
-const Node =
-  require("../../models/Node");
+const Node = require("../../models/Node");
 
-const deleteNodeService =
-  async (
-    id,
-    userId
-  ) => {
-    const node =
-      await Node.findOneAndUpdate(
-        {
-          _id: id,
-          isDeleted: false,
-        },
-        {
-          isDeleted: true,
-          deletedBy:
-            userId,
-          deletedAt:
-            new Date(),
-        },
-        {
-           returnDocument: "after",
-        }
-      );
+const deleteNodeService = async (id, userId) => {
+  const node = await Node.findOneAndUpdate(
+    {
+      _id: id,
+      isDeleted: false,
+    },
+    {
+      isDeleted: true,
+      deletedBy: userId,
+      deletedAt: new Date(),
+    },
+    {
+      returnDocument: "after",
+    },
+  );
 
-    if (!node) {
-      throw new Error(
-        "Node not found"
-      );
-    }
+  if (!node) {
+    throw new Error("Node not found");
+  }
 
-    return {
-      message:
-        "Node deleted successfully",
-    };
+  return {
+    message: "Node deleted successfully",
   };
+};
 
-module.exports =
-  deleteNodeService;
+module.exports = deleteNodeService;

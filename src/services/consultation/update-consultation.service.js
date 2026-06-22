@@ -1,40 +1,23 @@
-const Consultation =
-  require("../../models/consultation");
+const Consultation = require("../../models/consultation");
 
-const updateConsultationService =
-  async (
-    consultationId,
-    data,
-    updatedBy
-  ) => {
-    const consultation =
-      await Consultation.findOne({
-        _id:
-          consultationId,
+const updateConsultationService = async (consultationId, data, updatedBy) => {
+  const consultation = await Consultation.findOne({
+    _id: consultationId,
 
-        isDeleted: false,
-      });
+    isDeleted: false,
+  });
 
-    if (
-      !consultation
-    ) {
-      throw new Error(
-        "Consultation not found"
-      );
-    }
+  if (!consultation) {
+    throw new Error("Consultation not found");
+  }
 
-    Object.assign(
-      consultation,
-      data
-    );
+  Object.assign(consultation, data);
 
-    consultation.updatedBy =
-      updatedBy;
+  consultation.updatedBy = updatedBy;
 
-    await consultation.save();
+  await consultation.save();
 
-    return consultation;
-  };
+  return consultation;
+};
 
-module.exports =
-  updateConsultationService;
+module.exports = updateConsultationService;

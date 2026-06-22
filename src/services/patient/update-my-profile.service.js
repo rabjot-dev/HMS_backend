@@ -1,49 +1,30 @@
-const Patient =
-  require("../../models/Patient");
+const Patient = require("../../models/Patient");
 
-const updateMyProfile =
-  async (
-    patientId,
-    updateData,
-    updatedBy
-  ) => {
-    if (
-      updateData.maritalStatus ===
-      ""
-    ) {
-      delete updateData.maritalStatus;
-    }
+const updateMyProfile = async (patientId, updateData, updatedBy) => {
+  if (updateData.maritalStatus === "") {
+    delete updateData.maritalStatus;
+  }
 
-    if (
-      updateData.gender === ""
-    ) {
-      delete updateData.gender;
-    }
+  if (updateData.gender === "") {
+    delete updateData.gender;
+  }
 
-    const patient =
-      await Patient.findOne({
-        _id: patientId,
-        isDeleted: false,
-      });
+  const patient = await Patient.findOne({
+    _id: patientId,
+    isDeleted: false,
+  });
 
-    if (!patient) {
-      throw new Error(
-        "Patient not found"
-      );
-    }
+  if (!patient) {
+    throw new Error("Patient not found");
+  }
 
-    Object.assign(
-      patient,
-      updateData
-    );
+  Object.assign(patient, updateData);
 
-    patient.updatedBy =
-      updatedBy;
+  patient.updatedBy = updatedBy;
 
-    await patient.save();
+  await patient.save();
 
-    return patient;
-  };
+  return patient;
+};
 
-module.exports =
-  updateMyProfile;
+module.exports = updateMyProfile;

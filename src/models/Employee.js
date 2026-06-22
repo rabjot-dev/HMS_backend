@@ -82,12 +82,7 @@ const employeeSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: [
-        STATUS.ACTIVE,
-        STATUS.INACTIVE,
-        STATUS.PENDING,
-        STATUS.REJECTED,
-      ],
+      enum: [STATUS.ACTIVE, STATUS.INACTIVE, STATUS.PENDING, STATUS.REJECTED],
       default: STATUS.PENDING,
     },
 
@@ -192,9 +187,8 @@ const employeeSchema = new mongoose.Schema(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
-
 
 employeeSchema.index({
   status: 1,

@@ -2,19 +2,14 @@ const Patient = require("../../models/Patient");
 const Appointment = require("../../models/Appointment");
 const STATUS = require("../../constants/status");
 
-const getPatientDashboard = async (
-  patientId
-) => {
-  const patient =
-    await Patient.findOne({
-      _id: patientId,
-      isDeleted: false,
-    });
+const getPatientDashboard = async (patientId) => {
+  const patient = await Patient.findOne({
+    _id: patientId,
+    isDeleted: false,
+  });
 
   if (!patient) {
-    throw new Error(
-      "Patient not found"
-    );
+    throw new Error("Patient not found");
   }
 
   const baseFilter = {
@@ -22,85 +17,67 @@ const getPatientDashboard = async (
     isDeleted: false,
   };
 
-  const pendingCount =
-    await Appointment.countDocuments({
-      ...baseFilter,
-      status: STATUS.PENDING,
-    });
+  const pendingCount = await Appointment.countDocuments({
+    ...baseFilter,
+    status: STATUS.PENDING,
+  });
 
-  const bookedCount =
-    await Appointment.countDocuments({
-      ...baseFilter,
-      status: STATUS.BOOKED,
-    });
+  const bookedCount = await Appointment.countDocuments({
+    ...baseFilter,
+    status: STATUS.BOOKED,
+  });
 
-  const completedCount =
-    await Appointment.countDocuments({
-      ...baseFilter,
-      status: STATUS.COMPLETED,
-    });
+  const completedCount = await Appointment.countDocuments({
+    ...baseFilter,
+    status: STATUS.COMPLETED,
+  });
 
-  const cancelledCount =
-    await Appointment.countDocuments({
-      ...baseFilter,
-      status: STATUS.CANCELLED,
-    });
+  const cancelledCount = await Appointment.countDocuments({
+    ...baseFilter,
+    status: STATUS.CANCELLED,
+  });
 
-  const upcomingAppointment =
-    await Appointment.findOne({
-      ...baseFilter,
+  const upcomingAppointment = await Appointment.findOne({
+    ...baseFilter,
 
-      status: {
-        $in: [
-          STATUS.PENDING,
-          STATUS.BOOKED,
-        ],
+    status: {
+      $in: [STATUS.PENDING, STATUS.BOOKED],
+    },
+  })
+    .populate({
+      path: "doctorEmployeeId",
+
+      select: "name department specialization",
+
+      match: {
+        isDeleted: false,
       },
     })
-      .populate({
-        path:
-          "doctorEmployeeId",
-
-        select:
-          "name department specialization",
-
-        match: {
-          isDeleted: false,
-        },
-      })
-      .sort({
-        appointmentDate: 1,
-      });
+    .sort({
+      appointmentDate: 1,
+    });
 
   return {
     patient: {
-      firstName:
-        patient.firstName,
+      firstName: patient.firstName,
 
-      lastName:
-        patient.lastName,
+      lastName: patient.lastName,
 
-      patientId:
-        patient.patientId,
+      patientId: patient.patientId,
     },
 
     appointmentSummary: {
-      pending:
-        pendingCount,
+      pending: pendingCount,
 
-      booked:
-        bookedCount,
+      booked: bookedCount,
 
-      completed:
-        completedCount,
+      completed: completedCount,
 
-      cancelled:
-        cancelledCount,
+      cancelled: cancelledCount,
     },
 
     upcomingAppointment,
   };
 };
 
-module.exports =
-  getPatientDashboard;
+module.exports = getPatientDashboard;

@@ -1,31 +1,21 @@
-const express =
-  require("express");
+const express = require("express");
 
-const router =
-  express.Router();
+const router = express.Router();
 
-const authMiddleware =
-  require("../middleware/auth.middleware");
+const authMiddleware = require("../middleware/auth.middleware");
 
-const roleMiddleware =
-  require("../middleware/role.middleware");
-const upload =
-  require(
-    "../middleware/upload.middleware"
-  );
-const ROLES =
-  require("../constants/roles");
+const roleMiddleware = require("../middleware/role.middleware");
+const upload = require("../middleware/upload.middleware");
+const ROLES = require("../constants/roles");
 
 const {
   getHealthRecords,
   getHealthRecordDetails,
-    addLabReport,
+  addLabReport,
   deleteLabReport,
   addMedicalDocument,
   deleteMedicalDocument,
-} = require(
-  "../controllers/health-record.controller"
-);
+} = require("../controllers/health-record.controller");
 
 router.get(
   "/",
@@ -34,9 +24,9 @@ router.get(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
+    ROLES.DOCTOR,
   ),
-  getHealthRecords
+  getHealthRecords,
 );
 
 router.get(
@@ -46,32 +36,24 @@ router.get(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
+    ROLES.DOCTOR,
   ),
-  getHealthRecordDetails
+  getHealthRecordDetails,
 );
-
 
 router.delete(
   "/:patientId/lab-reports/:reportId",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN
-  ),
-  deleteLabReport
+  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  deleteLabReport,
 );
 
 router.delete(
   "/:patientId/medical-documents/:documentId",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN
-  ),
-  deleteMedicalDocument
+  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  deleteMedicalDocument,
 );
-
 
 router.post(
   "/:patientId/lab-reports",
@@ -80,12 +62,10 @@ router.post(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
+    ROLES.DOCTOR,
   ),
-  upload.single(
-    "document"
-  ),
-  addLabReport
+  upload.single("document"),
+  addLabReport,
 );
 
 router.post(
@@ -95,12 +75,9 @@ router.post(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
+    ROLES.DOCTOR,
   ),
-  upload.single(
-    "document"
-  ),
-  addMedicalDocument
+  upload.single("document"),
+  addMedicalDocument,
 );
-module.exports =
-  router;
+module.exports = router;

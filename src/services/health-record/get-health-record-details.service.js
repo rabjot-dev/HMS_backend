@@ -1,32 +1,27 @@
-const Consultation =
-  require("../../models/consultation");
+const Consultation = require("../../models/consultation");
 
-const Patient =
-  require("../../models/Patient");
+const Patient = require("../../models/Patient");
 
-const ROLES =
-  require("../../constants/roles");
+const ROLES = require("../../constants/roles");
+const mongoose = require("mongoose");
+const ApiError = require("../../utils/ApiError");
 
-const ApiError =
-  require("../../utils/ApiError");
+const getHealthRecordDetailsService = async (patientId, user) => {
+  console.log(user);
+  console.log(user.employeeId);
 
-const getHealthRecordDetailsService =
-  async (
-    patientId,
-    user
-  ) => {
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Patient
     |--------------------------------------------------------------------------
     */
 
-    const patient =
-      await Patient.findOne({
-        _id: patientId,
-        isDeleted: false,
-      })
-        .select(`
+  const patient = await Patient.findOne({
+    _id: patientId,
+    isDeleted: false,
+  })
+    .select(
+      `
   patientId
   firstName
   lastName
@@ -40,70 +35,68 @@ const getHealthRecordDetailsService =
   medicalHistory
   labReports
   medicalDocuments
-`)
-        .lean();
+`,
+    )
+    .lean();
 
-    if (!patient) {
-      throw new ApiError(
-        404,
-        "Patient not found",
-        "PATIENT_NOT_FOUND"
-      );
+  if (!patient) {
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
+  }
+  if (user.roles?.includes(ROLES.DOCTOR)) {
+    const hasAccess = await Consultation.exists({
+      patientId,
+      doctorEmployeeId: user.employeeId,
+      isDeleted: false,
+    });
+
+    if (!hasAccess) {
+      throw new ApiError(403, "Access denied", "ACCESS_DENIED");
     }
+  }
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Consultation Filter
     |--------------------------------------------------------------------------
     */
 
-    const filter = {
-      patientId,
-      isDeleted: false,
-    };
+  const filter = {
+    patientId,
+    isDeleted: false,
+  };
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Doctor Visibility
     |--------------------------------------------------------------------------
     */
 
-    if (
-      user.roles?.includes(
-        ROLES.DOCTOR
-      )
-    ) {
-      filter.doctorEmployeeId =
-        user.employeeId;
-    }
+  if (user.roles?.includes(ROLES.DOCTOR)) {
+    filter.doctorEmployeeId = new mongoose.Types.ObjectId(user.employeeId);
+  }
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Timeline
     |--------------------------------------------------------------------------
     */
 
-    const consultations =
-      await Consultation.find(
-        filter
-      )
-        .populate({
-          path:
-            "doctorEmployeeId",
+  const consultations = await Consultation.find(filter)
+    .populate({
+      path: "doctorEmployeeId",
 
-          select:
-            `
+      select: `
             name
             department
             specialization
           `,
 
-          match: {
-            isDeleted:
-              false,
-          },
-        })
-      .select(`
+      match: {
+        isDeleted: false,
+      },
+    })
+    .select(
+      `
   appointmentId
   patientId
   doctorEmployeeId
@@ -115,21 +108,19 @@ const getHealthRecordDetailsService =
   status
   createdAt
   updatedAt
-`)
-        .sort({
-          createdAt: -1,
-        })
-        .lean();
+`,
+    )
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
 
-    return {
-  patient,
-  consultations,
-  labReports:
-    patient.labReports ?? [],
-  medicalDocuments:
-    patient.medicalDocuments ?? [],
-};
+  return {
+    patient,
+    consultations,
+    labReports: patient.labReports ?? [],
+    medicalDocuments: patient.medicalDocuments ?? [],
   };
+};
 
-module.exports =
-  getHealthRecordDetailsService;
+module.exports = getHealthRecordDetailsService;

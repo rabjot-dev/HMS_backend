@@ -11,12 +11,12 @@ const {
   updateAppointment,
   getDoctorQueue,
   bookPatientAppointment,
-  getMyAppointments, 
+  getMyAppointments,
   getPendingAppointments,
   approveAppointment,
   rejectAppointment,
   updateMyAppointment,
-  cancelMyAppointment
+  cancelMyAppointment,
 } = require("../controllers/appointment.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
@@ -27,89 +27,69 @@ router.get(
   "/doctor-queue",
   authMiddleware,
   roleMiddleware("DOCTOR"),
-  getDoctorQueue
+  getDoctorQueue,
 );
 
 // Get available slots for a doctor
-router.get(
-  "/available-slots",
-  authMiddleware,
-  getAvailableSlots
-);
+router.get("/available-slots", authMiddleware, getAvailableSlots);
 
 // Get all appointments
-router.get(
-  "/",
-  authMiddleware,
-  getAppointments
-);
+router.get("/", authMiddleware, getAppointments);
 
-//Patient book appointment 
+//Patient book appointment
 router.post(
   "/patient/book",
   authMiddleware,
-  roleMiddleware( "PATIENT"),
-  bookPatientAppointment
-);
-// Only patients appointment 
-router.get(
-  "/my",
-  authMiddleware,
   roleMiddleware("PATIENT"),
-  getMyAppointments
+  bookPatientAppointment,
 );
+// Only patients appointment
+router.get("/my", authMiddleware, roleMiddleware("PATIENT"), getMyAppointments);
 //Pending appointments
 router.get(
   "/pending",
   authMiddleware,
-  roleMiddleware(
-    "ADMIN",
-    "RECEPTIONIST"
-  ),
-  getPendingAppointments
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  getPendingAppointments,
 );
-// Approve appointment 
+// Approve appointment
 router.patch(
   "/:id/approve",
   authMiddleware,
-  roleMiddleware("ADMIN","RECEPTIONIST"),
-  approveAppointment
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  approveAppointment,
 );
-// Reject appointment 
+// Reject appointment
 router.patch(
   "/:id/reject",
   authMiddleware,
   roleMiddleware("ADMIN", "RECEPTIONIST"),
-  rejectAppointment
+  rejectAppointment,
 );
 //update patient
 router.put(
   "/my/:id",
   authMiddleware,
-  roleMiddleware( "PATIENT"),
-  updateMyAppointment
+  roleMiddleware("PATIENT"),
+  updateMyAppointment,
 );
 //cancel appointment
 router.patch(
   "/my/:id/cancel",
   authMiddleware,
-  roleMiddleware( "PATIENT"),
-  cancelMyAppointment
+  roleMiddleware("PATIENT"),
+  cancelMyAppointment,
 );
 
 // Get appointment details by ID
-router.get(
-  "/:id",
-  authMiddleware,
-  getAppointmentById
-);
+router.get("/:id", authMiddleware, getAppointmentById);
 
 // Book a new appointment
 router.post(
   "/",
   authMiddleware,
   roleMiddleware("ADMIN", "RECEPTIONIST"),
-  bookAppointment
+  bookAppointment,
 );
 
 // Update appointment details
@@ -117,7 +97,7 @@ router.put(
   "/:id",
   authMiddleware,
   roleMiddleware("ADMIN", "RECEPTIONIST"),
-  updateAppointment
+  updateAppointment,
 );
 
 // Delete an appointment
@@ -125,7 +105,7 @@ router.delete(
   "/:id",
   authMiddleware,
   roleMiddleware("ADMIN", "RECEPTIONIST", "PATIENT"),
-  deleteAppointment
+  deleteAppointment,
 );
 
 module.exports = router;

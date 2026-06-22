@@ -1,49 +1,30 @@
-const Patient =
-  require("../../models/Patient");
+const Patient = require("../../models/Patient");
 
-const ApiError =
-  require("../../utils/ApiError");
+const ApiError = require("../../utils/ApiError");
 
-const addMedicalDocumentService =
-  async (
-    patientId,
-    data,
-    file,
-    uploadedBy
-  ) => {
-    const patient =
-      await Patient.findOne({
-        _id: patientId,
-        isDeleted: false,
-      });
+const addMedicalDocumentService = async (patientId, data, file, uploadedBy) => {
+  const patient = await Patient.findOne({
+    _id: patientId,
+    isDeleted: false,
+  });
 
-    if (!patient) {
-      throw new ApiError(
-        404,
-        "Patient not found",
-        "PATIENT_NOT_FOUND"
-      );
-    }
+  if (!patient) {
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
+  }
 
-    patient.medicalDocuments.push({
-      ...data,
+  patient.medicalDocuments.push({
+    ...data,
 
-      documentUrl:
-        file
-          ? `/uploads/medical-documents/${file.filename}`
-          : null,
+    documentUrl: file ? `/uploads/medical-documents/${file.filename}` : null,
 
-      uploadedBy,
-    });
+    uploadedBy,
+  });
 
-    patient.updatedBy =
-      uploadedBy;
+  patient.updatedBy = uploadedBy;
 
-    await patient.save();
+  await patient.save();
 
-    return patient
-      .medicalDocuments.at(-1);
-  };
+  return patient.medicalDocuments.at(-1);
+};
 
-module.exports =
-  addMedicalDocumentService;
+module.exports = addMedicalDocumentService;

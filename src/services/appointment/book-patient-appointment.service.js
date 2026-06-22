@@ -5,21 +5,20 @@ const Patient = require("../../models/Patient");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
 
 const bookPatientAppointment = async (appointmentData, user) => {
- const {
-  doctorId,
-  appointmentDate,
-  appointmentTime,
-  reason,
-  notes,
-  appointmentType,
-  priority,
-  paymentStatus,
-  visitMode,
-  symptoms,
-} = appointmentData;
+  const {
+    doctorId,
+    appointmentDate,
+    appointmentTime,
+    reason,
+    notes,
+    appointmentType,
+    priority,
+    paymentStatus,
+    visitMode,
+    symptoms,
+  } = appointmentData;
 
-const patientId =
-  user.patientId;
+  const patientId = user.patientId;
 
   // Prevent booking appointments for past dates
   const selectedDate = new Date(appointmentDate);
@@ -33,8 +32,7 @@ const patientId =
   }
 
   // Verify patient exists
- const patient =
-  await Patient.findOne({
+  const patient = await Patient.findOne({
     _id: patientId,
     isDeleted: false,
   });
@@ -44,8 +42,7 @@ const patientId =
   }
 
   // Verify doctor exists
- const doctor =
-  await Employee.findOne({
+  const doctor = await Employee.findOne({
     _id: doctorId,
     isDeleted: false,
   });
@@ -97,7 +94,8 @@ const patientId =
     },
     status: {
       $ne: "CANCELLED",
-    },isDeleted: false
+    },
+    isDeleted: false,
   });
 
   if (totalAppointments >= doctor?.availability?.maxPatientsPerDay) {
@@ -114,7 +112,8 @@ const patientId =
     },
     status: {
       $nin: ["CANCELLED", "NO_SHOW"],
-    }, isDeleted: false
+    },
+    isDeleted: false,
   });
 
   if (existingAppointment) {
@@ -131,7 +130,8 @@ const patientId =
     },
     status: {
       $nin: ["CANCELLED", "NO_SHOW"],
-    }, isDeleted: false
+    },
+    isDeleted: false,
   });
 
   if (existingPatientAppointment) {
@@ -148,7 +148,7 @@ const patientId =
       $gte: normalizedDate,
       $lt: nextDay,
     },
-    isDeleted: false
+    isDeleted: false,
   });
 
   const tokenNumber = todayAppointmentsCount + 1;
@@ -168,7 +168,7 @@ const patientId =
     reason,
     notes,
     tokenNumber: null,
-   createdByPatientId: user.patientId,
+    createdByPatientId: user.patientId,
     status: STATUS.PENDING,
   });
 

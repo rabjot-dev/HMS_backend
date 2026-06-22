@@ -13,38 +13,18 @@ const {
 const router = express.Router();
 
 // Get admin dashboard statistics
-router.get(
-  "/admin-stats",
-  authMiddleware,
-  getAdminStats
-);
+router.get("/admin-stats", authMiddleware, getAdminStats);
 
 // Get recently added employees
-router.get(
-  "/recent-employees",
-  authMiddleware,
-  getRecentEmployees
-);
+router.get("/recent-employees", authMiddleware, getRecentEmployees);
 
 // Get doctor dashboard statistics
-router.get(
-  "/doctor-stats",
-  authMiddleware,
-  getDoctorStats
-);
+router.get("/doctor-stats", authMiddleware, getDoctorStats);
 
 // Get receptionist dashboard statistics
-router.get(
-  "/receptionist-stats",
-  authMiddleware,
-  getReceptionistStats
-);
+router.get("/receptionist-stats", authMiddleware, getReceptionistStats);
 
 // Get today's appointments
-router.get(
-  "/today-appointments",
-  authMiddleware,
-  getTodayAppointments
-);
+router.get("/today-appointments", authMiddleware, getTodayAppointments);
 
 module.exports = router;

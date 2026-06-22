@@ -41,7 +41,11 @@ const loginUser = async (loginData) => {
   }
 
   if (user.status === STATUS.PENDING) {
-    throw new ApiError(403, "Your account is pending admin approval", "FORBIDDEN");
+    throw new ApiError(
+      403,
+      "Your account is pending admin approval",
+      "FORBIDDEN",
+    );
   }
 
   if (user.status === STATUS.REJECTED) {
@@ -57,13 +61,10 @@ const loginUser = async (loginData) => {
   if (user.isFirstLogin) {
     isPasswordValid = await bcrypt.compare(
       password,
-      user.temporaryPasswordHash
+      user.temporaryPasswordHash,
     );
   } else {
-    isPasswordValid = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
+    isPasswordValid = await bcrypt.compare(password, user.passwordHash);
   }
 
   if (!isPasswordValid) {
@@ -77,11 +78,9 @@ const loginUser = async (loginData) => {
     roles: user.roles,
   };
 
-  const accessToken =
-    generateAccessToken(tokenPayload);
+  const accessToken = generateAccessToken(tokenPayload);
 
-  const refreshToken =
-    generateRefreshToken(tokenPayload);
+  const refreshToken = generateRefreshToken(tokenPayload);
 
   user.refreshToken = refreshToken;
   user.lastLoginAt = new Date();

@@ -5,46 +5,35 @@ const STATUS = require("../../constants/status");
 const rejectEmployeeService = async (
   employeeId,
   rejectedBy,
-  rejectionReason = null
+  rejectionReason = null,
 ) => {
-  const employee =
-    await Employee.findOne({
-      _id: employeeId,
-      isDeleted: false,
-    });
+  const employee = await Employee.findOne({
+    _id: employeeId,
+    isDeleted: false,
+  });
 
   if (!employee) {
-    throw new Error(
-      "Employee not found"
-    );
+    throw new Error("Employee not found");
   }
 
-  const user =
-    await User.findOne({
-      employeeId,
-      isDeleted: false,
-    });
+  const user = await User.findOne({
+    employeeId,
+    isDeleted: false,
+  });
 
   if (!user) {
-    throw new Error(
-      "Employee account not found"
-    );
+    throw new Error("Employee account not found");
   }
 
-  employee.status =
-    STATUS.REJECTED;
+  employee.status = STATUS.REJECTED;
 
-  employee.rejectedBy =
-    rejectedBy;
+  employee.rejectedBy = rejectedBy;
 
-  employee.rejectedDate =
-    new Date();
+  employee.rejectedDate = new Date();
 
-  employee.rejectionReason =
-    rejectionReason;
+  employee.rejectionReason = rejectionReason;
 
-  user.status =
-    STATUS.REJECTED;
+  user.status = STATUS.REJECTED;
 
   await employee.save();
   await user.save();
@@ -52,5 +41,4 @@ const rejectEmployeeService = async (
   return employee;
 };
 
-module.exports =
-  rejectEmployeeService;
+module.exports = rejectEmployeeService;

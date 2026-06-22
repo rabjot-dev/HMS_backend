@@ -1,17 +1,14 @@
-const Employee =
-  require("../../models/Employee");
+const Employee = require("../../models/Employee");
 
-const getRecentEmployeesService =
-  async () => {
-    return Employee.find({
-      isDeleted: false,
+const getRecentEmployeesService = async () => {
+  return Employee.find({
+    isDeleted: false,
+  })
+    .sort({
+      createdAt: -1,
     })
-      .sort({
-        createdAt: -1,
-      })
-      .limit(5)
-      .lean();
-  };
+    .limit(5)
+    .lean();
+};
 
-module.exports =
-  getRecentEmployeesService;
+module.exports = getRecentEmployeesService;

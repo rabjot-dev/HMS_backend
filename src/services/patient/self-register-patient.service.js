@@ -1,116 +1,78 @@
 const bcrypt = require("bcryptjs");
 
-const Patient =
-  require("../../models/Patient");
+const Patient = require("../../models/Patient");
 
-const User =
-  require("../../models/User");
+const User = require("../../models/User");
 
-const ROLES =
-  require("../../constants/roles");
+const ROLES = require("../../constants/roles");
 
-const STATUS =
-  require("../../constants/status");
+const STATUS = require("../../constants/status");
 
-const generatePatientId =
-  require("../../utils/generatePatientId");
+const generatePatientId = require("../../utils/generatePatientId");
 
-const selfRegisterPatient =
-  async (
-    patientData
-  ) => {
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      password,
-    } = patientData;
+const selfRegisterPatient = async (patientData) => {
+  const { firstName, lastName, email, phone, password } = patientData;
 
-    const existingUser =
-      await User.findOne({
-        email:
-          email.toLowerCase(),
-        isDeleted: false,
-      });
+  const existingUser = await User.findOne({
+    email: email.toLowerCase(),
+    isDeleted: false,
+  });
 
-    if (existingUser) {
-      throw new Error(
-        "Email already registered"
-      );
-    }
+  if (existingUser) {
+    throw new Error("Email already registered");
+  }
 
-    const existingPatient =
-      await Patient.findOne({
-        phone,
-        isDeleted: false,
-      });
+  const existingPatient = await Patient.findOne({
+    phone,
+    isDeleted: false,
+  });
 
-    if (existingPatient) {
-      throw new Error(
-        "Phone number already registered"
-      );
-    }
+  if (existingPatient) {
+    throw new Error("Phone number already registered");
+  }
 
-    const patientId =
-      await generatePatientId();
+  const patientId = await generatePatientId();
 
-    const patient =
-      await Patient.create({
-        patientId,
+  const patient = await Patient.create({
+    patientId,
 
-        firstName,
+    firstName,
 
-        lastName,
+    lastName,
 
-        email:
-          email.toLowerCase(),
+    email: email.toLowerCase(),
 
-        phone,
+    phone,
 
-        gender: "OTHER",
+    gender: "OTHER",
 
-        dateOfBirth:
-          new Date(),
+    dateOfBirth: new Date(),
 
-        status:
-          STATUS.ACTIVE,
+    status: STATUS.ACTIVE,
 
-        createdBy: null,
-      });
+    createdBy: null,
+  });
 
-    const passwordHash =
-      await bcrypt.hash(
-        password,
-        10
-      );
+  const passwordHash = await bcrypt.hash(password, 10);
 
-    await User.create({
-      email:
-        email.toLowerCase(),
+  await User.create({
+    email: email.toLowerCase(),
 
-      passwordHash,
+    passwordHash,
 
-      patientId:
-        patient._id,
+    patientId: patient._id,
 
-      roles: [
-        ROLES.PATIENT,
-      ],
+    roles: [ROLES.PATIENT],
 
-      isFirstLogin:
-        false,
+    isFirstLogin: false,
 
-      status:
-        STATUS.ACTIVE,
-    });
+    status: STATUS.ACTIVE,
+  });
 
-    return {
-      message:
-        "Patient registered successfully",
-      patient,
-    };
+  return {
+    message: "Patient registered successfully",
+    patient,
   };
+};
 
-module.exports =
-  selfRegisterPatient;
+module.exports = selfRegisterPatient;

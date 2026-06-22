@@ -3,12 +3,12 @@ const mongoose = require("mongoose");
 const Patient = require("../models/Patient");
 const Appointment = require("../models/Appointment");
 const registerPatient = require("../services/patient/register-patient.service");
-const selfRegisterPatient = require( "../services/patient/self-register-patient.service");
-const getMyProfile =require("../services/patient/get-my-profile.service");
-const updateMyProfile =require("../services/patient/update-my-profile.service");
-const getPatientDashboardService =require("../services/patient/get-patient-dashboard.service");
-const deletePatientService = require("../services/patient/delete-patient.service")
-const getPatientsService =require( "../services/patient/get-patients.service",);
+const selfRegisterPatient = require("../services/patient/self-register-patient.service");
+const getMyProfile = require("../services/patient/get-my-profile.service");
+const updateMyProfile = require("../services/patient/update-my-profile.service");
+const getPatientDashboardService = require("../services/patient/get-patient-dashboard.service");
+const deletePatientService = require("../services/patient/delete-patient.service");
+const getPatientsService = require("../services/patient/get-patients.service");
 // Register a new patient
 const createPatient = async (req, res) => {
   try {
@@ -44,32 +44,20 @@ const createPatient = async (req, res) => {
 };
 
 // Get all patients
-const getPatients =
-  async (
-    req,
-    res,
-    next,
-  ) => {
-    try {
-      const result =
-        await getPatientsService(
-          req.user,
-          req.query,
-        );
+const getPatients = async (req, res, next) => {
+  try {
+    const result = await getPatientsService(req.user, req.query);
 
-      return res.status(200).json({
-        success: true,
-        message:
-          "Patients retrieved successfully",
-        data:
-          result.data,
-        meta:
-          result.meta,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+    return res.status(200).json({
+      success: true,
+      message: "Patients retrieved successfully",
+      data: result.data,
+      meta: result.meta,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // Get patient details by ID
 const getPatientById = async (req, res) => {
@@ -166,154 +154,98 @@ const updatePatient = async (req, res) => {
 */
 const registerPatientMobile = async (req, res) => {
   try {
-    const serviceResponse =
-      await selfRegisterPatient(
-        req.body
-      );
+    const serviceResponse = await selfRegisterPatient(req.body);
 
     return res.status(201).json({
       success: true,
 
-      message:
-        "Patient registered successfully",
+      message: "Patient registered successfully",
 
       data: serviceResponse,
     });
   } catch (error) {
-    console.error(
-      "PATIENT REGISTRATION ERROR:",
-      error
+    console.error("PATIENT REGISTRATION ERROR:", error);
+
+    return res.status(400).json({
+      success: false,
+
+      message: error.message || "Patient registration failed",
+    });
+  }
+};
+//Get my profile
+const getProfile = async (req, res) => {
+  try {
+    const patient = await getMyProfile(req.user.patientId);
+
+    return res.status(200).json({
+      success: true,
+
+      data: patient,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+
+      message: error.message,
+    });
+  }
+};
+// Update profile in mobile
+const updateProfile = async (req, res) => {
+  try {
+    const patient = await updateMyProfile(
+      req.user.patientId,
+
+      req.body,
     );
 
-    return res.status(400).json({
-      success: false,
-
-      message:
-        error.message ||
-        "Patient registration failed",
-    });
-  }
-};
-//Get my profile 
-const getProfile =
-async (
-  req,
-  res
-) => {
-
-  try {
-
-    const patient =
-      await getMyProfile(
-        req.user.patientId
-      );
-
     return res.status(200).json({
       success: true,
 
-      data: patient,
-    });
-
-  } catch (error) {
-
-    return res.status(400).json({
-      success: false,
-
-      message:
-        error.message,
-    });
-  }
-};
-// Update profile in mobile 
-const updateProfile =
-async (
-  req,
-  res
-) => {
-
-  try {
-
-    const patient =
-      await updateMyProfile(
-        req.user.patientId,
-
-        req.body
-      );
-
-    return res.status(200).json({
-      success: true,
-
-      message:
-        "Profile updated successfully",
+      message: "Profile updated successfully",
 
       data: patient,
     });
-
   } catch (error) {
-
     return res.status(400).json({
       success: false,
 
-      message:
-        error.message,
+      message: error.message,
     });
   }
 };
 
 // PAtient Dashboard
-const getPatientDashboard =
-async (
-  req,
-  res
-) => {
-
+const getPatientDashboard = async (req, res) => {
   try {
-
-    const dashboard =
-      await getPatientDashboardService(
-        req.user.patientId
-      );
+    const dashboard = await getPatientDashboardService(req.user.patientId);
 
     return res.status(200).json({
-
       success: true,
 
-      data:
-        dashboard,
+      data: dashboard,
     });
-
   } catch (error) {
-
     return res.status(400).json({
-
       success: false,
 
-      message:
-        error.message,
+      message: error.message,
     });
   }
 };
-const deletePatient =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const result =
-        await deletePatientService(
-          req.params.id,
-          req.user.userId
-        );
+const deletePatient = async (req, res, next) => {
+  try {
+    const result = await deletePatientService(req.params.id, req.user.userId);
 
-      res.json({
-        success: true,
-        ...result,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+    res.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   createPatient,
   getPatients,
@@ -324,5 +256,4 @@ module.exports = {
   updateProfile,
   getPatientDashboard,
   deletePatient,
-
 };

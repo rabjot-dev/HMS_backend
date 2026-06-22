@@ -1,42 +1,26 @@
-const Consultation =
-  require("../../models/consultation");
+const Consultation = require("../../models/consultation");
 
-const deleteConsultationService =
-  async (
-    consultationId,
-    deletedBy
-  ) => {
-    const consultation =
-      await Consultation.findOne({
-        _id:
-          consultationId,
-        isDeleted: false,
-      });
+const deleteConsultationService = async (consultationId, deletedBy) => {
+  const consultation = await Consultation.findOne({
+    _id: consultationId,
+    isDeleted: false,
+  });
 
-    if (
-      !consultation
-    ) {
-      throw new Error(
-        "Consultation not found"
-      );
-    }
+  if (!consultation) {
+    throw new Error("Consultation not found");
+  }
 
-    consultation.isDeleted =
-      true;
+  consultation.isDeleted = true;
 
-    consultation.deletedBy =
-      deletedBy;
+  consultation.deletedBy = deletedBy;
 
-    consultation.deletedAt =
-      new Date();
+  consultation.deletedAt = new Date();
 
-    await consultation.save();
+  await consultation.save();
 
-    return {
-      message:
-        "Consultation deleted successfully",
-    };
+  return {
+    message: "Consultation deleted successfully",
   };
+};
 
-module.exports =
-  deleteConsultationService;
+module.exports = deleteConsultationService;

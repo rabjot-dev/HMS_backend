@@ -161,146 +161,145 @@ const patientSchema = new mongoose.Schema(
       default: "ACTIVE",
     },
     createdBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
-
-updatedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
-
-isDeleted: {
-  type: Boolean,
-  default: false,
-},
-
-deletedBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
-
-deletedAt: {
-  type: Date,
-  default: null,
-},
-labReports: {
-  type: [
-    {
-      title: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-
-      labName: {
-        type: String,
-        trim: true,
-      },
-
-      doctorName: {
-        type: String,
-        trim: true,
-      },
-
-      reportType: {
-        type: String,
-        required: true,
-      },
-
-      reportDate: {
-        type: Date,
-        required: true,
-      },
-
-      documentUrl: {
-        type: String,
-        default: null,
-      },
-
-      notes: {
-        type: String,
-        trim: true,
-      },
-
-      uploadedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        default: null,
-      },
-
-      uploadedAt: {
-        type: Date,
-        default: Date.now,
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
-  ],
 
-  default: [],
-},
- default: [],
-medicalDocuments: {
-  type: [
-    {
-      title: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-
-      documentType: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-
-      hospitalName: {
-        type: String,
-        trim: true,
-      },
-
-      doctorName: {
-        type: String,
-        trim: true,
-      },
-
-      recordDate: {
-        type: Date,
-      },
-
-      documentUrl: {
-        type: String,
-        default: null,
-      },
-
-      notes: {
-        type: String,
-        trim: true,
-      },
-
-      uploadedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        default: null,
-      },
-
-      uploadedAt: {
-        type: Date,
-        default: Date.now,
-      },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
-  ],
 
-  default: [],
-},
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
 
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    labReports: {
+      type: [
+        {
+          title: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+
+          labName: {
+            type: String,
+            trim: true,
+          },
+
+          doctorName: {
+            type: String,
+            trim: true,
+          },
+
+          reportType: {
+            type: String,
+            required: true,
+          },
+
+          reportDate: {
+            type: Date,
+            required: true,
+          },
+
+          documentUrl: {
+            type: String,
+            default: null,
+          },
+
+          notes: {
+            type: String,
+            trim: true,
+          },
+
+          uploadedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+          },
+
+          uploadedAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+
+      default: [],
+    },
+    default: [],
+    medicalDocuments: {
+      type: [
+        {
+          title: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+
+          documentType: {
+            type: String,
+            required: true,
+            trim: true,
+          },
+
+          hospitalName: {
+            type: String,
+            trim: true,
+          },
+
+          doctorName: {
+            type: String,
+            trim: true,
+          },
+
+          recordDate: {
+            type: Date,
+          },
+
+          documentUrl: {
+            type: String,
+            default: null,
+          },
+
+          notes: {
+            type: String,
+            trim: true,
+          },
+
+          uploadedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+          },
+
+          uploadedAt: {
+            type: Date,
+            default: Date.now,
+          },
+        },
+      ],
+
+      default: [],
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 patientSchema.index({ email: 1 });

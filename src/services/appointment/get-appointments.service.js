@@ -1,266 +1,180 @@
-const Appointment =
-  require("../../models/Appointment");
+const Appointment = require("../../models/Appointment");
 
-const Patient =
-  require("../../models/Patient");
+const Patient = require("../../models/Patient");
 
-const Employee =
-  require("../../models/Employee");
+const Employee = require("../../models/Employee");
 
 const {
   getPagination,
   buildPaginationMeta,
 } = require("../../utils/pagination");
 
-const getAppointmentsService =
-  async (
-    user,
-    query,
-  ) => {
-    const {
-      search,
-      status,
-      doctor,
-      appointmentDate,
-      visitMode,
-      appointmentType,
-      priority,
-      page,
-      limit,
-    } = query;
+const getAppointmentsService = async (user, query) => {
+  const {
+    search,
+    status,
+    doctor,
+    appointmentDate,
+    visitMode,
+    appointmentType,
+    priority,
+    page,
+    limit,
+  } = query;
 
-    const filter = {
-      isDeleted: false,
-    };
+  const filter = {
+    isDeleted: false,
+  };
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Role Based Visibility
     |--------------------------------------------------------------------------
     */
 
-    if (
-      user.roles?.includes(
-        "DOCTOR",
-      )
-    ) {
-      filter.doctorEmployeeId =
-        user.employeeId;
-    }
+  if (user.roles?.includes("DOCTOR")) {
+    filter.doctorEmployeeId = user.employeeId;
+  }
 
-    if (
-      user.roles?.includes(
-        "PATIENT",
-      )
-    ) {
-      filter.patientId =
-        user.patientId;
-    }
+  if (user.roles?.includes("PATIENT")) {
+    filter.patientId = user.patientId;
+  }
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Filters
     |--------------------------------------------------------------------------
     */
 
-    if (status) {
-      filter.status = status;
-    }
+  if (status) {
+    filter.status = status;
+  }
 
-    if (doctor) {
-      filter.doctorEmployeeId =
-        doctor;
-    }
+  if (doctor) {
+    filter.doctorEmployeeId = doctor;
+  }
 
-    if (visitMode) {
-      filter.visitMode =
-        visitMode;
-    }
+  if (visitMode) {
+    filter.visitMode = visitMode;
+  }
 
-    if (
-      appointmentType
-    ) {
-      filter.appointmentType =
-        appointmentType;
-    }
+  if (appointmentType) {
+    filter.appointmentType = appointmentType;
+  }
 
-    if (priority) {
-      filter.priority =
-        priority;
-    }
+  if (priority) {
+    filter.priority = priority;
+  }
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Appointment Date
     |--------------------------------------------------------------------------
     */
 
-    if (appointmentDate) {
-      const selectedDate =
-        new Date(
-          appointmentDate,
-        );
+  if (appointmentDate) {
+    const selectedDate = new Date(appointmentDate);
 
-      selectedDate.setHours(
-        0,
-        0,
-        0,
-        0,
-      );
+    selectedDate.setHours(0, 0, 0, 0);
 
-      const nextDay =
-        new Date(
-          selectedDate,
-        );
+    const nextDay = new Date(selectedDate);
 
-      nextDay.setDate(
-        nextDay.getDate() +
-          1,
-      );
+    nextDay.setDate(nextDay.getDate() + 1);
 
-      filter.appointmentDate =
-        {
-          $gte:
-            selectedDate,
-          $lt: nextDay,
-        };
-    }
+    filter.appointmentDate = {
+      $gte: selectedDate,
+      $lt: nextDay,
+    };
+  }
 
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Search
     |--------------------------------------------------------------------------
     */
 
-    if (
-      search?.trim()
-    ) {
-      const patients =
-        await Patient.find({
-          $or: [
-            {
-              firstName:
-                {
-                  $regex:
-                    search,
-                  $options:
-                    "i",
-                },
-            },
-            {
-              lastName:
-                {
-                  $regex:
-                    search,
-                  $options:
-                    "i",
-                },
-            },
-            {
-              patientId:
-                {
-                  $regex:
-                    search,
-                  $options:
-                    "i",
-                },
-            },
-          ],
-        })
-          .select("_id")
-          .lean();
-
-      const doctors =
-        await Employee.find({
-          name: {
-            $regex:
-              search,
-            $options:
-              "i",
-          },
-        })
-          .select("_id")
-          .lean();
-
-      filter.$or = [
+  if (search?.trim()) {
+    const patients = await Patient.find({
+      $or: [
         {
-          appointmentId:
-            {
-              $regex:
-                search,
-              $options:
-                "i",
-            },
+          firstName: {
+            $regex: search,
+            $options: "i",
+          },
+        },
+        {
+          lastName: {
+            $regex: search,
+            $options: "i",
+          },
         },
         {
           patientId: {
-            $in:
-              patients.map(
-                (
-                  patient,
-                ) =>
-                  patient._id,
-              ),
+            $regex: search,
+            $options: "i",
           },
         },
-        {
-          doctorEmployeeId:
-            {
-              $in:
-                doctors.map(
-                  (
-                    doctor,
-                  ) =>
-                    doctor._id,
-                ),
-            },
-        },
-      ];
-    }
+      ],
+    })
+      .select("_id")
+      .lean();
 
-    /*
+    const doctors = await Employee.find({
+      name: {
+        $regex: search,
+        $options: "i",
+      },
+    })
+      .select("_id")
+      .lean();
+
+    filter.$or = [
+      {
+        appointmentId: {
+          $regex: search,
+          $options: "i",
+        },
+      },
+      {
+        patientId: {
+          $in: patients.map((patient) => patient._id),
+        },
+      },
+      {
+        doctorEmployeeId: {
+          $in: doctors.map((doctor) => doctor._id),
+        },
+      },
+    ];
+  }
+
+  /*
     |--------------------------------------------------------------------------
     | Pagination
     |--------------------------------------------------------------------------
     */
 
-    const pagination =
-      getPagination(
-        page,
-        limit,
-      );
+  const pagination = getPagination(page, limit);
 
-    const total =
-      await Appointment.countDocuments(
-        filter,
-      );
+  const total = await Appointment.countDocuments(filter);
 
-    const appointments =
-      await Appointment.find(
-        filter,
-      )
-        .populate({
-          path:
-            "patientId",
-          select:
-            "patientId firstName lastName phone",
-          match: {
-            isDeleted:
-              false,
-          },
-        })
-        .populate({
-          path:
-            "doctorEmployeeId",
-          select:
-            "name department specialization",
-          match: {
-            isDeleted:
-              false,
-          },
-        })
-        .select(
-          `
+  const appointments = await Appointment.find(filter)
+    .populate({
+      path: "patientId",
+      select: "patientId firstName lastName phone",
+      match: {
+        isDeleted: false,
+      },
+    })
+    .populate({
+      path: "doctorEmployeeId",
+      select: "name department specialization",
+      match: {
+        isDeleted: false,
+      },
+    })
+    .select(
+      `
           appointmentId
           patientId
           doctorEmployeeId
@@ -273,31 +187,19 @@ const getAppointmentsService =
           tokenNumber
           createdAt
         `,
-        )
-        .sort({
-          appointmentDate:
-            1,
-          timeSlot: 1,
-        })
-        .skip(
-          pagination.skip,
-        )
-        .limit(
-          pagination.limit,
-        )
-        .lean();
+    )
+    .sort({
+      appointmentDate: 1,
+      timeSlot: 1,
+    })
+    .skip(pagination.skip)
+    .limit(pagination.limit)
+    .lean();
 
-    return {
-      data:
-        appointments,
-      meta:
-        buildPaginationMeta(
-          pagination.page,
-          pagination.limit,
-          total,
-        ),
-    };
+  return {
+    data: appointments,
+    meta: buildPaginationMeta(pagination.page, pagination.limit, total),
   };
+};
 
-module.exports =
-  getAppointmentsService;
+module.exports = getAppointmentsService;

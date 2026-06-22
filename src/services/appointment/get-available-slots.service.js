@@ -20,8 +20,7 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   }
 
   // Find doctor record
-const doctor =
-  await Employee.findOne({
+  const doctor = await Employee.findOne({
     _id: doctorId,
     isDeleted: false,
   });
@@ -52,7 +51,7 @@ const doctor =
     doctor?.availability?.endTime,
     doctor?.availability?.slotDuration,
     doctor?.availability?.breakStartTime,
-    doctor?.availability?.breakEndTime
+    doctor?.availability?.breakEndTime,
   );
 
   // Normalize date for appointment search
@@ -64,98 +63,56 @@ const doctor =
   nextDay.setDate(nextDay.getDate() + 1);
 
   // Fetch existing appointments
-const bookedAppointments =
-  await Appointment.find({
-    doctorEmployeeId:
-      doctorId,
+  const bookedAppointments = await Appointment.find({
+    doctorEmployeeId: doctorId,
 
     appointmentDate: {
-      $gte:
-        normalizedDate,
+      $gte: normalizedDate,
 
       $lt: nextDay,
     },
 
     status: {
-      $nin: [
-        STATUS.CANCELLED,
-        STATUS.REJECTED,
-        STATUS.NO_SHOW,
-      ],
+      $nin: [STATUS.CANCELLED, STATUS.REJECTED, STATUS.NO_SHOW],
     },
 
     isDeleted: false,
   });
   // Create set of booked time slots
   const bookedSlots = new Set(
-    bookedAppointments.map((appointment) => appointment.timeSlot)
+    bookedAppointments.map((appointment) => appointment.timeSlot),
   );
   // Remove past slots if selected date is today
 
-let availableSlots =
-  allSlots.filter(
-    (slot) =>
-      !bookedSlots.has(slot)
-  );
+  let availableSlots = allSlots.filter((slot) => !bookedSlots.has(slot));
 
-const currentDate =
-  new Date();
+  const currentDate = new Date();
 
-const isToday =
-  normalizedDate.toDateString() ===
-  currentDate.toDateString();
+  const isToday = normalizedDate.toDateString() === currentDate.toDateString();
 
-if (isToday) {
+  if (isToday) {
+    availableSlots = availableSlots.filter((slot) => {
+      const [time, period] = slot.split(" ");
 
-  availableSlots =
-    availableSlots.filter(
-      (slot) => {
+      let [hours, minutes] = time.split(":").map(Number);
 
-        const [
-          time,
-          period,
-        ] = slot.split(" ");
-
-        let [
-          hours,
-          minutes,
-        ] = time
-          .split(":")
-          .map(Number);
-
-        if (
-          period === "PM" &&
-          hours !== 12
-        ) {
-          hours += 12;
-        }
-
-        if (
-          period === "AM" &&
-          hours === 12
-        ) {
-          hours = 0;
-        }
-
-        const slotDate =
-          new Date();
-
-        slotDate.setHours(
-          hours,
-          minutes,
-          0,
-          0
-        );
-
-        return (
-          slotDate >
-          currentDate
-        );
+      if (period === "PM" && hours !== 12) {
+        hours += 12;
       }
-    );
-}
 
-return availableSlots;
+      if (period === "AM" && hours === 12) {
+        hours = 0;
+      }
+
+      const slotDate = new Date();
+
+      slotDate.setHours(hours, minutes, 0, 0);
+
+      return slotDate > currentDate;
+    });
+  }
+
+  return availableSlots;
 };
 
 module.exports = getAvailableSlots;

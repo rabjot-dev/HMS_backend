@@ -1,83 +1,61 @@
-const Consultation =
-  require("../../models/consultation");
+const Consultation = require("../../models/consultation");
 
-const Appointment =
-  require("../../models/Appointment");
+const Appointment = require("../../models/Appointment");
 
-const STATUS =
-  require("../../constants/status");
+const STATUS = require("../../constants/status");
 
-const createConsultationService =
-  async (
-    data,
-    createdBy
-  ) => {
-    const {
-      appointmentId,
-      diagnosis,
-      symptoms,
-      doctorNotes,
-      vitals,
-      prescriptions,
-    } = data;
+const createConsultationService = async (data, createdBy) => {
+  const {
+    appointmentId,
+    diagnosis,
+    symptoms,
+    doctorNotes,
+    vitals,
+    prescriptions,
+  } = data;
 
-    const existingConsultation =
-      await Consultation.findOne({
-        appointmentId,
-        isDeleted: false,
-      });
+  const existingConsultation = await Consultation.findOne({
+    appointmentId,
+    isDeleted: false,
+  });
 
-    if (
-      existingConsultation
-    ) {
-      throw new Error(
-        "Consultation already exists"
-      );
-    }
+  if (existingConsultation) {
+    throw new Error("Consultation already exists");
+  }
 
-    const appointment =
-      await Appointment.findOne({
-        _id:
-          appointmentId,
+  const appointment = await Appointment.findOne({
+    _id: appointmentId,
 
-        isDeleted: false,
-      });
+    isDeleted: false,
+  });
 
-    if (!appointment) {
-      throw new Error(
-        "Appointment not found"
-      );
-    }
+  if (!appointment) {
+    throw new Error("Appointment not found");
+  }
 
-    const consultation =
-      await Consultation.create({
-        appointmentId,
+  const consultation = await Consultation.create({
+    appointmentId,
 
-        patientId:
-          appointment.patientId,
+    patientId: appointment.patientId,
 
-        doctorEmployeeId:
-          appointment.doctorEmployeeId,
+    doctorEmployeeId: appointment.doctorEmployeeId,
 
-        diagnosis,
-        symptoms,
-        doctorNotes,
-        vitals,
-        prescriptions,
+    diagnosis,
+    symptoms,
+    doctorNotes,
+    vitals,
+    prescriptions,
 
-        createdBy,
-      });
+    createdBy,
+  });
 
-    appointment.status =
-      STATUS.COMPLETED;
+  appointment.status = STATUS.COMPLETED;
 
-    appointment.updatedBy =
-      createdBy;
+  appointment.updatedBy = createdBy;
 
-    await appointment.save();
+  await appointment.save();
 
-    return consultation;
-  };
+  return consultation;
+};
 
-module.exports =
-  createConsultationService;
+module.exports = createConsultationService;

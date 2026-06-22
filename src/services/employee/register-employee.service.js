@@ -13,7 +13,7 @@ const generateSequentialId = require("../../utils/generateSequentialId");
 const sendEmail = require("../../utils/sendEmail");
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
 
-const registerEmployee = async (employeeData,userId) => {
+const registerEmployee = async (employeeData, userId) => {
   const {
     name,
     email,
@@ -41,7 +41,8 @@ const registerEmployee = async (employeeData,userId) => {
 
   // Check if email is already in use
   const existingUser = await User.findOne({
-    email: email.toLowerCase(),isDeleted:false,
+    email: email.toLowerCase(),
+    isDeleted: false,
   });
 
   if (existingUser) {
@@ -50,7 +51,8 @@ const registerEmployee = async (employeeData,userId) => {
 
   // Check if phone number is already in use
   const existingPhone = await Employee.findOne({
-    phone,isDeleted:false
+    phone,
+    isDeleted: false,
   });
 
   if (existingPhone) {
@@ -60,7 +62,8 @@ const registerEmployee = async (employeeData,userId) => {
   // Validate doctor's registration number
   if (designation === "DOCTOR") {
     const existingDoctor = await Employee.findOne({
-      medicalRegistrationNo,isDeleted:false
+      medicalRegistrationNo,
+      isDeleted: false,
     });
 
     if (existingDoctor) {
@@ -101,16 +104,14 @@ const registerEmployee = async (employeeData,userId) => {
       breakEndTime,
       maxPatientsPerDay: maxPatientsPerDay || 40,
     },
-    status: STATUS.ACTIVE, createdBy: userId
+    status: STATUS.ACTIVE,
+    createdBy: userId,
   });
 
   // Generate temporary password for first login
   const temporaryPassword = generateTemporaryPassword();
 
-  const hashedTemporaryPassword = await bcrypt.hash(
-    temporaryPassword,
-    10
-  );
+  const hashedTemporaryPassword = await bcrypt.hash(temporaryPassword, 10);
 
   // Create user account
   await User.create({

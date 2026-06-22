@@ -6,7 +6,7 @@ const getConsultationByAppointmentService = require("../services/consultation/ge
 const updateConsultationService = require("../services/consultation/update-consultation.service");
 const getConsultationsService = require("../services/consultation/get-consultations.service");
 const getPrescriptionDataService = require("../services/consultation/download-prescription-pdf.service");
-const deleteConsultationService = require("../services/consultation/delete-consultation.service")
+const deleteConsultationService = require("../services/consultation/delete-consultation.service");
 const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
 
 const createConsultation = async (req, res) => {
@@ -127,36 +127,20 @@ const updateConsultation = async (req, res) => {
   }
 };
 
-const getConsultations =
-  async (
-    req,
-    res,
-    next,
-  ) => {
-    try {
-      const result =
-        await getConsultationsService(
-          req.user,
-          req.query,
-        );
+const getConsultations = async (req, res, next) => {
+  try {
+    const result = await getConsultationsService(req.user, req.query);
 
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message:
-            "Consultations retrieved successfully",
-          data:
-            result.data,
-          meta:
-            result.meta,
-        });
-    } catch (
-      error
-    ) {
-      next(error);
-    }
-  };
+    return res.status(200).json({
+      success: true,
+      message: "Consultations retrieved successfully",
+      data: result.data,
+      meta: result.meta,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const downloadPrescriptionPdf = async (req, res) => {
   try {
@@ -223,27 +207,21 @@ const getConsultationById = async (req, res) => {
     });
   }
 };
-const deleteConsultation =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const result =
-        await deleteConsultationService(
-          req.params.id,
-          req.user.userId
-        );
+const deleteConsultation = async (req, res, next) => {
+  try {
+    const result = await deleteConsultationService(
+      req.params.id,
+      req.user.userId,
+    );
 
-      res.json({
-        success: true,
-        ...result,
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
+    res.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   createConsultation,
@@ -252,5 +230,5 @@ module.exports = {
   updateConsultation,
   getConsultations,
   downloadPrescriptionPdf,
-  deleteConsultation
+  deleteConsultation,
 };

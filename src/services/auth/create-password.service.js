@@ -43,12 +43,16 @@ const createEmployeePassword = async (passwordData) => {
   }
 
   if (!user.isFirstLogin) {
-    throw new ApiError(409, "Password is already created for this account", "CONFLICT");
+    throw new ApiError(
+      409,
+      "Password is already created for this account",
+      "CONFLICT",
+    );
   }
 
   const isTemporaryPasswordValid = await bcrypt.compare(
     temporaryPassword,
-    user.temporaryPasswordHash
+    user.temporaryPasswordHash,
   );
 
   if (!isTemporaryPasswordValid) {
@@ -59,7 +63,7 @@ const createEmployeePassword = async (passwordData) => {
 
   const hashedSecurityAnswer = await bcrypt.hash(
     securityAnswer.trim().toLowerCase(),
-    10
+    10,
   );
 
   user.passwordHash = hashedNewPassword;

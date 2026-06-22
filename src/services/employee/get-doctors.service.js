@@ -1,19 +1,15 @@
 const Employee = require("../../models/Employee");
 
-const getDoctorsService =
-  async () => {
-    return Employee.find({
-      designation: "DOCTOR",
-      isDeleted: false,
+const getDoctorsService = async () => {
+  return Employee.find({
+    designation: "DOCTOR",
+    isDeleted: false,
+  })
+    .select("name department specialization availability consultationFee")
+    .sort({
+      name: 1,
     })
-      .select(
-        "name department specialization availability consultationFee"
-      )
-      .sort({
-        name: 1,
-      })
-      .lean();
-  };
+    .lean();
+};
 
-module.exports =
-  getDoctorsService;
+module.exports = getDoctorsService;

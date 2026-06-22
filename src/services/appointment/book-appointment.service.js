@@ -1,7 +1,7 @@
 const Appointment = require("../../models/Appointment");
 const Employee = require("../../models/Employee");
 const Patient = require("../../models/Patient");
-const getNextTokenNumber = require("../../utils/getNextTokenNumber")
+const getNextTokenNumber = require("../../utils/getNextTokenNumber");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
 
 const bookAppointment = async (appointmentData, user) => {
@@ -31,8 +31,7 @@ const bookAppointment = async (appointmentData, user) => {
   }
 
   // Verify patient exists
-const patient =
-  await Patient.findOne({
+  const patient = await Patient.findOne({
     _id: patientId,
     isDeleted: false,
   });
@@ -42,8 +41,7 @@ const patient =
   }
 
   // Verify doctor exists
-const doctor =
-  await Employee.findOne({
+  const doctor = await Employee.findOne({
     _id: doctorId,
     isDeleted: false,
   });
@@ -96,7 +94,7 @@ const doctor =
     status: {
       $ne: "CANCELLED",
     },
-    isDeleted: false
+    isDeleted: false,
   });
 
   if (totalAppointments >= doctor?.availability?.maxPatientsPerDay) {
@@ -113,8 +111,8 @@ const doctor =
     },
     status: {
       $nin: ["CANCELLED", "NO_SHOW"],
-    },isDeleted: false,
-
+    },
+    isDeleted: false,
   });
 
   if (existingAppointment) {

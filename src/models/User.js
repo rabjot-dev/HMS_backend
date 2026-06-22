@@ -76,10 +76,10 @@ const userSchema = new mongoose.Schema(
 
     // Audit fields
     createdBy: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -106,7 +106,7 @@ const userSchema = new mongoose.Schema(
   {
     timestamps: true,
     versionKey: false,
-  }
+  },
 );
 
 // Indexes
@@ -114,7 +114,7 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ status: 1 });
 userSchema.index({ employeeId: 1 });
 userSchema.index({ patientId: 1 });
-userSchema.index({status: 1,isDeleted: 1});
+userSchema.index({ status: 1, isDeleted: 1 });
 
 const User = mongoose.model("User", userSchema);
 

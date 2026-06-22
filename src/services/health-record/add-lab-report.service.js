@@ -1,51 +1,31 @@
-const Patient =
-  require("../../models/Patient");
+const Patient = require("../../models/Patient");
 
-const ApiError =
-  require("../../utils/ApiError");
+const ApiError = require("../../utils/ApiError");
 
-const addLabReportService =
-  async (
-    patientId,
-    data,
-    file,
-    uploadedBy
-  ) => {
-    const patient =
-      await Patient.findOne({
-        _id: patientId,
-        isDeleted: false,
-      });
+const addLabReportService = async (patientId, data, file, uploadedBy) => {
+  const patient = await Patient.findOne({
+    _id: patientId,
+    isDeleted: false,
+  });
 
-    if (!patient) {
-      throw new ApiError(
-        404,
-        "Patient not found",
-        "PATIENT_NOT_FOUND"
-      );
-    }
-console.log(data);
-console.log(file);
-    patient.labReports.push({
-      ...data,
+  if (!patient) {
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
+  }
+  console.log(data);
+  console.log(file);
+  patient.labReports.push({
+    ...data,
 
-      documentUrl:
-        file
-          ? `/uploads/lab-reports/${file.filename}`
-          : null,
+    documentUrl: file ? `/uploads/lab-reports/${file.filename}` : null,
 
-      uploadedBy,
-    });
+    uploadedBy,
+  });
 
-    patient.updatedBy =
-      uploadedBy;
+  patient.updatedBy = uploadedBy;
 
-    await patient.save();
+  await patient.save();
 
-    return patient.labReports.at(
-      -1
-    );
-  };
+  return patient.labReports.at(-1);
+};
 
-module.exports =
-  addLabReportService;
+module.exports = addLabReportService;
