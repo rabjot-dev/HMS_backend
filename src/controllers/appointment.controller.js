@@ -354,6 +354,10 @@ const getPendingAppointments = asyncHandler(async (req, res) => {
 
 // Appointment approval
 const approveAppointment = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw ERR.invalidAppointmentId();
+  }
+
   const appointment = await approveAppointmentService(
     req.params.id,
     req.user.userId
@@ -368,6 +372,10 @@ const approveAppointment = asyncHandler(async (req, res) => {
 
 // Reject appointment
 const rejectAppointment = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw ERR.invalidAppointmentId();
+  }
+
   const appointment = await rejectAppointmentService(
     req.params.id,
     req.user.userId
@@ -382,6 +390,10 @@ const rejectAppointment = asyncHandler(async (req, res) => {
 
 // Update Appointment
 const updateMyAppointment = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw ERR.invalidAppointmentId();
+  }
+
   const appointment = await updateMyAppointmentService(
     req.params.id,
     req.user.patientId,
@@ -397,6 +409,10 @@ const updateMyAppointment = asyncHandler(async (req, res) => {
 
 // Cancel Appointment
 const cancelMyAppointment = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw ERR.invalidAppointmentId();
+  }
+
   const appointment = await cancelMyAppointmentService(
     req.params.id,
     req.user.patientId,

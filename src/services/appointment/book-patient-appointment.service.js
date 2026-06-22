@@ -3,6 +3,7 @@ const Employee = require("../../models/Employee");
 const Patient = require("../../models/Patient");
 const ERR = require("../../utils/errors");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
+const ensureDoctorJoined = require("./ensure-doctor-joined.service");
 
 const bookPatientAppointment = async (appointmentData, user) => {
   const {
@@ -48,6 +49,8 @@ throw ERR.patientNotFound();  }
   if (!doctor) {
 throw ERR.doctorNotFound();
   }
+
+  ensureDoctorJoined(doctor, appointmentDate);
 
   // Check if doctor is currently available
   if (!doctor?.availability?.isAvailable) {

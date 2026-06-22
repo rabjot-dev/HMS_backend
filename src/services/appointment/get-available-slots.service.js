@@ -3,6 +3,7 @@ const Employee = require("../../models/Employee");
 
 const generateSlots = require("../../utils/generateSlots");
 const ERR = require("../../utils/errors");
+const ensureDoctorJoined = require("./ensure-doctor-joined.service");
 
 const getAvailableSlots = async (doctorId, appointmentDate) => {
   // Validate required fields
@@ -26,6 +27,8 @@ throw ERR.cannotSelectPastDates(); }
 
   if (!doctor) {
 throw ERR.doctorNotFound();  }
+
+  ensureDoctorJoined(doctor, appointmentDate);
 
   // Check doctor availability status
   if (!doctor?.availability?.isAvailable) {

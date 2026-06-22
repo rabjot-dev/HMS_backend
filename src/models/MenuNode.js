@@ -15,6 +15,12 @@ const menuNodeSchema = new mongoose.Schema(
       unique: true,
     },
 
+    parentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MenuNode",
+      default: null,
+    },
+
     icon: {
       type: String,
       default: "",

@@ -5,6 +5,8 @@ const ERR = {
   phoneExists: () => new AppError("Phone number is already registered", 409),
   medicalRegistrationExists: () =>
     new AppError("Medical registration number already exists", 409),
+  menuNodePathExists: () =>
+    new AppError("Menu node path already exists", 409),
 
   userNotFound: () => new AppError("User not found", 404),
   employeeNotFound: () => new AppError("Employee not found", 404),
@@ -12,6 +14,7 @@ const ERR = {
   doctorNotFound: () => new AppError("Doctor not found", 404),
   appointmentNotFound: () => new AppError("Appointment not found", 404),
   consultationNotFound: () => new AppError("Consultation not found", 404),
+  menuNodeNotFound: () => new AppError("Menu node not found", 404),
 
   invalidCredentials: () => new AppError("Invalid email or password", 401),
   invalidToken: () => new AppError("Invalid or expired token", 401),
@@ -22,6 +25,7 @@ const ERR = {
   invalidEmployeeId: () => new AppError("Invalid employee ID", 400),
   invalidAppointmentId: () => new AppError("Invalid appointment ID", 400),
   invalidConsultationId: () => new AppError("Invalid consultation ID", 400),
+  invalidMenuNodeId: () => new AppError("Invalid menu node ID", 400),
 
   pastAppointmentDate: () =>
     new AppError("Cannot book appointment for past dates", 422),
@@ -34,6 +38,12 @@ const ERR = {
 
   doctorUnavailable: () =>
     new AppError("Doctor is currently unavailable", 409),
+
+  doctorNotJoined: (joiningDate) =>
+    new AppError(
+      `Appointments can be booked only from doctor's joining date (${joiningDate})`,
+      409
+    ),
 
   doctorNotAvailableOnDay: (day) =>
     new AppError(`Doctor is not available on ${day}`, 409),

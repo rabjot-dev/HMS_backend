@@ -107,6 +107,18 @@ const getPatientById = asyncHandler(async (req, res) => {
     throw ERR.patientNotFound();
   }
 
+  if (req.user.roles?.includes("DOCTOR")) {
+    const hasHandledPatient = await Appointment.exists({
+      patientId: id,
+      doctorEmployeeId: req.user.employeeId,
+      isDeleted: { $ne: true },
+    });
+
+    if (!hasHandledPatient) {
+      throw ERR.unauthorizedAccess();
+    }
+  }
+
   return res.status(200).json({
     success: true,
     message: "Patient retrieved successfully",

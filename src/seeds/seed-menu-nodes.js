@@ -4,100 +4,205 @@ const mongoose = require("mongoose");
 const connectDB = require("../config/db");
 const MenuNode = require("../models/MenuNode");
 
-const menuNodes = [
+const parentMenus = [
   {
-    label: "Dashboard",
+    key: "admin-dashboard",
+    label: "Admin Dashboard",
     path: "/dashboard/admin",
-    icon: "H",
+    icon: "dashboard",
     allowedRoles: ["ADMIN"],
     order: 1,
-    isActive: true,
   },
   {
-    label: "Dashboard",
+    key: "doctor-dashboard",
+    label: "Doctor Dashboard",
     path: "/dashboard/doctor",
-    icon: "H",
+    icon: "dashboard",
     allowedRoles: ["DOCTOR"],
     order: 1,
-    isActive: true,
   },
   {
-    label: "Dashboard",
+    key: "receptionist-dashboard",
+    label: "Receptionist Dashboard",
     path: "/dashboard/receptionist",
-    icon: "H",
+    icon: "dashboard",
     allowedRoles: ["RECEPTIONIST"],
     order: 1,
-    isActive: true,
   },
   {
+    key: "employees",
     label: "Employees",
-    path: "/employees",
-    icon: "E",
+    path: "group:employees",
+    icon: "users",
     allowedRoles: ["ADMIN"],
     order: 2,
-    isActive: true,
   },
   {
-    label: "Add Employee",
-    path: "/employees/create",
-    icon: "+",
-    allowedRoles: ["ADMIN"],
-    order: 3,
-    isActive: true,
-  },
-  {
-    label: "Pending Requests",
-    path: "/employees/pending",
-    icon: "P",
-    allowedRoles: ["ADMIN"],
-    order: 4,
-    isActive: true,
-  },
-  {
+    key: "patients",
     label: "Patients",
-    path: "/patients",
-    icon: "U",
+    path: "group:patients",
+    icon: "patients",
     allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
-    order: 5,
-    isActive: true,
+    order: 3,
   },
   {
+    key: "appointments",
     label: "Appointments",
-    path: "/appointments",
-    icon: "A",
+    path: "group:appointments",
+    icon: "calendar",
     allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
-    order: 6,
-    isActive: true,
+    order: 4,
   },
   {
-    label: "Queue",
+    key: "doctor-queue",
+    label: "Doctor Queue",
     path: "/doctor-queue",
-    icon: "Q",
+    icon: "queue",
     allowedRoles: ["DOCTOR"],
-    order: 7,
-    isActive: true,
+    order: 5,
   },
   {
+    key: "doctor-availability",
     label: "Availability",
     path: "/doctor-availability",
-    icon: "T",
+    icon: "clock",
     allowedRoles: ["DOCTOR"],
-    order: 8,
-    isActive: true,
+    order: 6,
+  },
+  {
+    key: "profile",
+    label: "My Profile",
+    path: "/my-profile",
+    icon: "user-circle",
+    allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+    order: 7,
+  },
+];
+
+const childMenus = [
+  {
+    parentKey: "employees",
+    label: "All Employees",
+    path: "/employees",
+    icon: "list",
+    allowedRoles: ["ADMIN"],
+    order: 1,
+  },
+  {
+    parentKey: "employees",
+    label: "New Employee",
+    path: "/employees/create",
+    icon: "user-plus",
+    allowedRoles: ["ADMIN"],
+    order: 2,
+  },
+  {
+    parentKey: "employees",
+    label: "Requests",
+    path: "/employees/pending",
+    icon: "inbox",
+    allowedRoles: ["ADMIN"],
+    order: 3,
+  },
+  {
+    parentKey: "patients",
+    label: "All Patients",
+    path: "/patients",
+    icon: "list",
+    allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+    order: 1,
+  },
+  {
+    parentKey: "patients",
+    label: "New Patient",
+    path: "/patients/create",
+    icon: "user-plus",
+    allowedRoles: ["ADMIN", "RECEPTIONIST"],
+    order: 2,
+  },
+  {
+    parentKey: "appointments",
+    label: "All Appointments",
+    path: "/appointments",
+    icon: "calendar-days",
+    allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+    order: 1,
+  },
+  {
+    parentKey: "appointments",
+    label: "New Appointment",
+    path: "/appointments/book",
+    icon: "calendar-plus",
+    allowedRoles: ["ADMIN", "RECEPTIONIST"],
+    order: 2,
+  },
+  {
+    parentKey: "appointments",
+    label: "Requests",
+    path: "/appointments/requests",
+    icon: "inbox",
+    allowedRoles: ["ADMIN"],
+    order: 3,
   },
 ];
 
 const seedMenuNodes = async () => {
   await connectDB();
 
-  for (const menuNode of menuNodes) {
-    await MenuNode.findOneAndUpdate({ path: menuNode.path }, menuNode, {
-      upsert: true,
-      returnDocument: "after",
-    });
+  const parentNodeMap = new Map();
+
+  for (const menuNode of parentMenus) {
+    const savedNode = await MenuNode.findOneAndUpdate(
+      { path: menuNode.path },
+      {
+        label: menuNode.label,
+        path: menuNode.path,
+        parentId: null,
+        icon: menuNode.icon,
+        allowedRoles: menuNode.allowedRoles,
+        order: menuNode.order,
+        isActive: true,
+      },
+      {
+        upsert: true,
+        returnDocument: "after",
+      }
+    );
+
+    parentNodeMap.set(menuNode.key, savedNode);
+  }
+
+  for (const menuNode of childMenus) {
+    const parentNode = parentNodeMap.get(menuNode.parentKey);
+
+    await MenuNode.findOneAndUpdate(
+      { path: menuNode.path },
+      {
+        label: menuNode.label,
+        path: menuNode.path,
+        parentId: parentNode?._id || null,
+        icon: menuNode.icon,
+        allowedRoles: menuNode.allowedRoles,
+        order: menuNode.order,
+        isActive: true,
+      },
+      {
+        upsert: true,
+        returnDocument: "after",
+      }
+    );
   }
 
   await MenuNode.deleteOne({ path: "/medical-records" });
+  await MenuNode.findOneAndUpdate(
+    { path: "/consultations" },
+    { isActive: false }
+  );
+  await MenuNode.deleteMany({
+    path: {
+      $in: ["/menu/employees", "/menu/patients", "/menu/appointments"],
+    },
+  });
 
   console.log("Menu nodes seeded successfully");
   await mongoose.connection.close();

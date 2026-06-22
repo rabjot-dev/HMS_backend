@@ -4,6 +4,7 @@ const Patient = require("../../models/Patient");
 const ERR = require("../../utils/errors");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
 const getNextTokenNumber = require("./get-next-token-number.service");
+const ensureDoctorJoined = require("./ensure-doctor-joined.service");
 
 const bookAppointment = async (appointmentData, user) => {
   const {
@@ -50,6 +51,8 @@ const bookAppointment = async (appointmentData, user) => {
   if (!doctor) {
     throw ERR.doctorNotFound();
   }
+
+  ensureDoctorJoined(doctor, appointmentDate);
 
   // Check if doctor is currently available
   if (!doctor?.availability?.isAvailable) {

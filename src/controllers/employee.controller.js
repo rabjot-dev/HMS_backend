@@ -117,6 +117,10 @@ const deleteEmployee = asyncHandler(async (req, res) => {
 
 // Deactivate employee account
 const deactivateEmployee = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw ERR.invalidEmployeeId();
+  }
+
   await deactivateEmployeeService(req.params.id, req.user.userId);
   return res.status(200).json({
     success: true,
@@ -126,6 +130,10 @@ const deactivateEmployee = asyncHandler(async (req, res) => {
 
 // Activate employee account
 const activateEmployee = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw ERR.invalidEmployeeId();
+  }
+
   await activateEmployeeService(req.params.id, req.user.userId);
   return res.status(200).json({
     success: true,
@@ -161,6 +169,10 @@ const getPendingEmployees = asyncHandler(async (req, res) => {
 
 // Approve employee registration
 const approveEmployee = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw ERR.invalidEmployeeId();
+  }
+
   const employee = await approveEmployeeService(
     req.params.id,
     req.body.consultationFee,
@@ -176,6 +188,10 @@ const approveEmployee = asyncHandler(async (req, res) => {
 
 // Reject employee registration
 const rejectEmployee = asyncHandler(async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    throw ERR.invalidEmployeeId();
+  }
+
   await rejectEmployeeService(req.params.id, req.user.userId);
   return res.status(200).json({
     success: true,

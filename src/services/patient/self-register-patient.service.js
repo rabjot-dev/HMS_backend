@@ -19,26 +19,24 @@ const selfRegisterPatient = async (patientData) => {
     securityAnswer,
   } = patientData;
 
-  //  Duplicate Email Check
   const existingUser = await User.findOne({
     email: email.toLowerCase(),
   });
 
   if (existingUser) {
-throw ERR.emailAlreadyRegistered(); }
+    throw ERR.emailAlreadyRegistered();
+  }
 
-  //  Duplicate Phone Check
   const existingPatient = await Patient.findOne({
     phone,
   });
 
   if (existingPatient) {
-throw ERR.phoneAlreadyRegistered(); }
+    throw ERR.phoneAlreadyRegistered();
+  }
 
-  //  Generate Patient ID
   const patientId = await generatePatientId();
 
-  //  Create Patient
   const patient = await Patient.create({
     patientId,
 
@@ -55,11 +53,6 @@ throw ERR.phoneAlreadyRegistered(); }
     dateOfBirth: new Date(),
   });
 
-  /*
-  |--------------------------------------------------------------------------
-  | Hash Password
-  |--------------------------------------------------------------------------
-  */
   const passwordHash = await bcrypt.hash(
     password,
     10,
@@ -70,11 +63,6 @@ throw ERR.phoneAlreadyRegistered(); }
     10,
   );
 
-  /*
-  |--------------------------------------------------------------------------
-  | Create User
-  |--------------------------------------------------------------------------
-  */
   await User.create({
     email: email.toLowerCase(),
 

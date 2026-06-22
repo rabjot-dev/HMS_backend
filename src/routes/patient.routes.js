@@ -10,8 +10,8 @@ const {
   deletePatient,
   registerPatientMobile,
   getProfile,
-updateProfile,
-getPatientDashboard
+  updateProfile,
+  getPatientDashboard,
 } = require("../controllers/patient.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
@@ -41,6 +41,7 @@ router.post(
 router.get(
   "/",
   authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST", "DOCTOR"),
   getPatients
 );
 // get profile 
@@ -64,14 +65,15 @@ router.put(
 // Patient dashboard
 router.get(
   "/dashboard",
-authMiddleware,
-roleMiddleware( "PATIENT"),
+  authMiddleware,
+  roleMiddleware("PATIENT"),
   getPatientDashboard
 );
 // Get patient details by ID
 router.get(
   "/:id",
   authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST", "DOCTOR"),
   getPatientById
 );
 
