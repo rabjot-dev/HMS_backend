@@ -74,17 +74,17 @@ module.exports = [
     ],
   },
 
-  {
-    name: "Consultations",
-    path: "/consultations",
-    icon: "description",
-    order: 40,
-    roles: [
-      ROLES.SUPER_ADMIN,
-      ROLES.ADMIN,
-      ROLES.RECEPTIONIST,
-      ROLES.DOCTOR,
-    ],
+{
+  name: "Health Records",
+  path: "/health-records",
+  icon: "folder_shared",
+  order: 40,
+  roles: [
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.RECEPTIONIST,
+    ROLES.DOCTOR,
+  ],
   },
 
   {

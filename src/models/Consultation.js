@@ -124,6 +124,59 @@ deletedAt: {
   type: Date,
   default: null,
 },
+followUpDate: {
+  type: Date,
+  default: null,
+},
+
+diagnosisCategory: {
+  type: String,
+  trim: true,
+},
+
+labRecommendations: [
+  {
+    type: String,
+    trim: true,
+  },
+],
+
+labReports: [
+  { reportName: {
+      type: String,
+      trim: true,
+    },
+
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    uploadedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+],
+
+attachments: [
+  {
+    fileName: String,
+    fileUrl: String,
+    type: String,
+    trim: true,
+
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    uploadedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+],
   },
   {
     timestamps: true,

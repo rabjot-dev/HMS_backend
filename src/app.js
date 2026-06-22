@@ -1,7 +1,9 @@
 const express = require("express");
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 const authRoutes = require("./routes/auth.routes");
-
+const path =
+  require("node:path");
+  const upload =require(  "../src/middleware/upload.middleware");
 const employeeRoutes = require("./routes/employee.routes");
 const appointmentRoutes = require("./routes/appointment.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
@@ -9,11 +11,11 @@ const consultationRoutes = require("./routes/consultation.routes");
 const patientRoutes = require("./routes/patient.routes");
 const errorMiddleware =require("./middleware/error.middleware");
 const nodeRoutes = require("./routes/node.routes");
-
+const healthRecordRoutes =require("./routes/health-record.routes");
 const cors = require("cors");
 const app = express();
 app.disable('x-powered-by');
-app.use(cors({origin: ["http://localhost:4200"],credentials: true}));
+app.use(cors({origin: true,credentials: true}));
 app.use(express.json());
 
 app.use(
@@ -54,8 +56,20 @@ app.use(
 
   consultationRoutes,
 );
+app.use(
+  "/api/health-records",
+  healthRecordRoutes
+);
+app.use(
+  '/uploads',
+  express.static(
+    path.join(__dirname, '../uploads')
+  )
+);
+
+app.use( "/api/nodes",nodeRoutes);
 
 app.use(errorMiddleware);
-app.use( "/api/nodes",nodeRoutes);
+
 
 module.exports = app;
