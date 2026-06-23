@@ -115,6 +115,7 @@ const refreshToken = asyncHandler(async (req, res) => {
     {
       userId: user._id,
       employeeId: user.employeeId,
+      patientId: user.patientId,
       roles: user.roles,
     },
     process.env.JWT_SECRET,

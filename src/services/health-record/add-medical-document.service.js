@@ -12,13 +12,23 @@ const addMedicalDocumentService = async (patientId, data, file, uploadedBy) => {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
-  patient.medicalDocuments.push({
-    ...data,
+patient.medicalDocuments.push({
+  ...data,
 
-    documentUrl: file ? `/uploads/medical-documents/${file.filename}` : null,
+  documentUrl: file
+    ? `/uploads/medical-documents/${file.filename}`
+    : null,
 
-    uploadedBy,
-  });
+  uploadedBy,
+  uploadedAt: new Date(),
+
+  updatedBy: null,
+  updatedAt: null,
+
+  isDeleted: false,
+  deletedBy: null,
+  deletedAt: null,
+});
 
   patient.updatedBy = uploadedBy;
 

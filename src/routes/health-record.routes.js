@@ -15,6 +15,8 @@ const {
   deleteLabReport,
   addMedicalDocument,
   deleteMedicalDocument,
+  updateMedicalDocument,
+  updateLabReport
 } = require("../controllers/health-record.controller");
 
 router.get(
@@ -79,5 +81,31 @@ router.post(
   ),
   upload.single("document"),
   addMedicalDocument,
+);
+
+router.put(
+  "/:patientId/lab-reports/:reportId",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.RECEPTIONIST,
+    ROLES.DOCTOR,
+  ),
+  upload.single("document"),
+  updateLabReport,
+);
+
+router.put(
+  "/:patientId/medical-documents/:documentId",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.RECEPTIONIST,
+    ROLES.DOCTOR,
+  ),
+  upload.single("document"),
+  updateMedicalDocument,
 );
 module.exports = router;

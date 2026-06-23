@@ -11,15 +11,24 @@ const addLabReportService = async (patientId, data, file, uploadedBy) => {
   if (!patient) {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
-  console.log(data);
-  console.log(file);
-  patient.labReports.push({
-    ...data,
 
-    documentUrl: file ? `/uploads/lab-reports/${file.filename}` : null,
+ patient.labReports.push({
+  ...data,
 
-    uploadedBy,
-  });
+  documentUrl: file
+    ? `/uploads/lab-reports/${file.filename}`
+    : null,
+
+  uploadedBy,
+  uploadedAt: new Date(),
+
+  updatedBy: null,
+  updatedAt: null,
+
+  isDeleted: false,
+  deletedBy: null,
+  deletedAt: null,
+});
 
   patient.updatedBy = uploadedBy;
 

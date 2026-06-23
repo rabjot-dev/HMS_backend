@@ -236,10 +236,36 @@ const patientSchema = new mongoose.Schema(
             type: Date,
             default: Date.now,
           },
+          updatedBy: {
+  type:
+    mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+updatedAt: {
+  type: Date,
+  default: null,
+},
+
+isDeleted: {
+  type: Boolean,
+  default: false,
+},
+
+deletedBy: {
+  type:
+    mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+deletedAt: {
+  type: Date,
+  default: null,
+},
         },
       ],
-
-      default: [],
     },
     default: [],
     medicalDocuments: {
@@ -291,6 +317,34 @@ const patientSchema = new mongoose.Schema(
             type: Date,
             default: Date.now,
           },
+          updatedBy: {
+  type:
+    mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+updatedAt: {
+  type: Date,
+  default: null,
+},
+
+isDeleted: {
+  type: Boolean,
+  default: false,
+},
+
+deletedBy: {
+  type:
+    mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
+
+deletedAt: {
+  type: Date,
+  default: null,
+},
         },
       ],
 

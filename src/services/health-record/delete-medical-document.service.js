@@ -2,49 +2,104 @@ const fs = require("fs");
 const path = require("path");
 
 const Patient = require("../../models/Patient");
-
 const ApiError = require("../../utils/ApiError");
 
-const deleteMedicalDocumentService = async (patientId, documentId) => {
-  const patient = await Patient.findOne({
-    _id: patientId,
-    isDeleted: false,
-  });
+const deleteMedicalDocumentService = async (
+  patientId,
+  documentId,
+  deletedBy
+) => {
+  const patient =
+    await Patient.findOne({
+      _id: patientId,
+      isDeleted: false,
+    });
 
   if (!patient) {
-    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
+    throw new ApiError(
+      404,
+      "Patient not found",
+      "PATIENT_NOT_FOUND",
+    );
   }
 
-  const document = patient.medicalDocuments.id(documentId);
+  const index =
+    patient.medicalDocuments.findIndex(
+      (document) =>
+        document._id.toString() ===
+        documentId,
+    );
 
-  if (!document) {
-    throw new ApiError(404, "Medical document not found", "DOCUMENT_NOT_FOUND");
+  if (index === -1) {
+    throw new ApiError(
+      404,
+      "Medical document not found",
+      "DOCUMENT_NOT_FOUND",
+    );
   }
+
+  const document =
+    patient.medicalDocuments[index];
 
   /*
-    |---------------------------------------
-    | Delete Physical File
-    |---------------------------------------
-    */
+  |--------------------------------------------------------------------------
+  | Delete Physical File
+  |--------------------------------------------------------------------------
+  */
 
   if (document.documentUrl) {
     const filePath = path.join(
       process.cwd(),
-      document.documentUrl.replace(/^\//, ""),
+      document.documentUrl.replace(
+        /^\//,
+        "",
+      ),
     );
 
-    if (fs.existsSync(filePath)) {
-      await fs.promises.unlink(filePath);
+    try {
+      if (
+        fs.existsSync(
+          filePath,
+        )
+      ) {
+        await fs.promises.unlink(
+          filePath,
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Unable to delete medical document file",
+        error,
+      );
     }
   }
 
-  document.deleteOne();
+  /*
+  |--------------------------------------------------------------------------
+  | Remove Document
+  |--------------------------------------------------------------------------
+  */
+
+document.isDeleted = true;
+document.deletedBy = deletedBy;
+document.deletedAt = new Date();
+
+patient.markModified(
+  "medicalDocuments",
+);
+
+await patient.save();
+  patient.markModified(
+    "medicalDocuments",
+  );
 
   await patient.save();
 
   return {
-    message: "Medical document deleted successfully",
+    message:
+      "Medical document deleted successfully",
   };
 };
 
-module.exports = deleteMedicalDocumentService;
+module.exports =
+  deleteMedicalDocumentService;

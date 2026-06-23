@@ -7,8 +7,7 @@ const mongoose = require("mongoose");
 const ApiError = require("../../utils/ApiError");
 
 const getHealthRecordDetailsService = async (patientId, user) => {
-  console.log(user);
-  console.log(user.employeeId);
+
 
   /*
     |--------------------------------------------------------------------------
@@ -118,8 +117,21 @@ const getHealthRecordDetailsService = async (patientId, user) => {
   return {
     patient,
     consultations,
-    labReports: patient.labReports ?? [],
-    medicalDocuments: patient.medicalDocuments ?? [],
+ labReports:
+  patient.labReports?.filter(
+    (
+      report,
+    ) =>
+      !report.isDeleted
+  ) ?? [],
+
+medicalDocuments:
+  patient.medicalDocuments?.filter(
+    (
+      document,
+    ) =>
+      !document.isDeleted
+  ) ?? [],
   };
 };
 
