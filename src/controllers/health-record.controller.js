@@ -35,7 +35,7 @@ const getHealthRecordDetails = async (req, res, next) => {
       });
     }
 
-    const result = await getHealthRecordDetailsService(patientId, req.user);
+    const result = await getHealthRecordDetailsService(patientId, req.user, req.query);
 
     return res.status(200).json({
       success: true,
