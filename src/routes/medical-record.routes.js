@@ -6,11 +6,70 @@ const {
   getMyPrescriptions,
   getPrescriptionById,
   getLabReports,
+  createHealthRecord,
+  getHealthRecords,
+  getPatientHealthRecords,
+  getMyHealthRecords,
+  getHealthRecordById,
+  updateHealthRecord,
+  deleteHealthRecord,
 } = require("../controllers/medical-record.controller");
 const authMiddleware = require("../middleware/auth.middleware");
+const healthRecordUpload = require("../middleware/health-record-upload.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
 
 const router = express.Router();
+
+router.get(
+  "/health-records",
+  authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST", "DOCTOR"),
+  getHealthRecords
+);
+
+router.post(
+  "/health-records",
+  authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  healthRecordUpload.single("documentFile"),
+  createHealthRecord
+);
+
+router.get(
+  "/health-records/my",
+  authMiddleware,
+  roleMiddleware("PATIENT"),
+  getMyHealthRecords
+);
+
+router.get(
+  "/health-records/patient/:patientId",
+  authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST", "DOCTOR"),
+  getPatientHealthRecords
+);
+
+router.get(
+  "/health-records/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST", "DOCTOR", "PATIENT"),
+  getHealthRecordById
+);
+
+router.put(
+  "/health-records/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  healthRecordUpload.single("documentFile"),
+  updateHealthRecord
+);
+
+router.delete(
+  "/health-records/:id",
+  authMiddleware,
+  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  deleteHealthRecord
+);
 
 router.get(
   "/prescriptions",

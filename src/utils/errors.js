@@ -15,6 +15,7 @@ const ERR = {
   appointmentNotFound: () => new AppError("Appointment not found", 404),
   consultationNotFound: () => new AppError("Consultation not found", 404),
   menuNodeNotFound: () => new AppError("Menu node not found", 404),
+  healthRecordNotFound: () => new AppError("Health record not found", 404),
 
   invalidCredentials: () => new AppError("Invalid email or password", 401),
   invalidToken: () => new AppError("Invalid or expired token", 401),
@@ -26,6 +27,7 @@ const ERR = {
   invalidAppointmentId: () => new AppError("Invalid appointment ID", 400),
   invalidConsultationId: () => new AppError("Invalid consultation ID", 400),
   invalidMenuNodeId: () => new AppError("Invalid menu node ID", 400),
+  invalidHealthRecordId: () => new AppError("Invalid health record ID", 400),
 
   pastAppointmentDate: () =>
     new AppError("Cannot book appointment for past dates", 422),

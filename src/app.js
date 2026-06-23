@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const authRoutes = require("./routes/auth.routes");
 
 const employeeRoutes = require("./routes/employee.routes");
@@ -20,6 +21,7 @@ app.use(
     extended: true,
   }),
 );
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.get("/health", (req, res) => {
   return res.status(200).json({

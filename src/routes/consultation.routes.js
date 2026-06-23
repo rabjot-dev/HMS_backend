@@ -3,7 +3,6 @@ const router = express.Router();
 const {
   createConsultation,
   getConsultationByAppointment,
-  updateConsultation,
   getConsultations,
   downloadPrescriptionPdf,
   getConsultationById,
@@ -42,15 +41,6 @@ router.get(
   "/appointment/:appointmentId",
   authMiddleware,
   getConsultationByAppointment,
-);
-
-//Update Consultation
-
-router.put(
-  "/:id",
-  authMiddleware,
-  roleMiddleware("DOCTOR"),
-  updateConsultation,
 );
 
 router.get(

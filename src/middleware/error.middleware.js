@@ -1,9 +1,15 @@
 const errorHandler = (error, req, res, next) => {
-  const statusCode = error.statusCode || 500;
+  let statusCode = error.statusCode || 500;
+  let message = error.isOperational ? error.message : "Internal server error";
+
+  if (error.code === "LIMIT_FILE_SIZE") {
+    statusCode = 400;
+    message = "Document file must be 10MB or smaller";
+  }
 
   const response = {
     success: false,
-    message: error.isOperational ? error.message : "Internal server error",
+    message,
   };
 
   if (error.errorCode) {

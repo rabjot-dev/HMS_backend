@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const createConsultationService = require("../services/consultation/create-consultation.service");
 const getConsultationByIdService = require("../services/consultation/get-consultation-by-id.service");
 const getConsultationByAppointmentService = require("../services/consultation/get-consultation-by-appointment.service");
-const updateConsultationService = require("../services/consultation/update-consultation.service");
 const getConsultationsService = require("../services/consultation/get-consultations.service");
 const getPrescriptionDataService = require("../services/consultation/download-prescription-pdf.service");
 
@@ -36,22 +35,6 @@ const getConsultationByAppointment = asyncHandler(async (req, res) => {
     data: consultation,
   });
 });
-const updateConsultation = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw ERR.invalidConsultationId();
-  }
-
-  const consultation = await updateConsultationService(id, req.body);
-
-  return res.status(200).json({
-    success: true,
-    message: "Consultation updated successfully",
-    data: consultation,
-  });
-});
-
 const getConsultations = asyncHandler(async (req, res) => {
   const { page, limit, skip, sort, search, status, fromDate, toDate } =
     getPagination(req.query, {
@@ -113,7 +96,6 @@ module.exports = {
   createConsultation,
   getConsultationById,
   getConsultationByAppointment,
-  updateConsultation,
   getConsultations,
   downloadPrescriptionPdf,
 };
