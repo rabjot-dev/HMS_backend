@@ -3,7 +3,8 @@ const Employee = require("../../models/Employee");
 const Patient = require("../../models/Patient");
 const getNextTokenNumber = require("../../utils/getNextTokenNumber");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
-
+const STATUS =
+  require("../../constants/status");
 const bookAppointment = async (appointmentData, user) => {
   const {
     patientId,

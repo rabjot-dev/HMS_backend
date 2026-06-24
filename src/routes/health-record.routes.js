@@ -30,7 +30,25 @@ router.get(
   ),
   getHealthRecords,
 );
+router.get(
+  "/me",
+  authMiddleware,
+  roleMiddleware(ROLES.PATIENT),
+  async (req, res, next) => {
+    try {
+      req.params.patientId =
+        req.user.patientId;
 
+      return getHealthRecordDetails(
+        req,
+        res,
+        next,
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 router.get(
   "/:patientId",
   authMiddleware,
