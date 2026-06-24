@@ -1,7 +1,7 @@
 const express = require("express");
 
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
+const permissionMiddleware = require("../middleware/permission.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
 
 const {
@@ -30,7 +30,7 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:create"),
   registerEmployeeValidation,
   validateMiddleware,
   createEmployee
@@ -46,6 +46,7 @@ router.get(
 router.get(
   "/doctor/availability",
   authMiddleware,
+  permissionMiddleware("doctor:availability:view"),
   getDoctorAvailability
 );
 
@@ -53,6 +54,7 @@ router.get(
 router.patch(
   "/doctor/availability",
   authMiddleware,
+  permissionMiddleware("doctor:availability:update"),
   updateDoctorAvailability
 );
 
@@ -60,7 +62,7 @@ router.patch(
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:list"),
   getEmployees
 );
 
@@ -68,7 +70,7 @@ router.get(
 router.get(
   "/pending-employees",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:pending-list"),
   getPendingEmployees
 );
 
@@ -76,7 +78,7 @@ router.get(
 router.patch(
   "/:id/approve-employee",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:approve"),
   approveEmployee
 );
 
@@ -84,7 +86,7 @@ router.patch(
 router.patch(
   "/:id/reject-employee",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:reject"),
   rejectEmployee
 );
 
@@ -92,7 +94,7 @@ router.patch(
 router.patch(
   "/:id/deactivate",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:deactivate"),
   deactivateEmployee
 );
 
@@ -100,7 +102,7 @@ router.patch(
 router.get(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:detail"),
   getEmployeeById
 );
 
@@ -108,7 +110,7 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:update"),
   updateEmployee
 );
 
@@ -116,7 +118,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:delete"),
   deleteEmployee
 );
 
@@ -124,7 +126,7 @@ router.delete(
 router.patch(
   "/:id/activate",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("employee:activate"),
   activateEmployee
 );
 

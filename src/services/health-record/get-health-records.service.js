@@ -1,14 +1,13 @@
 const HealthRecord = require("../../models/HealthRecord");
-const { buildSearchFilter } = require("../../utils/pagination");
 
 const getHealthRecords = async ({
   patientId,
   user,
+  documentType,
+  excludeDocumentType,
   skip,
   limit,
   sort,
-  search,
-  documentType,
 }) => {
   const filter = {
     isDeleted: { $ne: true },
@@ -26,19 +25,8 @@ const getHealthRecords = async ({
     filter.documentType = documentType;
   }
 
-  if (search) {
-    Object.assign(
-      filter,
-      buildSearchFilter(
-        [
-          "title",
-          "documentType",
-          "notes",
-          "originalFileName",
-        ],
-        search
-      )
-    );
+  if (excludeDocumentType) {
+    filter.documentType = { $ne: excludeDocumentType };
   }
 
   const total = await HealthRecord.countDocuments(filter);
@@ -49,7 +37,8 @@ const getHealthRecords = async ({
     .populate("updatedBy", "email roles")
     .sort(sort)
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
   return {
     records,

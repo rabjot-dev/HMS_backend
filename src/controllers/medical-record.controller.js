@@ -2,14 +2,15 @@ const mongoose = require("mongoose");
 
 const asyncHandler = require("../utils/asyncHandler");
 const ERR = require("../utils/errors");
-const { getPagination, getPaginationMeta } = require("../utils/pagination");
 const getPrescriptionsService = require("../services/medical-record/get-prescriptions.service");
 const getPrescriptionByIdService = require("../services/medical-record/get-prescription-by-id.service");
+const getRecordPatientsService = require("../services/medical-record/get-record-patients.service");
 const createHealthRecordService = require("../services/health-record/create-health-record.service");
 const getHealthRecordsService = require("../services/health-record/get-health-records.service");
 const getHealthRecordByIdService = require("../services/health-record/get-health-record-by-id.service");
 const updateHealthRecordService = require("../services/health-record/update-health-record.service");
 const deleteHealthRecordService = require("../services/health-record/delete-health-record.service");
+const { getPagination, getPaginationMeta } = require("../utils/pagination");
 
 const HEALTH_DOCUMENT_TYPES = [
   "PREVIOUS_DISCHARGE_SUMMARY",
@@ -73,22 +74,52 @@ const validateHealthRecordUpdate = (body) => {
   }
 };
 
-const getPrescriptions = asyncHandler(async (req, res) => {
-  const { page, limit, skip, sort, search, status, fromDate, toDate } =
-    getPagination(req.query, {
-      allowedSortFields: ["createdAt", "updatedAt", "status"],
-      defaultSort: { createdAt: -1 },
-    });
+const ensureLabReport = async (id, user) => {
+  const record = await getHealthRecordByIdService(id, user);
 
-  const { prescriptions, total } = await getPrescriptionsService({
+  if (record.documentType !== "LAB_REPORT") {
+    throw ERR.healthRecordNotFound();
+  }
+
+  return record;
+};
+
+const getRecordPatients = asyncHandler(async (req, res) => {
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt", "firstName", "lastName", "patientId"],
+    defaultSort: { createdAt: -1 },
+  });
+
+  const { patients, total } = await getRecordPatientsService({
     user: req.user,
     skip,
     limit,
     sort,
-    search,
-    status,
-    fromDate,
-    toDate,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Medical record patients retrieved successfully",
+    data: patients,
+    pagination: getPaginationMeta({
+      page,
+      limit,
+      total,
+    }),
+  });
+});
+
+const getPrescriptions = asyncHandler(async (req, res) => {
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt"],
+    defaultSort: { createdAt: -1 },
+  });
+
+  const { records: prescriptions, total } = await getPrescriptionsService({
+    user: req.user,
+    skip,
+    limit,
+    sort,
   });
 
   return res.status(200).json({
@@ -110,22 +141,17 @@ const getPatientPrescriptions = asyncHandler(async (req, res) => {
     throw ERR.invalidPatientId();
   }
 
-  const { page, limit, skip, sort, search, status, fromDate, toDate } =
-    getPagination(req.query, {
-      allowedSortFields: ["createdAt", "updatedAt", "status"],
-      defaultSort: { createdAt: -1 },
-    });
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt"],
+    defaultSort: { createdAt: -1 },
+  });
 
-  const { prescriptions, total } = await getPrescriptionsService({
+  const { records: prescriptions, total } = await getPrescriptionsService({
     user: req.user,
     patientId,
     skip,
     limit,
     sort,
-    search,
-    status,
-    fromDate,
-    toDate,
   });
 
   return res.status(200).json({
@@ -141,21 +167,16 @@ const getPatientPrescriptions = asyncHandler(async (req, res) => {
 });
 
 const getMyPrescriptions = asyncHandler(async (req, res) => {
-  const { page, limit, skip, sort, search, status, fromDate, toDate } =
-    getPagination(req.query, {
-      allowedSortFields: ["createdAt", "updatedAt", "status"],
-      defaultSort: { createdAt: -1 },
-    });
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt"],
+    defaultSort: { createdAt: -1 },
+  });
 
-  const { prescriptions, total } = await getPrescriptionsService({
+  const { records: prescriptions, total } = await getPrescriptionsService({
     user: req.user,
     skip,
     limit,
     sort,
-    search,
-    status,
-    fromDate,
-    toDate,
   });
 
   return res.status(200).json({
@@ -187,15 +208,119 @@ const getPrescriptionById = asyncHandler(async (req, res) => {
 });
 
 const getLabReports = asyncHandler(async (req, res) => {
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt", "documentDate", "title"],
+    defaultSort: { createdAt: -1 },
+  });
+
+  const { records, total } = await getHealthRecordsService({
+    user: req.user,
+    documentType: "LAB_REPORT",
+    skip,
+    limit,
+    sort,
+  });
+
   return res.status(200).json({
     success: true,
-    message: "Lab reports module will be implemented later",
-    data: [],
+    message: "Lab reports retrieved successfully",
+    data: records,
     pagination: getPaginationMeta({
-      page: 1,
-      limit: 10,
-      total: 0,
+      page,
+      limit,
+      total,
     }),
+  });
+});
+
+const getPatientLabReports = asyncHandler(async (req, res) => {
+  const { patientId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(patientId)) {
+    throw ERR.invalidPatientId();
+  }
+
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt", "documentDate", "title"],
+    defaultSort: { createdAt: -1 },
+  });
+
+  const { records, total } = await getHealthRecordsService({
+    patientId,
+    user: req.user,
+    documentType: "LAB_REPORT",
+    skip,
+    limit,
+    sort,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Patient lab reports retrieved successfully",
+    data: records,
+    pagination: getPaginationMeta({
+      page,
+      limit,
+      total,
+    }),
+  });
+});
+
+const createLabReport = asyncHandler(async (req, res) => {
+  req.body = req.body || {};
+  req.body.documentType = "LAB_REPORT";
+
+  validateHealthRecordCreate(req.body, req.file);
+
+  const record = await createHealthRecordService(req.body, req.file, req.user);
+
+  return res.status(201).json({
+    success: true,
+    message: "Lab report created successfully",
+    data: record,
+  });
+});
+
+const updateLabReport = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw ERR.invalidHealthRecordId();
+  }
+
+  await ensureLabReport(id, req.user);
+
+  req.body = req.body || {};
+  req.body.documentType = "LAB_REPORT";
+  validateHealthRecordUpdate(req.body);
+
+  const record = await updateHealthRecordService(
+    id,
+    req.body,
+    req.file,
+    req.user
+  );
+
+  return res.status(200).json({
+    success: true,
+    message: "Lab report updated successfully",
+    data: record,
+  });
+});
+
+const deleteLabReport = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw ERR.invalidHealthRecordId();
+  }
+
+  await ensureLabReport(id, req.user);
+  await deleteHealthRecordService(id, req.user.userId);
+
+  return res.status(200).json({
+    success: true,
+    message: "Lab report deleted successfully",
   });
 });
 
@@ -212,18 +337,17 @@ const createHealthRecord = asyncHandler(async (req, res) => {
 });
 
 const getHealthRecords = asyncHandler(async (req, res) => {
-  const { page, limit, skip, sort, search } = getPagination(req.query, {
-    allowedSortFields: ["createdAt", "updatedAt", "documentDate", "title"],
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt", "documentDate", "title"],
     defaultSort: { createdAt: -1 },
   });
 
   const { records, total } = await getHealthRecordsService({
     user: req.user,
+    excludeDocumentType: "LAB_REPORT",
     skip,
     limit,
     sort,
-    search,
-    documentType: req.query.documentType,
   });
 
   return res.status(200).json({
@@ -245,19 +369,18 @@ const getPatientHealthRecords = asyncHandler(async (req, res) => {
     throw ERR.invalidPatientId();
   }
 
-  const { page, limit, skip, sort, search } = getPagination(req.query, {
-    allowedSortFields: ["createdAt", "updatedAt", "documentDate", "title"],
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt", "documentDate", "title"],
     defaultSort: { createdAt: -1 },
   });
 
   const { records, total } = await getHealthRecordsService({
     patientId,
     user: req.user,
+    excludeDocumentType: "LAB_REPORT",
     skip,
     limit,
     sort,
-    search,
-    documentType: req.query.documentType,
   });
 
   return res.status(200).json({
@@ -273,18 +396,17 @@ const getPatientHealthRecords = asyncHandler(async (req, res) => {
 });
 
 const getMyHealthRecords = asyncHandler(async (req, res) => {
-  const { page, limit, skip, sort, search } = getPagination(req.query, {
-    allowedSortFields: ["createdAt", "updatedAt", "documentDate", "title"],
+  const { page, limit, skip, sort } = getPagination(req.query, {
+    allowedSortFields: ["createdAt", "documentDate", "title"],
     defaultSort: { createdAt: -1 },
   });
 
   const { records, total } = await getHealthRecordsService({
     user: req.user,
+    excludeDocumentType: "LAB_REPORT",
     skip,
     limit,
     sort,
-    search,
-    documentType: req.query.documentType,
   });
 
   return res.status(200).json({
@@ -354,11 +476,16 @@ const deleteHealthRecord = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getRecordPatients,
   getPrescriptions,
   getPatientPrescriptions,
   getMyPrescriptions,
   getPrescriptionById,
   getLabReports,
+  getPatientLabReports,
+  createLabReport,
+  updateLabReport,
+  deleteLabReport,
   createHealthRecord,
   getHealthRecords,
   getPatientHealthRecords,

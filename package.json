@@ -9,7 +9,8 @@
     "test:unit": "jest tests/unit --detectOpenHandles --forceExit --runInBand --passWithNoTests",
     "test:integration": "jest tests/integration --detectOpenHandles --forceExit --runInBand --passWithNoTests",
     "test:coverage": "jest --coverage --detectOpenHandles --forceExit --runInBand --passWithNoTests",
-    "seed:menu-nodes": "node src/seeds/seed-menu-nodes.js"
+    "seed:menu-nodes": "node src/seeds/seed-menu-nodes.js",
+    "seed:api-permissions": "node src/seeds/seed-api-permissions.js"
   },
   "keywords": [],
   "author": "",

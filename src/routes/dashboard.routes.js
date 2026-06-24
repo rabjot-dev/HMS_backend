@@ -1,6 +1,7 @@
 const express = require("express");
 
 const authMiddleware = require("../middleware/auth.middleware");
+const permissionMiddleware = require("../middleware/permission.middleware");
 
 const {
   getAdminStats,
@@ -16,6 +17,7 @@ const router = express.Router();
 router.get(
   "/admin-stats",
   authMiddleware,
+  permissionMiddleware("dashboard:admin-stats"),
   getAdminStats
 );
 
@@ -23,6 +25,7 @@ router.get(
 router.get(
   "/recent-employees",
   authMiddleware,
+  permissionMiddleware("dashboard:recent-employees"),
   getRecentEmployees
 );
 
@@ -30,6 +33,7 @@ router.get(
 router.get(
   "/doctor-stats",
   authMiddleware,
+  permissionMiddleware("dashboard:doctor-stats"),
   getDoctorStats
 );
 
@@ -37,6 +41,7 @@ router.get(
 router.get(
   "/receptionist-stats",
   authMiddleware,
+  permissionMiddleware("dashboard:receptionist-stats"),
   getReceptionistStats
 );
 
@@ -44,6 +49,7 @@ router.get(
 router.get(
   "/today-appointments",
   authMiddleware,
+  permissionMiddleware("dashboard:today-appointments"),
   getTodayAppointments
 );
 

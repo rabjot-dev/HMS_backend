@@ -14,7 +14,7 @@ const sendEmail = require("../../utils/sendEmail");
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
 const ERR = require("../../utils/errors");
 
-const registerEmployee = async (employeeData) => {
+const registerEmployee = async (employeeData, currentUser = {}) => {
   const {
     name,
     email,
@@ -39,6 +39,18 @@ const registerEmployee = async (employeeData) => {
     securityAnswer,
     role,
   } = employeeData;
+  const selectedRole = role || designation || ROLES.DOCTOR;
+
+  if (selectedRole === ROLES.SUPER_ADMIN) {
+    throw ERR.unauthorizedAccess();
+  }
+
+  if (
+    selectedRole === ROLES.ADMIN &&
+    !currentUser.roles?.includes(ROLES.SUPER_ADMIN)
+  ) {
+    throw ERR.unauthorizedAccess();
+  }
 
   // Check if email is already in use
   const existingUser = await User.findOne({
@@ -73,9 +85,7 @@ throw ERR.medicalRegistrationExists();
 throw ERR.invalidDesignation();
   }
   const employeeCode = await generateSequentialId(prefix);
-
-  // Create employee record
-  const employee = await Employee.create({
+  const employeePayload = {
     employeeCode,
     name,
     email: email.toLowerCase(),
@@ -84,12 +94,16 @@ throw ERR.invalidDesignation();
     gender,
     designation,
     joiningDate,
-    medicalRegistrationNo,
-    specialization,
-    qualification,
-    consultationFee,
-    availabilitySlots,
-    availability: {
+    status: STATUS.ACTIVE,
+  };
+
+  if (designation === ROLES.DOCTOR) {
+    employeePayload.medicalRegistrationNo = medicalRegistrationNo;
+    employeePayload.specialization = specialization;
+    employeePayload.qualification = qualification;
+    employeePayload.consultationFee = consultationFee;
+    employeePayload.availabilitySlots = availabilitySlots;
+    employeePayload.availability = {
       workingDays: workingDays || [],
       startTime,
       endTime,
@@ -97,9 +111,11 @@ throw ERR.invalidDesignation();
       breakStartTime,
       breakEndTime,
       maxPatientsPerDay: maxPatientsPerDay || 40,
-    },
-    status: STATUS.ACTIVE,
-  });
+    };
+  }
+
+  // Create employee record
+  const employee = await Employee.create(employeePayload);
 
   // Generate temporary password for first login
   const temporaryPassword = generateTemporaryPassword();
@@ -113,7 +129,7 @@ throw ERR.invalidDesignation();
   await User.create({
     email: email.toLowerCase(),
     temporaryPasswordHash: hashedTemporaryPassword,
-    roles: [role || designation || ROLES.DOCTOR],
+    roles: [selectedRole],
     employeeId: employee._id,
     isFirstLogin: true,
     status: STATUS.ACTIVE,

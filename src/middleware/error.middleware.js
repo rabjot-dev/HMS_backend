@@ -7,6 +7,14 @@ const errorHandler = (error, req, res, next) => {
     message = "Document file must be 10MB or smaller";
   }
 
+  if (error.code === 11000) {
+    statusCode = 409;
+    const field = Object.keys(error.keyPattern || error.keyValue || {})[0];
+    message = field
+      ? `${field} already exists`
+      : "Duplicate value already exists";
+  }
+
   const response = {
     success: false,
     message,

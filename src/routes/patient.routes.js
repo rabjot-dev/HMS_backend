@@ -15,7 +15,7 @@ const {
 } = require("../controllers/patient.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
+const permissionMiddleware = require("../middleware/permission.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
 
 const {
@@ -31,7 +31,7 @@ const {
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  permissionMiddleware("patient:create"),
   createPatientValidation,
   validateMiddleware,
   createPatient
@@ -41,14 +41,14 @@ router.post(
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST", "DOCTOR"),
+  permissionMiddleware("patient:list"),
   getPatients
 );
 // get profile 
 router.get(
   "/profile",
   authMiddleware,
-  roleMiddleware("PATIENT"),
+  permissionMiddleware("patient:profile:view"),
   getProfile
 );
 
@@ -56,7 +56,7 @@ router.get(
 router.put(
   "/profile",
   authMiddleware,
-  roleMiddleware("PATIENT"),
+  permissionMiddleware("patient:profile:update"),
   updatePatientValidation,
   validateMiddleware,
   updateProfile
@@ -66,14 +66,14 @@ router.put(
 router.get(
   "/dashboard",
   authMiddleware,
-  roleMiddleware("PATIENT"),
+  permissionMiddleware("patient:dashboard"),
   getPatientDashboard
 );
 // Get patient details by ID
 router.get(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST", "DOCTOR"),
+  permissionMiddleware("patient:detail"),
   getPatientById
 );
 
@@ -81,7 +81,7 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  permissionMiddleware("patient:update"),
   updatePatientValidation,
   validateMiddleware,
   updatePatient
@@ -91,7 +91,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("patient:delete"),
   deletePatient
 );
 

@@ -20,13 +20,13 @@ const {
 } = require("../controllers/appointment.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
+const permissionMiddleware = require("../middleware/permission.middleware");
 
 // Get today's queue for a doctor
 router.get(
   "/doctor-queue",
   authMiddleware,
-  roleMiddleware("DOCTOR"),
+  permissionMiddleware("appointment:doctor-queue"),
   getDoctorQueue
 );
 
@@ -34,6 +34,7 @@ router.get(
 router.get(
   "/available-slots",
   authMiddleware,
+  permissionMiddleware("appointment:available-slots"),
   getAvailableSlots
 );
 
@@ -41,6 +42,7 @@ router.get(
 router.get(
   "/",
   authMiddleware,
+  permissionMiddleware("appointment:list"),
   getAppointments
 );
 
@@ -48,49 +50,49 @@ router.get(
 router.post(
   "/patient/book",
   authMiddleware,
-  roleMiddleware( "PATIENT"),
+  permissionMiddleware("appointment:patient-book"),
   bookPatientAppointment
 );
 // Only patients appointment 
 router.get(
   "/my",
   authMiddleware,
-  roleMiddleware("PATIENT"),
+  permissionMiddleware("appointment:my-list"),
   getMyAppointments
 );
 //Pending appointments
 router.get(
   "/pending",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("appointment:pending-list"),
   getPendingAppointments
 );
 // Approve appointment 
 router.patch(
   "/:id/approve",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("appointment:approve"),
   approveAppointment
 );
 // Reject appointment 
 router.patch(
   "/:id/reject",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("appointment:reject"),
   rejectAppointment
 );
 //update patient
 router.put(
   "/my/:id",
   authMiddleware,
-  roleMiddleware( "PATIENT"),
+  permissionMiddleware("appointment:my-update"),
   updateMyAppointment
 );
 //cancel appointment
 router.patch(
   "/my/:id/cancel",
   authMiddleware,
-  roleMiddleware( "PATIENT"),
+  permissionMiddleware("appointment:my-cancel"),
   cancelMyAppointment
 );
 
@@ -98,6 +100,7 @@ router.patch(
 router.get(
   "/:id",
   authMiddleware,
+  permissionMiddleware("appointment:detail"),
   getAppointmentById
 );
 
@@ -105,7 +108,7 @@ router.get(
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  permissionMiddleware("appointment:create"),
   bookAppointment
 );
 
@@ -113,7 +116,7 @@ router.post(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  permissionMiddleware("appointment:update"),
   updateAppointment
 );
 
@@ -121,7 +124,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  permissionMiddleware("appointment:delete"),
   deleteAppointment
 );
 

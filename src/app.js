@@ -9,6 +9,7 @@ const consultationRoutes = require("./routes/consultation.routes");
 const patientRoutes = require("./routes/patient.routes");
 const menuNodeRoutes = require("./routes/menu-node.routes");
 const medicalRecordRoutes = require("./routes/medical-record.routes");
+const apiPermissionRoutes = require("./routes/api-permission.routes");
 
 const cors = require("cors");
 const app = express();
@@ -57,6 +58,8 @@ app.use(
 );
 
 app.use("/api/menu-nodes", menuNodeRoutes);
+
+app.use("/api/api-permissions", apiPermissionRoutes);
 
 app.use("/api/medical-records", medicalRecordRoutes);
 

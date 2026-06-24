@@ -19,7 +19,7 @@ const { getPagination, getPaginationMeta } = require("../utils/pagination");
 
 // Create a new employee
 const createEmployee = asyncHandler(async (req, res) => {
-  const employee = await registerEmployee(req.body);
+  const employee = await registerEmployee(req.body, req.user);
 
   return res.status(201).json({
     success: true,

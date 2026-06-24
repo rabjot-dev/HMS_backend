@@ -9,13 +9,13 @@ const {
 } = require("../controllers/consultation.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
+const permissionMiddleware = require("../middleware/permission.middleware");
 
 //CREATE CONSULTATION
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("DOCTOR"),
+  permissionMiddleware("consultation:create"),
   createConsultation,
 );
 
@@ -24,6 +24,7 @@ router.post(
 router.get(
   "/",
   authMiddleware,
+  permissionMiddleware("consultation:list"),
   getConsultations,
 );
 
@@ -32,6 +33,7 @@ router.get(
 router.get(
   "/pdf/:consultationId",
   authMiddleware,
+  permissionMiddleware("consultation:pdf"),
   downloadPrescriptionPdf,
 );
 
@@ -40,15 +42,22 @@ router.get(
 router.get(
   "/appointment/:appointmentId",
   authMiddleware,
+  permissionMiddleware("consultation:by-appointment"),
   getConsultationByAppointment,
 );
 
 router.get(
   "/prescription/:consultationId",
   authMiddleware,
+  permissionMiddleware("consultation:pdf"),
   downloadPrescriptionPdf,
 );
 
-router.get("/:id", authMiddleware, getConsultationById);
+router.get(
+  "/:id",
+  authMiddleware,
+  permissionMiddleware("consultation:detail"),
+  getConsultationById
+);
 
 module.exports = router;

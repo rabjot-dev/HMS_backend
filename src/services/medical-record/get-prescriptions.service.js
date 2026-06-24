@@ -1,7 +1,5 @@
 const Consultation = require("../../models/Consultation");
 const Appointment = require("../../models/Appointment");
-const getConsultationSearchFilter = require("../consultation/get-consultation-search-filter.service");
-const { buildDateRangeFilter } = require("../../utils/pagination");
 const ERR = require("../../utils/errors");
 
 const getPrescriptionsService = async ({
@@ -10,10 +8,6 @@ const getPrescriptionsService = async ({
   skip,
   limit,
   sort,
-  search,
-  status,
-  fromDate,
-  toDate,
 }) => {
   const filter = {
     status: "COMPLETED",
@@ -43,24 +37,19 @@ const getPrescriptionsService = async ({
     filter.patientId = user.patientId;
   }
 
-  if (search) {
-    Object.assign(filter, await getConsultationSearchFilter(search));
-  }
-
-  Object.assign(filter, buildDateRangeFilter("createdAt", fromDate, toDate));
-
   const total = await Consultation.countDocuments(filter);
 
-  const prescriptions = await Consultation.find(filter)
+  const records = await Consultation.find(filter)
     .populate("patientId")
     .populate("doctorEmployeeId")
     .populate("appointmentId")
     .sort(sort)
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .lean();
 
   return {
-    prescriptions,
+    records,
     total,
   };
 };

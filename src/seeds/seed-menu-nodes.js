@@ -10,7 +10,7 @@ const parentMenus = [
     label: "Admin Dashboard",
     path: "/dashboard/admin",
     icon: "dashboard",
-    allowedRoles: ["ADMIN"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
     order: 1,
   },
   {
@@ -34,7 +34,7 @@ const parentMenus = [
     label: "Employees",
     path: "group:employees",
     icon: "users",
-    allowedRoles: ["ADMIN"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
     order: 2,
   },
   {
@@ -42,7 +42,7 @@ const parentMenus = [
     label: "Patients",
     path: "group:patients",
     icon: "patients",
-    allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
     order: 3,
   },
   {
@@ -50,7 +50,7 @@ const parentMenus = [
     label: "Appointments",
     path: "group:appointments",
     icon: "calendar",
-    allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
     order: 4,
   },
   {
@@ -70,12 +70,20 @@ const parentMenus = [
     order: 6,
   },
   {
+    key: "medical-records",
+    label: "Medical Records",
+    path: "/medical-records",
+    icon: "file-text",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+    order: 7,
+  },
+  {
     key: "profile",
     label: "My Profile",
     path: "/my-profile",
     icon: "user-circle",
-    allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
-    order: 7,
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+    order: 8,
   },
 ];
 
@@ -85,7 +93,7 @@ const childMenus = [
     label: "All Employees",
     path: "/employees",
     icon: "list",
-    allowedRoles: ["ADMIN"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
     order: 1,
   },
   {
@@ -93,7 +101,7 @@ const childMenus = [
     label: "New Employee",
     path: "/employees/create",
     icon: "user-plus",
-    allowedRoles: ["ADMIN"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
     order: 2,
   },
   {
@@ -101,7 +109,7 @@ const childMenus = [
     label: "Requests",
     path: "/employees/pending",
     icon: "inbox",
-    allowedRoles: ["ADMIN"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
     order: 3,
   },
   {
@@ -109,7 +117,7 @@ const childMenus = [
     label: "All Patients",
     path: "/patients",
     icon: "list",
-    allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
     order: 1,
   },
   {
@@ -117,7 +125,7 @@ const childMenus = [
     label: "New Patient",
     path: "/patients/create",
     icon: "user-plus",
-    allowedRoles: ["ADMIN", "RECEPTIONIST"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"],
     order: 2,
   },
   {
@@ -125,7 +133,7 @@ const childMenus = [
     label: "All Appointments",
     path: "/appointments",
     icon: "calendar-days",
-    allowedRoles: ["ADMIN", "DOCTOR", "RECEPTIONIST"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
     order: 1,
   },
   {
@@ -133,7 +141,7 @@ const childMenus = [
     label: "New Appointment",
     path: "/appointments/book",
     icon: "calendar-plus",
-    allowedRoles: ["ADMIN", "RECEPTIONIST"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"],
     order: 2,
   },
   {
@@ -141,7 +149,7 @@ const childMenus = [
     label: "Requests",
     path: "/appointments/requests",
     icon: "inbox",
-    allowedRoles: ["ADMIN"],
+    allowedRoles: ["SUPER_ADMIN", "ADMIN"],
     order: 3,
   },
 ];
@@ -193,7 +201,6 @@ const seedMenuNodes = async () => {
     );
   }
 
-  await MenuNode.deleteOne({ path: "/medical-records" });
   await MenuNode.findOneAndUpdate(
     { path: "/consultations" },
     { isActive: false }
@@ -213,3 +220,4 @@ seedMenuNodes().catch(async (error) => {
   await mongoose.connection.close();
   process.exit(1);
 });
+
