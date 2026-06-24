@@ -38,8 +38,11 @@ const ERR = {
   patientAlreadyHasAppointment: () =>
     new AppError("Patient already has an appointment at this time", 409),
 
-  doctorUnavailable: () =>
+doctorUnavailable: () =>
     new AppError("Doctor is currently unavailable", 409),
+
+invalidDoctorAvailability: () =>
+  new AppError("Doctor availability end time must be after start time", 400),
 
   doctorNotJoined: (joiningDate) =>
     new AppError(

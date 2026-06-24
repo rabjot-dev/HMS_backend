@@ -24,7 +24,7 @@ const getDoctorsService = async ({ skip, limit, sort, search, status }) => {
   const total = await Employee.countDocuments(filter);
 
   const doctors = await Employee.find(filter)
-    .select("name department specialization availability consultationFee")
+    .select("name department specialization joiningDate availability consultationFee")
     .sort(sort)
     .skip(skip)
     .limit(limit);
