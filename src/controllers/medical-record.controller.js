@@ -85,7 +85,7 @@ const ensureLabReport = async (id, user) => {
 };
 
 const getRecordPatients = asyncHandler(async (req, res) => {
-  const { page, limit, skip, sort } = getPagination(req.query, {
+  const { page, limit, skip, sort, search } = getPagination(req.query, {
     allowedSortFields: ["createdAt", "firstName", "lastName", "patientId"],
     defaultSort: { createdAt: -1 },
   });
@@ -95,6 +95,7 @@ const getRecordPatients = asyncHandler(async (req, res) => {
     skip,
     limit,
     sort,
+    search,
   });
 
   return res.status(200).json({
