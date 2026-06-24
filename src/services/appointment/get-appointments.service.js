@@ -46,10 +46,13 @@ const getAppointmentsService = async (user, query) => {
     |--------------------------------------------------------------------------
     */
 
-  if (status) {
-    filter.status = status;
-  }
-
+ if (
+  status &&
+  status !== "ALL"
+) {
+  filter.status =
+    status;
+}
   if (doctor) {
     filter.doctorEmployeeId = doctor;
   }
@@ -189,8 +192,8 @@ const getAppointmentsService = async (user, query) => {
         `,
     )
     .sort({
-      appointmentDate: 1,
-      timeSlot: 1,
+      appointmentDate: -1,
+      timeSlot: -1,
     })
     .skip(pagination.skip)
     .limit(pagination.limit)

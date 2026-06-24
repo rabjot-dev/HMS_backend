@@ -179,11 +179,21 @@ const getHealthRecordDetailsService = async (
   |--------------------------------------------------------------------------
   */
 
-  const labReports =
+const labReports =
+  (
     patient.labReports?.filter(
       (report) =>
         !report.isDeleted,
-    ) ?? [];
+    ) ?? []
+  ).sort(
+    (a, b) =>
+      new Date(
+        b.reportDate,
+      ) -
+      new Date(
+        a.reportDate,
+      ),
+  );
 
   const paginatedLabReports =
     labReports.slice(
@@ -198,12 +208,21 @@ const getHealthRecordDetailsService = async (
   |--------------------------------------------------------------------------
   */
 
-  const medicalDocuments =
+ const medicalDocuments =
+  (
     patient.medicalDocuments?.filter(
       (document) =>
         !document.isDeleted,
-    ) ?? [];
-
+    ) ?? []
+  ).sort(
+    (a, b) =>
+      new Date(
+        b.recordDate,
+      ) -
+      new Date(
+        a.recordDate,
+      ),
+  );
   const paginatedMedicalDocuments =
     medicalDocuments.slice(
       (documentPage - 1) *
