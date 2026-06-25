@@ -31,4 +31,9 @@ const apiPermissionSchema = new mongoose.Schema(
   }
 );
 
+apiPermissionSchema.index({
+  key: 1,
+  isActive: 1,
+});
+
 module.exports = mongoose.model("ApiPermission", apiPermissionSchema);

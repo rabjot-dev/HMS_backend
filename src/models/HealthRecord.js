@@ -90,5 +90,11 @@ const healthRecordSchema = new mongoose.Schema(
 
 healthRecordSchema.index({ patientId: 1, isDeleted: 1, createdAt: -1 });
 healthRecordSchema.index({ documentType: 1, isDeleted: 1 });
+healthRecordSchema.index({
+  patientId: 1,
+  documentType: 1,
+  isDeleted: 1,
+  documentDate: -1,
+});
 
 module.exports = mongoose.model("HealthRecord", healthRecordSchema);

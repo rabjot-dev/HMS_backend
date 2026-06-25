@@ -104,6 +104,25 @@ const consultationSchema = new mongoose.Schema(
   }
 );
 
+consultationSchema.index({
+  appointmentId: 1,
+});
+
+consultationSchema.index({
+  patientId: 1,
+  createdAt: -1,
+});
+
+consultationSchema.index({
+  doctorEmployeeId: 1,
+  createdAt: -1,
+});
+
+consultationSchema.index({
+  status: 1,
+  createdAt: -1,
+});
+
 const Consultation = mongoose.model(
   "Consultation",
   consultationSchema

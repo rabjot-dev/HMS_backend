@@ -202,6 +202,25 @@ const employeeSchema = new mongoose.Schema(
   },
 );
 
+employeeSchema.index({
+  designation: 1,
+  department: 1,
+  status: 1,
+  isDeleted: 1,
+});
+
+employeeSchema.index({
+  status: 1,
+  isDeleted: 1,
+  createdAt: -1,
+});
+
+employeeSchema.index({
+  designation: 1,
+  isDeleted: 1,
+  createdAt: -1,
+});
+
 const Employee = mongoose.model("Employee", employeeSchema);
 
 module.exports = Employee;

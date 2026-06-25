@@ -147,6 +147,32 @@ const appointmentSchema = new mongoose.Schema(
   }
 );
 
+appointmentSchema.index({
+  doctorEmployeeId: 1,
+  appointmentDate: 1,
+  isDeleted: 1,
+  status: 1,
+});
+
+appointmentSchema.index({
+  doctorEmployeeId: 1,
+  appointmentDate: 1,
+  tokenNumber: -1,
+});
+
+appointmentSchema.index({
+  patientId: 1,
+  isDeleted: 1,
+  appointmentDate: -1,
+  status: 1,
+});
+
+appointmentSchema.index({
+  status: 1,
+  isDeleted: 1,
+  createdAt: -1,
+});
+
 const Appointment =
   mongoose.models.Appointment ||
   mongoose.model("Appointment", appointmentSchema);

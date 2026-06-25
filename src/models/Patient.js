@@ -182,4 +182,21 @@ const patientSchema = new mongoose.Schema(
   }
 );
 
+patientSchema.index({
+  status: 1,
+  isDeleted: 1,
+  createdAt: -1,
+});
+
+patientSchema.index({
+  assignedDoctor: 1,
+  isDeleted: 1,
+});
+
+patientSchema.index({
+  firstName: 1,
+  lastName: 1,
+  isDeleted: 1,
+});
+
 module.exports = mongoose.model("Patient", patientSchema);
