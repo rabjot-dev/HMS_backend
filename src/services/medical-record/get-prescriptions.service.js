@@ -21,7 +21,7 @@ const getPrescriptionsService = async ({
     if (!patientId) {
       throw ERR.unauthorizedAccess();
     }
-
+// check dr handled the patient before
     const hasHandledPatient = await Appointment.exists({
       patientId,
       doctorEmployeeId: user.employeeId,
