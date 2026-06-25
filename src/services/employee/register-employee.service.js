@@ -13,7 +13,7 @@ const generateSequentialId = require("../../utils/generateSequentialId");
 const sendEmail = require("../../utils/sendEmail");
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
 
-const registerEmployee = async (employeeData, userId) => {
+const registerEmployee = async (employeeData, currentUser ) => {
   const {
     name,
     email,
@@ -38,6 +38,18 @@ const registerEmployee = async (employeeData, userId) => {
     securityAnswer: hashedSecurityAnswer,
     role,
   } = employeeData;
+
+  // Super admin authorization
+if (
+  designation === ROLES.ADMIN &&
+  !currentUser.roles?.includes(
+    ROLES.SUPER_ADMIN
+  )
+) {
+  throw new Error(
+    "Only Super Admin can create Admin"
+  );
+}
 
   // Check if email is already in use
   const existingUser = await User.findOne({
@@ -105,7 +117,7 @@ const registerEmployee = async (employeeData, userId) => {
       maxPatientsPerDay: maxPatientsPerDay || 40,
     },
     status: STATUS.ACTIVE,
-    createdBy: userId,
+    createdBy: currentUser.userId,
   });
 
   // Generate temporary password for first login
@@ -117,13 +129,13 @@ const registerEmployee = async (employeeData, userId) => {
   await User.create({
     email: email.toLowerCase(),
     temporaryPasswordHash: hashedTemporaryPassword,
-    roles: [role || designation || ROLES.DOCTOR],
+   roles: [designation],
     employeeId: employee._id,
     isFirstLogin: true,
     status: STATUS.ACTIVE,
     securityQuestion,
     securityAnswer: hashedSecurityAnswer,
-    createdBy: userId,
+    createdBy: currentUser.userId,
   });
 
   // Send welcome email with login details

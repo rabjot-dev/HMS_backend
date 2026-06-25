@@ -30,6 +30,14 @@ const registerEmployeeSelf = async (employeeData) => {
     securityAnswer,
   } = employeeData;
 
+  if (designation === ROLES.ADMIN) {
+  throw new ApiError(
+    403,
+    "Admin cannot self register",
+    "FORBIDDEN",
+  );
+}
+
   const existingUser = await User.findOne({
     email: email.toLowerCase(),
     isDeleted: false,

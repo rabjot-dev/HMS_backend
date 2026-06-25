@@ -3,7 +3,9 @@ const express = require("express");
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
+
 const ROLES = require("../constants/roles");
+
 const {
   registerEmployeeValidation,
 } = require("../validations/employee.validation");
@@ -26,63 +28,157 @@ const {
 
 const router = express.Router();
 
-// Create a new employee
+
+// Create Employee
+
+
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("ADMIN"),
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
   registerEmployeeValidation,
   validateMiddleware,
   createEmployee,
 );
 
-// Get all doctors
-router.get("/doctors", getDoctors);
+// Doctors
 
-// Get doctor's availability
-router.get("/doctor/availability", authMiddleware, getDoctorAvailability);
 
-// Update doctor's availability
-router.patch("/doctor/availability", authMiddleware, updateDoctorAvailability);
-
-// Get all employees
-router.get("/", authMiddleware, roleMiddleware("ADMIN"), getEmployees);
-
-// Get pending employee approvals
-router.get("/pending-employees", authMiddleware, getPendingEmployees);
-
-// Approve employee registration
-router.patch("/:id/approve-employee", authMiddleware, approveEmployee);
-
-// Reject employee registration
-router.patch("/:id/reject-employee", authMiddleware, rejectEmployee);
-
-// Deactivate employee account
-router.patch(
-  "/:id/deactivate",
-  authMiddleware,
-  roleMiddleware("ADMIN"),
-  deactivateEmployee,
+router.get(
+  "/doctors",
+  getDoctors
 );
 
-// Get employee details by ID
-router.get("/:id", authMiddleware, roleMiddleware("ADMIN"), getEmployeeById);
+router.get(
+  "/doctor/availability",
+  authMiddleware,
+  getDoctorAvailability
+);
 
-// Update employee information
-router.put("/:id", authMiddleware, roleMiddleware("ADMIN"), updateEmployee);
+router.patch(
+  "/doctor/availability",
+  authMiddleware,
+  updateDoctorAvailability
+);
 
-// Activate employee account
+
+// Employee List
+
+
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  getEmployees
+);
+
+
+// Pending Employees
+
+
+router.get(
+  "/pending-employees",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  getPendingEmployees
+);
+
+
+// Employee Approval
+
+
+router.patch(
+  "/:id/approve-employee",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  approveEmployee
+);
+
+router.patch(
+  "/:id/reject-employee",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  rejectEmployee
+);
+
+// Employee Details
+
+
+router.get(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  getEmployeeById
+);
+
+// Update Employee
+
+
+router.put(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  updateEmployee
+);
+
+// Activate Employee
+
+
 router.patch(
   "/:id/activate",
   authMiddleware,
-  roleMiddleware("ADMIN"),
-  activateEmployee,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  activateEmployee
 );
+
+// Deactivate Employee
+
+router.patch(
+  "/:id/deactivate",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  deactivateEmployee
+);
+
+
+// Delete Employee
+
+
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
-  deleteEmployee,
+  roleMiddleware(
+    ROLES.ADMIN,
+    ROLES.SUPER_ADMIN
+  ),
+  deleteEmployee
 );
 
 module.exports = router;
