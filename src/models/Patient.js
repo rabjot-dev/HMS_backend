@@ -266,8 +266,9 @@ deletedAt: {
 },
         },
       ],
+        default: [],
     },
-    default: [],
+  
     medicalDocuments: {
       type: [
         {
@@ -371,6 +372,12 @@ patientSchema.index({
 
 patientSchema.index({
   assignedDoctor: 1,
+  isDeleted: 1,
+});
+
+patientSchema.index({
+  assignedDoctor: 1,
+  status: 1,
   isDeleted: 1,
 });
 

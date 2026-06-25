@@ -15,7 +15,7 @@ const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
 
 //CREATE CONSULTATION
-router.post("/", authMiddleware, roleMiddleware("DOCTOR"), createConsultation);
+router.post("/", authMiddleware, roleMiddleware(ROLES.DOCTOR), createConsultation);
 
 //Get All Consultations
 
@@ -38,7 +38,7 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware("DOCTOR"),
+  roleMiddleware(ROLES.DOCTOR),
   updateConsultation,
 );
 

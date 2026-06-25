@@ -1,5 +1,12 @@
 const Employee = require("../../models/Employee");
+const Appointment =
+  require("../../models/Appointment");
 
+const STATUS =
+  require("../../constants/status");
+
+const cancelFutureDoctorAppointments =
+  require("../appointment/cancel-future-doctor-appointments.service");
 const User = require("../../models/User");
 
 const deleteEmployeeService = async (employeeId, deletedBy) => {
@@ -17,6 +24,12 @@ const deleteEmployeeService = async (employeeId, deletedBy) => {
   employee.deletedAt = new Date();
 
   await employee.save();
+  if (employee.designation === "DOCTOR") {
+  await cancelFutureDoctorAppointments(
+    employee._id,
+    deletedBy,
+  );
+}
 
   await User.findOneAndUpdate(
     {

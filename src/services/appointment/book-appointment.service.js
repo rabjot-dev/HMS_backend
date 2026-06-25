@@ -141,7 +141,7 @@ const bookAppointment = async (appointmentData, user) => {
   const appointmentId = await generateAppointmentId();
 
   // Generate queue token number
-  const tokenNumber = await getNextTokenNumber(doctorId, appointmentData);
+  const tokenNumber = await getNextTokenNumber(doctorId, appointmentDate);
 
   // Create appointment record
   const appointment = await Appointment.create({
@@ -158,7 +158,7 @@ const bookAppointment = async (appointmentData, user) => {
     reason,
     notes,
     tokenNumber,
-    createdByEmployeeId: user.EmployeeId,
+    createdByEmployeeId: user.employeeId,
     status: "BOOKED",
   });
 
