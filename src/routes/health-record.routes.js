@@ -3,9 +3,9 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth.middleware");
-
 const roleMiddleware = require("../middleware/role.middleware");
 const upload = require("../middleware/upload.middleware");
+
 const ROLES = require("../constants/roles");
 
 const {
@@ -19,6 +19,8 @@ const {
   updateLabReport,
 } = require("../controllers/health-record.controller");
 
+// Get all health records
+
 router.get(
   "/",
   authMiddleware,
@@ -26,24 +28,37 @@ router.get(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
+    ROLES.DOCTOR
   ),
-  getHealthRecords,
+  getHealthRecords
 );
+
+// Patient's own health record
+
 router.get(
   "/me",
   authMiddleware,
-  roleMiddleware(ROLES.PATIENT),
+  roleMiddleware(
+    ROLES.PATIENT
+  ),
   async (req, res, next) => {
     try {
-      req.params.patientId = req.user.patientId;
+      req.params.patientId =
+        req.user.patientId;
 
-      return getHealthRecordDetails(req, res, next);
+      return getHealthRecordDetails(
+        req,
+        res,
+        next
+      );
     } catch (error) {
       next(error);
     }
-  },
+  }
 );
+
+// Health record by patient id
+
 router.get(
   "/:patientId",
   authMiddleware,
@@ -51,24 +66,12 @@ router.get(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
+    ROLES.DOCTOR
   ),
-  getHealthRecordDetails,
+  getHealthRecordDetails
 );
 
-router.delete(
-  "/:patientId/lab-reports/:reportId",
-  authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
-  deleteLabReport,
-);
-
-router.delete(
-  "/:patientId/medical-documents/:documentId",
-  authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
-  deleteMedicalDocument,
-);
+// Add lab report
 
 router.post(
   "/:patientId/lab-reports",
@@ -77,24 +80,13 @@ router.post(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
+    ROLES.DOCTOR
   ),
   upload.single("document"),
-  addLabReport,
+  addLabReport
 );
 
-router.post(
-  "/:patientId/medical-documents",
-  authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
-  ),
-  upload.single("document"),
-  addMedicalDocument,
-);
+// Update lab report
 
 router.put(
   "/:patientId/lab-reports/:reportId",
@@ -103,11 +95,40 @@ router.put(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
+    ROLES.DOCTOR
   ),
   upload.single("document"),
-  updateLabReport,
+  updateLabReport
 );
+
+// Delete lab report
+
+router.delete(
+  "/:patientId/lab-reports/:reportId",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN
+  ),
+  deleteLabReport
+);
+
+// Add medical document
+
+router.post(
+  "/:patientId/medical-documents",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.RECEPTIONIST,
+    ROLES.DOCTOR
+  ),
+  upload.single("document"),
+  addMedicalDocument
+);
+
+// Update medical document
 
 router.put(
   "/:patientId/medical-documents/:documentId",
@@ -116,9 +137,22 @@ router.put(
     ROLES.SUPER_ADMIN,
     ROLES.ADMIN,
     ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
+    ROLES.DOCTOR
   ),
   upload.single("document"),
-  updateMedicalDocument,
+  updateMedicalDocument
 );
+
+// Delete medical document
+
+router.delete(
+  "/:patientId/medical-documents/:documentId",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN
+  ),
+  deleteMedicalDocument
+);
+
 module.exports = router;

@@ -1,6 +1,12 @@
 const express = require("express");
+
 const router = express.Router();
+
 const ROLES = require("../constants/roles");
+
+const authMiddleware = require("../middleware/auth.middleware");
+const roleMiddleware = require("../middleware/role.middleware");
+
 const {
   createConsultation,
   getConsultationByAppointment,
@@ -11,10 +17,8 @@ const {
   deleteConsultation,
 } = require("../controllers/consultation.controller");
 
-const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
+// Create consultation
 
-//CREATE CONSULTATION
 router.post(
   "/",
   authMiddleware,
@@ -22,23 +26,49 @@ router.post(
   createConsultation,
 );
 
-//Get All Consultations
+// Get all consultations
 
-router.get("/", authMiddleware, getConsultations);
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.DOCTOR,
+    ROLES.RECEPTIONIST,
+  ),
+  getConsultations,
+);
 
-//Download Prescription PDF
-
-router.get("/pdf/:consultationId", authMiddleware, downloadPrescriptionPdf);
-
-//Get Consultation By Appointment
+// Get consultation by appointment
 
 router.get(
   "/appointment/:appointmentId",
   authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.DOCTOR,
+    ROLES.RECEPTIONIST,
+  ),
   getConsultationByAppointment,
 );
 
-//Update Consultation
+// Get consultation by id
+
+router.get(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.DOCTOR,
+    ROLES.RECEPTIONIST,
+  ),
+  getConsultationById,
+);
+
+// Update consultation
 
 router.put(
   "/:id",
@@ -47,14 +77,29 @@ router.put(
   updateConsultation,
 );
 
-router.get("/prescription/:consultationId", downloadPrescriptionPdf);
+// Download prescription
 
-router.get("/:id", getConsultationById);
+router.get(
+  "/prescription/:consultationId",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.DOCTOR,
+    ROLES.RECEPTIONIST,
+  ),
+  downloadPrescriptionPdf,
+);
+
+// Delete consultation
 
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+  ),
   deleteConsultation,
 );
 

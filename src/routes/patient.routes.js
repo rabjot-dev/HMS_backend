@@ -1,6 +1,12 @@
 const express = require("express");
-const ROLES = require("../constants/roles");
+
 const router = express.Router();
+
+const ROLES = require("../constants/roles");
+
+const authMiddleware = require("../middleware/auth.middleware");
+const roleMiddleware = require("../middleware/role.middleware");
+const validateMiddleware = require("../middleware/validate.middleware");
 
 const {
   createPatient,
@@ -14,71 +20,120 @@ const {
   getPatientDashboard,
 } = require("../controllers/patient.controller");
 
-const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
-const validateMiddleware = require("../middleware/validate.middleware");
-
 const {
   createPatientValidation,
   updatePatientValidation,
 } = require("../validations/patient.validation");
+
 const {
   registerPatientMobileValidation,
 } = require("../validations/register-patient-mobile.validation");
-// Register a new patient
+
+// Create patient
+
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.RECEPTIONIST,
+  ),
   createPatientValidation,
   validateMiddleware,
   createPatient,
 );
 
 // Get all patients
-router.get("/", authMiddleware, getPatients);
-// get profile
-router.get("/profile", authMiddleware, roleMiddleware("PATIENT"), getProfile);
 
-// update profile
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.RECEPTIONIST,
+    ROLES.DOCTOR,
+  ),
+  getPatients,
+);
+
+// Patient profile
+
+router.get(
+  "/profile",
+  authMiddleware,
+  roleMiddleware(ROLES.PATIENT),
+  getProfile,
+);
+
+// Update patient profile
+
 router.put(
   "/profile",
   authMiddleware,
-  roleMiddleware("PATIENT"),
+  roleMiddleware(ROLES.PATIENT),
   updatePatientValidation,
+  validateMiddleware,
   updateProfile,
 );
 
 // Patient dashboard
+
 router.get(
   "/dashboard",
   authMiddleware,
-  roleMiddleware("PATIENT"),
+  roleMiddleware(ROLES.PATIENT),
   getPatientDashboard,
 );
-// Get patient details by ID
-router.get("/:id", authMiddleware, getPatientById);
 
-// Update patient information
+// Get patient by id
+
+router.get(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.RECEPTIONIST,
+    ROLES.DOCTOR,
+  ),
+  getPatientById,
+);
+
+// Update patient
+
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware("ADMIN", "RECEPTIONIST"),
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+    ROLES.RECEPTIONIST,
+  ),
   updatePatientValidation,
   validateMiddleware,
   updatePatient,
 );
-// Mobile register
+
+// Mobile registration
+
 router.post(
   "/register",
   registerPatientMobileValidation,
   validateMiddleware,
   registerPatientMobile,
 );
+
+// Delete patient
+
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  roleMiddleware(
+    ROLES.SUPER_ADMIN,
+    ROLES.ADMIN,
+  ),
   deletePatient,
 );
 
