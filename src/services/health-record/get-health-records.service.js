@@ -8,7 +8,6 @@ const {
 } = require("../../utils/pagination");
 
 const getHealthRecordsService = async (user, query) => {
-
   const { page, limit, search } = query;
 
   const pagination = getPagination(page, limit);

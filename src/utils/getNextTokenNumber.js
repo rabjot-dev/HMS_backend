@@ -16,15 +16,9 @@ const getDateRange = (appointmentDate) => {
 };
 
 const getNextTokenNumber = async (doctorEmployeeId, appointmentDate) => {
-    console.log(
-    "Received appointmentDate:",
-    appointmentDate
-  );
+  console.log("Received appointmentDate:", appointmentDate);
 
-  console.log(
-    "Parsed:",
-    new Date(appointmentDate)
-  );
+  console.log("Parsed:", new Date(appointmentDate));
   const { startOfDay, endOfDay } = getDateRange(appointmentDate);
 
   const latestAppointment = await Appointment.findOne({
@@ -46,5 +40,3 @@ const getNextTokenNumber = async (doctorEmployeeId, appointmentDate) => {
 };
 
 module.exports = getNextTokenNumber;
-
- 

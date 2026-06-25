@@ -2,8 +2,7 @@ const Appointment = require("../../models/Appointment");
 const Employee = require("../../models/Employee");
 
 const generateSlots = require("../../utils/generateSlots");
-const STATUS =
-  require("../../constants/status");
+const STATUS = require("../../constants/status");
 const getAvailableSlots = async (doctorId, appointmentDate) => {
   // Validate required fields
   if (!doctorId || !appointmentDate) {

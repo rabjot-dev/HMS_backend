@@ -46,13 +46,9 @@ const getAppointmentsService = async (user, query) => {
     |--------------------------------------------------------------------------
     */
 
- if (
-  status &&
-  status !== "ALL"
-) {
-  filter.status =
-    status;
-}
+  if (status && status !== "ALL") {
+    filter.status = status;
+  }
   if (doctor) {
     filter.doctorEmployeeId = doctor;
   }

@@ -16,7 +16,7 @@ const {
   addMedicalDocument,
   deleteMedicalDocument,
   updateMedicalDocument,
-  updateLabReport
+  updateLabReport,
 } = require("../controllers/health-record.controller");
 
 router.get(
@@ -36,14 +36,9 @@ router.get(
   roleMiddleware(ROLES.PATIENT),
   async (req, res, next) => {
     try {
-      req.params.patientId =
-        req.user.patientId;
+      req.params.patientId = req.user.patientId;
 
-      return getHealthRecordDetails(
-        req,
-        res,
-        next,
-      );
+      return getHealthRecordDetails(req, res, next);
     } catch (error) {
       next(error);
     }

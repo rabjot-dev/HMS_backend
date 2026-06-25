@@ -10,19 +10,19 @@ const seedNodes = async () => {
   try {
     await connectDB();
 
- for (const node of defaultNodes) {
-  await Node.findOneAndUpdate(
-    {
-      path: node.path,
-    },
-    node,
-    {
-      upsert: true,
-      returnDocument: "after",
-      setDefaultsOnInsert: true,
-    },
-  );
-}
+    for (const node of defaultNodes) {
+      await Node.findOneAndUpdate(
+        {
+          path: node.path,
+        },
+        node,
+        {
+          upsert: true,
+          returnDocument: "after",
+          setDefaultsOnInsert: true,
+        },
+      );
+    }
 
     console.log("Default nodes seeded successfully");
 

@@ -301,24 +301,21 @@ const getDoctorQueue = async (req, res) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const appointments = await Appointment.find({
-  doctorEmployeeId,
-  appointmentDate: {
-    $gte: today,
-    $lt: tomorrow,
-  },
-  isDeleted: false,
-  status: {
-    $in: [
-      "BOOKED",
-      "IN_CONSULTATION",
-    ],
-  },
-})
-  .populate("patientId")
-  .sort({
-    tokenNumber: 1,
-  });
+    const appointments = await Appointment.find({
+      doctorEmployeeId,
+      appointmentDate: {
+        $gte: today,
+        $lt: tomorrow,
+      },
+      isDeleted: false,
+      status: {
+        $in: ["BOOKED", "IN_CONSULTATION"],
+      },
+    })
+      .populate("patientId")
+      .sort({
+        tokenNumber: 1,
+      });
 
     return res.status(200).json({
       success: true,

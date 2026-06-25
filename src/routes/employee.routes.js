@@ -28,17 +28,12 @@ const {
 
 const router = express.Router();
 
-
 // Create Employee
-
 
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   registerEmployeeValidation,
   validateMiddleware,
   createEmployee,
@@ -46,113 +41,71 @@ router.post(
 
 // Doctors
 
+router.get("/doctors", getDoctors);
 
-router.get(
-  "/doctors",
-  getDoctors
-);
+router.get("/doctor/availability", authMiddleware, getDoctorAvailability);
 
-router.get(
-  "/doctor/availability",
-  authMiddleware,
-  getDoctorAvailability
-);
-
-router.patch(
-  "/doctor/availability",
-  authMiddleware,
-  updateDoctorAvailability
-);
-
+router.patch("/doctor/availability", authMiddleware, updateDoctorAvailability);
 
 // Employee List
-
 
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  getEmployees
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  getEmployees,
 );
 
-
 // Pending Employees
-
 
 router.get(
   "/pending-employees",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  getPendingEmployees
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  getPendingEmployees,
 );
 
-
 // Employee Approval
-
 
 router.patch(
   "/:id/approve-employee",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  approveEmployee
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  approveEmployee,
 );
 
 router.patch(
   "/:id/reject-employee",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  rejectEmployee
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  rejectEmployee,
 );
 
 // Employee Details
 
-
 router.get(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  getEmployeeById
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  getEmployeeById,
 );
 
 // Update Employee
 
-
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  updateEmployee
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  updateEmployee,
 );
 
 // Activate Employee
 
-
 router.patch(
   "/:id/activate",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  activateEmployee
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  activateEmployee,
 );
 
 // Deactivate Employee
@@ -160,25 +113,17 @@ router.patch(
 router.patch(
   "/:id/deactivate",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  deactivateEmployee
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  deactivateEmployee,
 );
 
-
 // Delete Employee
-
 
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.ADMIN,
-    ROLES.SUPER_ADMIN
-  ),
-  deleteEmployee
+  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  deleteEmployee,
 );
 
 module.exports = router;

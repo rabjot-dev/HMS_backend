@@ -7,8 +7,8 @@ const addLabReportService = require("../services/health-record/add-lab-report.se
 const deleteLabReportService = require("../services/health-record/delete-lab-report.service");
 const addMedicalDocumentService = require("../services/health-record/add-medical-document.service");
 const deleteMedicalDocumentService = require("../services/health-record/delete-medical-document.service");
-const updateLabReportService = require("../services/health-record/update-lab-report.service",);
-const updateMedicalDocumentService = require("../services/health-record/update-medical-document.service",);
+const updateLabReportService = require("../services/health-record/update-lab-report.service");
+const updateMedicalDocumentService = require("../services/health-record/update-medical-document.service");
 const getHealthRecords = async (req, res, next) => {
   try {
     const result = await getHealthRecordsService(req.user, req.query);
@@ -35,7 +35,11 @@ const getHealthRecordDetails = async (req, res, next) => {
       });
     }
 
-    const result = await getHealthRecordDetailsService(patientId, req.user, req.query);
+    const result = await getHealthRecordDetailsService(
+      patientId,
+      req.user,
+      req.query,
+    );
 
     return res.status(200).json({
       success: true,
@@ -68,10 +72,10 @@ const addLabReport = async (req, res, next) => {
 const deleteLabReport = async (req, res, next) => {
   try {
     const result = await deleteMedicalDocumentService(
-  req.params.patientId,
-  req.params.documentId,
-  req.user.userId,
-);
+      req.params.patientId,
+      req.params.documentId,
+      req.user.userId,
+    );
 
     return res.status(200).json({
       success: true,
@@ -104,10 +108,10 @@ const addMedicalDocument = async (req, res, next) => {
 const deleteMedicalDocument = async (req, res, next) => {
   try {
     const result = await deleteMedicalDocumentService(
-  req.params.patientId,
-  req.params.documentId,
-  req.user.userId,
-);
+      req.params.patientId,
+      req.params.documentId,
+      req.user.userId,
+    );
     return res.status(200).json({
       success: true,
       ...result,
@@ -116,50 +120,38 @@ const deleteMedicalDocument = async (req, res, next) => {
     next(error);
   }
 };
-const updateLabReport = async (
-  req,
-  res,
-  next,
-) => {
+const updateLabReport = async (req, res, next) => {
   try {
-    const result =
-      await updateLabReportService(
-        req.params.patientId,
-        req.params.reportId,
-        req.body,
-        req.file,
-        req.user.userId,
-      );
+    const result = await updateLabReportService(
+      req.params.patientId,
+      req.params.reportId,
+      req.body,
+      req.file,
+      req.user.userId,
+    );
 
     return res.status(200).json({
       success: true,
-      message:
-        "Lab report updated successfully",
+      message: "Lab report updated successfully",
       data: result,
     });
   } catch (error) {
     next(error);
   }
 };
-const updateMedicalDocument = async (
-  req,
-  res,
-  next,
-) => {
+const updateMedicalDocument = async (req, res, next) => {
   try {
-    const result =
-      await updateMedicalDocumentService(
-        req.params.patientId,
-        req.params.documentId,
-        req.body,
-        req.file,
-        req.user.userId,
-      );
+    const result = await updateMedicalDocumentService(
+      req.params.patientId,
+      req.params.documentId,
+      req.body,
+      req.file,
+      req.user.userId,
+    );
 
     return res.status(200).json({
       success: true,
-      message:
-        "Medical document updated successfully",
+      message: "Medical document updated successfully",
       data: result,
     });
   } catch (error) {
@@ -173,6 +165,6 @@ module.exports = {
   deleteLabReport,
   addMedicalDocument,
   deleteMedicalDocument,
-    updateMedicalDocument,
- updateLabReport
+  updateMedicalDocument,
+  updateLabReport,
 };

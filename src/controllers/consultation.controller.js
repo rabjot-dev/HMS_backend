@@ -11,7 +11,10 @@ const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
 
 const createConsultation = async (req, res) => {
   try {
-    const consultation = await createConsultationService(req.body, req.user.userId);
+    const consultation = await createConsultationService(
+      req.body,
+      req.user.userId,
+    );
 
     return res.status(201).json({
       success: true,
@@ -96,7 +99,11 @@ const updateConsultation = async (req, res) => {
       });
     }
 
-    const consultation = await updateConsultationService(id, req.body, req.user.userId);
+    const consultation = await updateConsultationService(
+      id,
+      req.body,
+      req.user.userId,
+    );
 
     return res.status(200).json({
       success: true,

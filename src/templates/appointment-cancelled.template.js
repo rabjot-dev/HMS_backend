@@ -1,5 +1,4 @@
-const appointmentCancelledTemplate =
-({
+const appointmentCancelledTemplate = ({
   patientName,
   appointmentDate,
   appointmentTime,
@@ -101,5 +100,4 @@ const appointmentCancelledTemplate =
   `;
 };
 
-module.exports =
-  appointmentCancelledTemplate;
+module.exports = appointmentCancelledTemplate;

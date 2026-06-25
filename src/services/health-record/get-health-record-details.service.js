@@ -6,32 +6,20 @@ const Patient = require("../../models/Patient");
 const ROLES = require("../../constants/roles");
 const ApiError = require("../../utils/ApiError");
 
-const getHealthRecordDetailsService = async (
-  patientId,
-  user,
-  query,
-) => {
+const getHealthRecordDetailsService = async (patientId, user, query) => {
   /*
   |--------------------------------------------------------------------------
   | Pagination Params
   |--------------------------------------------------------------------------
   */
 
-  const limit =
-    Number(query.limit) || 5;
+  const limit = Number(query.limit) || 5;
 
-  const timelinePage =
-    Number(
-      query.timelinePage,
-    ) || 1;
+  const timelinePage = Number(query.timelinePage) || 1;
 
-  const labPage =
-    Number(query.labPage) || 1;
+  const labPage = Number(query.labPage) || 1;
 
-  const documentPage =
-    Number(
-      query.documentPage,
-    ) || 1;
+  const documentPage = Number(query.documentPage) || 1;
 
   /*
   |--------------------------------------------------------------------------
@@ -39,12 +27,12 @@ const getHealthRecordDetailsService = async (
   |--------------------------------------------------------------------------
   */
 
-  const patient =
-    await Patient.findOne({
-      _id: patientId,
-      isDeleted: false,
-    })
-      .select(`
+  const patient = await Patient.findOne({
+    _id: patientId,
+    isDeleted: false,
+  })
+    .select(
+      `
         patientId
         firstName
         lastName
@@ -58,15 +46,12 @@ const getHealthRecordDetailsService = async (
         medicalHistory
         labReports
         medicalDocuments
-      `)
-      .lean();
+      `,
+    )
+    .lean();
 
   if (!patient) {
-    throw new ApiError(
-      404,
-      "Patient not found",
-      "PATIENT_NOT_FOUND",
-    );
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
   /*
@@ -75,27 +60,15 @@ const getHealthRecordDetailsService = async (
   |--------------------------------------------------------------------------
   */
 
-  if (
-    user.roles?.includes(
-      ROLES.DOCTOR,
-    )
-  ) {
-    const hasAccess =
-      await Consultation.exists(
-        {
-          patientId,
-          doctorEmployeeId:
-            user.employeeId,
-          isDeleted: false,
-        },
-      );
+  if (user.roles?.includes(ROLES.DOCTOR)) {
+    const hasAccess = await Consultation.exists({
+      patientId,
+      doctorEmployeeId: user.employeeId,
+      isDeleted: false,
+    });
 
     if (!hasAccess) {
-      throw new ApiError(
-        403,
-        "Access denied",
-        "ACCESS_DENIED",
-      );
+      throw new ApiError(403, "Access denied", "ACCESS_DENIED");
     }
   }
 
@@ -110,15 +83,8 @@ const getHealthRecordDetailsService = async (
     isDeleted: false,
   };
 
-  if (
-    user.roles?.includes(
-      ROLES.DOCTOR,
-    )
-  ) {
-    filter.doctorEmployeeId =
-      new mongoose.Types.ObjectId(
-        user.employeeId,
-      );
+  if (user.roles?.includes(ROLES.DOCTOR)) {
+    filter.doctorEmployeeId = new mongoose.Types.ObjectId(user.employeeId);
   }
 
   /*
@@ -127,30 +93,24 @@ const getHealthRecordDetailsService = async (
   |--------------------------------------------------------------------------
   */
 
-  const totalConsultations =
-    await Consultation.countDocuments(
-      filter,
-    );
+  const totalConsultations = await Consultation.countDocuments(filter);
 
-  const consultations =
-    await Consultation.find(
-      filter,
-    )
-      .populate({
-        path:
-          "doctorEmployeeId",
+  const consultations = await Consultation.find(filter)
+    .populate({
+      path: "doctorEmployeeId",
 
-        select: `
+      select: `
           name
           department
           specialization
         `,
 
-        match: {
-          isDeleted: false,
-        },
-      })
-      .select(`
+      match: {
+        isDeleted: false,
+      },
+    })
+    .select(
+      `
         appointmentId
         patientId
         doctorEmployeeId
@@ -162,16 +122,14 @@ const getHealthRecordDetailsService = async (
         status
         createdAt
         updatedAt
-      `)
-      .sort({
-        createdAt: -1,
-      })
-      .skip(
-        (timelinePage - 1) *
-          limit,
-      )
-      .limit(limit)
-      .lean();
+      `,
+    )
+    .sort({
+      createdAt: -1,
+    })
+    .skip((timelinePage - 1) * limit)
+    .limit(limit)
+    .lean();
 
   /*
   |--------------------------------------------------------------------------
@@ -179,28 +137,14 @@ const getHealthRecordDetailsService = async (
   |--------------------------------------------------------------------------
   */
 
-const labReports =
-  (
-    patient.labReports?.filter(
-      (report) =>
-        !report.isDeleted,
-    ) ?? []
-  ).sort(
-    (a, b) =>
-      new Date(
-        b.reportDate,
-      ) -
-      new Date(
-        a.reportDate,
-      ),
-  );
+  const labReports = (
+    patient.labReports?.filter((report) => !report.isDeleted) ?? []
+  ).sort((a, b) => new Date(b.reportDate) - new Date(a.reportDate));
 
-  const paginatedLabReports =
-    labReports.slice(
-      (labPage - 1) *
-        limit,
-      labPage * limit,
-    );
+  const paginatedLabReports = labReports.slice(
+    (labPage - 1) * limit,
+    labPage * limit,
+  );
 
   /*
   |--------------------------------------------------------------------------
@@ -208,27 +152,13 @@ const labReports =
   |--------------------------------------------------------------------------
   */
 
- const medicalDocuments =
-  (
-    patient.medicalDocuments?.filter(
-      (document) =>
-        !document.isDeleted,
-    ) ?? []
-  ).sort(
-    (a, b) =>
-      new Date(
-        b.recordDate,
-      ) -
-      new Date(
-        a.recordDate,
-      ),
+  const medicalDocuments = (
+    patient.medicalDocuments?.filter((document) => !document.isDeleted) ?? []
+  ).sort((a, b) => new Date(b.recordDate) - new Date(a.recordDate));
+  const paginatedMedicalDocuments = medicalDocuments.slice(
+    (documentPage - 1) * limit,
+    documentPage * limit,
   );
-  const paginatedMedicalDocuments =
-    medicalDocuments.slice(
-      (documentPage - 1) *
-        limit,
-      documentPage * limit,
-    );
 
   /*
   |--------------------------------------------------------------------------
@@ -239,52 +169,32 @@ const labReports =
   return {
     patient,
     consultations,
-    labReports:
-      paginatedLabReports,
-    medicalDocuments:
-      paginatedMedicalDocuments,
+    labReports: paginatedLabReports,
+    medicalDocuments: paginatedMedicalDocuments,
 
     meta: {
       consultations: {
-        page:
-          timelinePage,
+        page: timelinePage,
         limit,
-        totalRecords:
-          totalConsultations,
-        totalPages:
-          Math.ceil(
-            totalConsultations /
-              limit,
-          ),
+        totalRecords: totalConsultations,
+        totalPages: Math.ceil(totalConsultations / limit),
       },
 
       labReports: {
         page: labPage,
         limit,
-        totalRecords:
-          labReports.length,
-        totalPages:
-          Math.ceil(
-            labReports.length /
-              limit,
-          ),
+        totalRecords: labReports.length,
+        totalPages: Math.ceil(labReports.length / limit),
       },
 
       medicalDocuments: {
-        page:
-          documentPage,
+        page: documentPage,
         limit,
-        totalRecords:
-          medicalDocuments.length,
-        totalPages:
-          Math.ceil(
-            medicalDocuments.length /
-              limit,
-          ),
+        totalRecords: medicalDocuments.length,
+        totalPages: Math.ceil(medicalDocuments.length / limit),
       },
     },
   };
 };
 
-module.exports =
-  getHealthRecordDetailsService;
+module.exports = getHealthRecordDetailsService;

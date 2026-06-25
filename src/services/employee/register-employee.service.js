@@ -13,7 +13,7 @@ const generateSequentialId = require("../../utils/generateSequentialId");
 const sendEmail = require("../../utils/sendEmail");
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
 
-const registerEmployee = async (employeeData, currentUser ) => {
+const registerEmployee = async (employeeData, currentUser) => {
   const {
     name,
     email,
@@ -40,16 +40,12 @@ const registerEmployee = async (employeeData, currentUser ) => {
   } = employeeData;
 
   // Super admin authorization
-if (
-  designation === ROLES.ADMIN &&
-  !currentUser.roles?.includes(
-    ROLES.SUPER_ADMIN
-  )
-) {
-  throw new Error(
-    "Only Super Admin can create Admin"
-  );
-}
+  if (
+    designation === ROLES.ADMIN &&
+    !currentUser.roles?.includes(ROLES.SUPER_ADMIN)
+  ) {
+    throw new Error("Only Super Admin can create Admin");
+  }
 
   // Check if email is already in use
   const existingUser = await User.findOne({
@@ -129,7 +125,7 @@ if (
   await User.create({
     email: email.toLowerCase(),
     temporaryPasswordHash: hashedTemporaryPassword,
-   roles: [designation],
+    roles: [designation],
     employeeId: employee._id,
     isFirstLogin: true,
     status: STATUS.ACTIVE,

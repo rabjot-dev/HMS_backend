@@ -237,38 +237,36 @@ const patientSchema = new mongoose.Schema(
             default: Date.now,
           },
           updatedBy: {
-  type:
-    mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+          },
 
-updatedAt: {
-  type: Date,
-  default: null,
-},
+          updatedAt: {
+            type: Date,
+            default: null,
+          },
 
-isDeleted: {
-  type: Boolean,
-  default: false,
-},
+          isDeleted: {
+            type: Boolean,
+            default: false,
+          },
 
-deletedBy: {
-  type:
-    mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+          deletedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+          },
 
-deletedAt: {
-  type: Date,
-  default: null,
-},
+          deletedAt: {
+            type: Date,
+            default: null,
+          },
         },
       ],
-        default: [],
+      default: [],
     },
-  
+
     medicalDocuments: {
       type: [
         {
@@ -319,33 +317,31 @@ deletedAt: {
             default: Date.now,
           },
           updatedBy: {
-  type:
-    mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+          },
 
-updatedAt: {
-  type: Date,
-  default: null,
-},
+          updatedAt: {
+            type: Date,
+            default: null,
+          },
 
-isDeleted: {
-  type: Boolean,
-  default: false,
-},
+          isDeleted: {
+            type: Boolean,
+            default: false,
+          },
 
-deletedBy: {
-  type:
-    mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  default: null,
-},
+          deletedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+          },
 
-deletedAt: {
-  type: Date,
-  default: null,
-},
+          deletedAt: {
+            type: Date,
+            default: null,
+          },
         },
       ],
 

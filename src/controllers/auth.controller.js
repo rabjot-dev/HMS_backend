@@ -124,13 +124,11 @@ const refreshToken = asyncHandler(async (req, res) => {
     },
   );
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, "Access token refreshed successfully", {
-        accessToken,
-      }),
-    );
+  return res.status(200).json(
+    new ApiResponse(200, "Access token refreshed successfully", {
+      accessToken,
+    }),
+  );
 });
 
 const logout = asyncHandler(async (req, res) => {

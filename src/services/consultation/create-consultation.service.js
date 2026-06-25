@@ -33,7 +33,7 @@ const createConsultationService = async (data, createdBy) => {
     throw new Error("Appointment not found");
   }
 
-const consultation = await Consultation.create({
+  const consultation = await Consultation.create({
     appointmentId,
     patientId: appointment.patientId,
     doctorEmployeeId: appointment.doctorEmployeeId,
@@ -47,8 +47,8 @@ const consultation = await Consultation.create({
     status: STATUS.COMPLETED,
 
     createdBy,
-      updatedBy: createdBy,
-});
+    updatedBy: createdBy,
+  });
   appointment.status = STATUS.COMPLETED;
 
   appointment.updatedBy = createdBy;

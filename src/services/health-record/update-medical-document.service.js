@@ -17,24 +17,13 @@ const updateMedicalDocumentService = async (
   });
 
   if (!patient) {
-    throw new ApiError(
-      404,
-      "Patient not found",
-      "PATIENT_NOT_FOUND",
-    );
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
-  const document =
-    patient.medicalDocuments.id(
-      documentId,
-    );
+  const document = patient.medicalDocuments.id(documentId);
 
   if (!document) {
-    throw new ApiError(
-      404,
-      "Medical document not found",
-      "DOCUMENT_NOT_FOUND",
-    );
+    throw new ApiError(404, "Medical document not found", "DOCUMENT_NOT_FOUND");
   }
 
   /*
@@ -43,34 +32,20 @@ const updateMedicalDocumentService = async (
   |--------------------------------------------------------------------------
   */
 
-  document.title =
-    data.title ??
-    document.title;
+  document.title = data.title ?? document.title;
 
-  document.documentType =
-    data.documentType ??
-    document.documentType;
+  document.documentType = data.documentType ?? document.documentType;
 
-  document.hospitalName =
-    data.hospitalName ??
-    document.hospitalName;
+  document.hospitalName = data.hospitalName ?? document.hospitalName;
 
-  document.doctorName =
-    data.doctorName ??
-    document.doctorName;
+  document.doctorName = data.doctorName ?? document.doctorName;
 
-  document.recordDate =
-    data.recordDate ??
-    document.recordDate;
+  document.recordDate = data.recordDate ?? document.recordDate;
 
-  document.notes =
-    data.notes ??
-    document.notes;
-    document.updatedBy =
-  updatedBy;
+  document.notes = data.notes ?? document.notes;
+  document.updatedBy = updatedBy;
 
-document.updatedAt =
-  new Date();
+  document.updatedAt = new Date();
 
   /*
   |--------------------------------------------------------------------------
@@ -82,32 +57,19 @@ document.updatedAt =
     if (document.documentUrl) {
       const oldFilePath = path.join(
         process.cwd(),
-        document.documentUrl.replace(
-          /^\//,
-          "",
-        ),
+        document.documentUrl.replace(/^\//, ""),
       );
 
       try {
-        if (
-          fs.existsSync(
-            oldFilePath,
-          )
-        ) {
-          await fs.promises.unlink(
-            oldFilePath,
-          );
+        if (fs.existsSync(oldFilePath)) {
+          await fs.promises.unlink(oldFilePath);
         }
       } catch (error) {
-        console.error(
-          "Unable to delete old file",
-          error,
-        );
+        console.error("Unable to delete old file", error);
       }
     }
 
-    document.documentUrl =
-      `/uploads/medical-documents/${file.filename}`;
+    document.documentUrl = `/uploads/medical-documents/${file.filename}`;
   }
 
   patient.updatedBy = updatedBy;
@@ -117,5 +79,4 @@ document.updatedAt =
   return document.toObject();
 };
 
-module.exports =
-  updateMedicalDocumentService;
+module.exports = updateMedicalDocumentService;
