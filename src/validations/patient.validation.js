@@ -2,6 +2,7 @@ const { body } = require("express-validator");
 
 // Reusable name regex
 const nameRegex = /^[A-Za-z\s'-]+$/;
+const locationNameRegex = /^[A-Za-z\s'().&-]+$/;
 
 // Validation for creating a patient
 const createPatientValidation = [
@@ -82,9 +83,9 @@ const createPatientValidation = [
   body("city")
     .optional()
     .trim()
-    .matches(nameRegex)
+    .matches(locationNameRegex)
     .withMessage(
-      "City can contain only letters, spaces, apostrophes and hyphens",
+      "City can contain only letters, spaces, apostrophes, hyphens, periods, ampersands and parentheses",
     )
     .isLength({ max: 100 })
     .withMessage("City cannot exceed 100 characters"),
@@ -92,12 +93,32 @@ const createPatientValidation = [
   body("state")
     .optional()
     .trim()
-    .matches(nameRegex)
+    .matches(locationNameRegex)
     .withMessage(
-      "State can contain only letters, spaces, apostrophes and hyphens",
+      "State can contain only letters, spaces, apostrophes, hyphens, periods, ampersands and parentheses",
     )
     .isLength({ max: 100 })
     .withMessage("State cannot exceed 100 characters"),
+
+  body("taluk")
+    .optional()
+    .trim()
+    .matches(locationNameRegex)
+    .withMessage(
+      "Taluk can contain only letters, spaces, apostrophes, hyphens, periods, ampersands and parentheses",
+    )
+    .isLength({ max: 100 })
+    .withMessage("Taluk cannot exceed 100 characters"),
+
+  body("postOffice")
+    .optional()
+    .trim()
+    .matches(locationNameRegex)
+    .withMessage(
+      "Post office can contain only letters, spaces, apostrophes, hyphens, periods, ampersands and parentheses",
+    )
+    .isLength({ max: 100 })
+    .withMessage("Post office cannot exceed 100 characters"),
 
   body("pincode")
     .optional()
@@ -266,3 +287,4 @@ module.exports = {
   createPatientValidation,
   updatePatientValidation,
 };
+ 

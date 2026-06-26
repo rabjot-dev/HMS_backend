@@ -11,6 +11,7 @@ const patientRoutes = require("./routes/patient.routes");
 const errorMiddleware = require("./middleware/error.middleware");
 const nodeRoutes = require("./routes/node.routes");
 const healthRecordRoutes = require("./routes/health-record.routes");
+const locationRoutes = require("../src/routes/loaction.routes");
 const cors = require("cors");
 const app = express();
 app.disable("x-powered-by");
@@ -43,7 +44,7 @@ app.use(
 
   appointmentRoutes,
 );
-
+app.use("/api/locations", locationRoutes);
 app.use(
   "/api/patients",
 
