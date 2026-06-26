@@ -91,6 +91,12 @@ const patientSchema = new mongoose.Schema(
       unique: true,
     },
 
+    UHID: {
+      type: String,
+      trim: true,
+      select: false,
+    },
+
     firstName: {
       type: String,
       required: true,

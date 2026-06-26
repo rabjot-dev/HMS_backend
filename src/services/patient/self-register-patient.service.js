@@ -6,7 +6,7 @@ const User = require("../../models/User");
 const ROLES = require("../../constants/roles");
 const STATUS = require("../../constants/status");
 
-const generatePatientId = require("../../utils/generatePatientId");
+const createPatientWithGeneratedId = require("../../utils/createPatientWithGeneratedId");
 const ERR = require("../../utils/errors");
 const selfRegisterPatient = async (patientData) => {
   const {
@@ -35,11 +35,7 @@ const selfRegisterPatient = async (patientData) => {
     throw ERR.phoneAlreadyRegistered();
   }
 
-  const patientId = await generatePatientId();
-
-  const patient = await Patient.create({
-    patientId,
-
+  const patient = await createPatientWithGeneratedId({
     firstName,
 
     lastName,
@@ -53,10 +49,7 @@ const selfRegisterPatient = async (patientData) => {
     dateOfBirth: new Date(),
   });
 
-  const passwordHash = await bcrypt.hash(
-    password,
-    10,
-  );
+  const passwordHash = await bcrypt.hash(password, 10);
 
   const hashedSecurityAnswer = await bcrypt.hash(
     securityAnswer.trim().toLowerCase(),

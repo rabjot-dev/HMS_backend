@@ -1,6 +1,4 @@
-const Patient = require("../../models/Patient");
-
-const generatePatientId = require("../../utils/generatePatientId");
+const createPatientWithGeneratedId = require("../../utils/createPatientWithGeneratedId");
 const bcrypt = require("bcryptjs");
 
 const User = require("../../models/User");
@@ -58,10 +56,9 @@ const registerPatient = async (patientData) => {
     patientType,
   } = patientData;
 
-  // Generate unique patient ID
-  const patientId = await generatePatientId();
   if (dateOfBirth && new Date(dateOfBirth) > new Date()) {
-throw ERR.futureDateOfBirth();  }
+    throw ERR.futureDateOfBirth();
+  }
 
   // check duplicate
   const existingUser = await User.findOne({
@@ -69,12 +66,11 @@ throw ERR.futureDateOfBirth();  }
   });
 
   if (existingUser) {
-throw ERR.userEmailExists();  }
+    throw ERR.userEmailExists();
+  }
 
   // Create patient record
-  const patient = await Patient.create({
-    patientId,
-
+  const patient = await createPatientWithGeneratedId({
     firstName,
     lastName,
     dateOfBirth,
