@@ -119,6 +119,8 @@ const seedNodeChildren = async () => {
         order: 31,
         roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST],
         apiPermissions: [
+          { method: "GET", path: "/api/patients" },
+          { method: "GET", path: "/api/employees/doctors" },
           { method: "GET", path: "/api/appointments/available-slots" },
           { method: "POST", path: "/api/appointments" },
         ],

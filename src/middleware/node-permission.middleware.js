@@ -22,7 +22,9 @@ const nodePermissionMiddleware = async (req, res, next) => {
     const userRoles = req.user?.roles || [];
 
     if (!userRoles.length) {
-      throw new ApiError(403, "Access denied", "FORBIDDEN");
+      throw new ApiError(403, "Access denied", "FORBIDDEN", {
+        reason: "No roles found in token",
+      });
     }
 
     const method = req.method.toUpperCase();
@@ -60,7 +62,11 @@ const nodePermissionMiddleware = async (req, res, next) => {
     );
 
     if (!authorizedNode) {
-      throw new ApiError(403, "Access denied", "FORBIDDEN");
+      throw new ApiError(403, "Access denied", "FORBIDDEN", {
+        method,
+        path,
+        roles: userRoles,
+      });
     }
 
     req.authorizedNode = authorizedNode;

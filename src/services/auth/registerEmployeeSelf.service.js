@@ -9,7 +9,7 @@ const EMPLOYEE_PREFIX = require("../../constants/employee-prefix");
 const generateSequentialId = require("../../utils/generateSequentialId");
 const sendEmail = require("../../utils/sendEmail");
 const ApiError = require("../../utils/ApiError");
-
+const ROLES = require("../../constants/roles");
 const pendingApprovalTemplate = require("../../templates/pendingApprovalTemplate");
 
 const registerEmployeeSelf = async (employeeData) => {
