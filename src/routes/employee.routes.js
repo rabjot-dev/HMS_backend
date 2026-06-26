@@ -1,10 +1,8 @@
 const express = require("express");
 
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
+const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
-
-const ROLES = require("../constants/roles");
 
 const {
   registerEmployeeValidation,
@@ -33,7 +31,7 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   registerEmployeeValidation,
   validateMiddleware,
   createEmployee,
@@ -43,16 +41,26 @@ router.post(
 
 router.get("/doctors", getDoctors);
 
-router.get("/doctor/availability", authMiddleware, getDoctorAvailability);
+router.get(
+  "/doctor/availability",
+  authMiddleware,
+  nodePermissionMiddleware,
+  getDoctorAvailability,
+);
 
-router.patch("/doctor/availability", authMiddleware, updateDoctorAvailability);
+router.patch(
+  "/doctor/availability",
+  authMiddleware,
+  nodePermissionMiddleware,
+  updateDoctorAvailability,
+);
 
 // Employee List
 
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   getEmployees,
 );
 
@@ -61,7 +69,7 @@ router.get(
 router.get(
   "/pending-employees",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   getPendingEmployees,
 );
 
@@ -70,14 +78,14 @@ router.get(
 router.patch(
   "/:id/approve-employee",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   approveEmployee,
 );
 
 router.patch(
   "/:id/reject-employee",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   rejectEmployee,
 );
 
@@ -86,7 +94,7 @@ router.patch(
 router.get(
   "/:id",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   getEmployeeById,
 );
 
@@ -95,7 +103,7 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   updateEmployee,
 );
 
@@ -104,7 +112,7 @@ router.put(
 router.patch(
   "/:id/activate",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   activateEmployee,
 );
 
@@ -113,7 +121,7 @@ router.patch(
 router.patch(
   "/:id/deactivate",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   deactivateEmployee,
 );
 
@@ -122,7 +130,7 @@ router.patch(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(ROLES.ADMIN, ROLES.SUPER_ADMIN),
+  nodePermissionMiddleware,
   deleteEmployee,
 );
 

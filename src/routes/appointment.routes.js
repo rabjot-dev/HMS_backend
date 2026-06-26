@@ -23,13 +23,14 @@ const {
 
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
+const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 
 // Get today's queue for a doctor
 
 router.get(
   "/doctor-queue",
   authMiddleware,
-  roleMiddleware(ROLES.DOCTOR),
+  nodePermissionMiddleware,
   getDoctorQueue,
 );
 
@@ -46,6 +47,7 @@ router.get(
 router.get(
   "/",
   authMiddleware,
+  nodePermissionMiddleware,
   getAppointments,
 );
 
@@ -72,11 +74,7 @@ router.get(
 router.get(
   "/pending",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   getPendingAppointments,
 );
 
@@ -85,11 +83,7 @@ router.get(
 router.patch(
   "/:id/approve",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   approveAppointment,
 );
 
@@ -98,11 +92,7 @@ router.patch(
 router.patch(
   "/:id/reject",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   rejectAppointment,
 );
 
@@ -129,6 +119,7 @@ router.patch(
 router.get(
   "/:id",
   authMiddleware,
+  nodePermissionMiddleware,
   getAppointmentById,
 );
 
@@ -137,11 +128,7 @@ router.get(
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   bookAppointment,
 );
 
@@ -150,11 +137,7 @@ router.post(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   updateAppointment,
 );
 
@@ -163,12 +146,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.PATIENT,
-  ),
+  nodePermissionMiddleware,
   deleteAppointment,
 );
 

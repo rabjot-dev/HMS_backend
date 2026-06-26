@@ -32,6 +32,30 @@ const nodeSchema = new mongoose.Schema(
       default: [],
     },
 
+    apiPermissions: [
+      {
+        method: {
+          type: String,
+          enum: ["GET", "POST", "PUT", "PATCH", "DELETE", "ALL"],
+          required: true,
+          uppercase: true,
+          trim: true,
+        },
+
+        path: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        roles: {
+          type: [String],
+          enum: Object.values(ROLES),
+          default: [],
+        },
+      },
+    ],
+
     isActive: {
       type: Boolean,
       default: true,
@@ -84,6 +108,10 @@ nodeSchema.index({
   roles: 1,
   isActive: 1,
   isDeleted: 1,
+});
+nodeSchema.index({
+  "apiPermissions.method": 1,
+  "apiPermissions.path": 1,
 });
 nodeSchema.index({
   parent: 1,

@@ -4,6 +4,7 @@ const router = express.Router();
 
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
+const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 const upload = require("../middleware/upload.middleware");
 
 const ROLES = require("../constants/roles");
@@ -24,12 +25,7 @@ const {
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
-  ),
+  nodePermissionMiddleware,
   getHealthRecords
 );
 
@@ -62,12 +58,7 @@ router.get(
 router.get(
   "/:patientId",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
-  ),
+  nodePermissionMiddleware,
   getHealthRecordDetails
 );
 
@@ -76,12 +67,7 @@ router.get(
 router.post(
   "/:patientId/lab-reports",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
-  ),
+  nodePermissionMiddleware,
   upload.single("document"),
   addLabReport
 );
@@ -91,12 +77,7 @@ router.post(
 router.put(
   "/:patientId/lab-reports/:reportId",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
-  ),
+  nodePermissionMiddleware,
   upload.single("document"),
   updateLabReport
 );
@@ -106,10 +87,7 @@ router.put(
 router.delete(
   "/:patientId/lab-reports/:reportId",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN
-  ),
+  nodePermissionMiddleware,
   deleteLabReport
 );
 
@@ -118,12 +96,7 @@ router.delete(
 router.post(
   "/:patientId/medical-documents",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
-  ),
+  nodePermissionMiddleware,
   upload.single("document"),
   addMedicalDocument
 );
@@ -133,12 +106,7 @@ router.post(
 router.put(
   "/:patientId/medical-documents/:documentId",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR
-  ),
+  nodePermissionMiddleware,
   upload.single("document"),
   updateMedicalDocument
 );
@@ -148,10 +116,7 @@ router.put(
 router.delete(
   "/:patientId/medical-documents/:documentId",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN
-  ),
+  nodePermissionMiddleware,
   deleteMedicalDocument
 );
 

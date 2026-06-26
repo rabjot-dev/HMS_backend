@@ -1,8 +1,7 @@
 const express = require("express");
 
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
-const ROLES = require("../constants/roles");
+const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 
 const {
   getIndiaStates,
@@ -17,35 +16,35 @@ const router = express.Router();
 router.get(
   "/india/states",
   authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST),
+  nodePermissionMiddleware,
   getIndiaStates,
 );
 
 router.get(
   "/india/states/:stateId/districts",
   authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST),
+  nodePermissionMiddleware,
   getIndiaDistricts,
 );
 
 router.get(
   "/india/pincodes",
   authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST),
+  nodePermissionMiddleware,
   getIndiaPincodes,
 );
 
 router.get(
   "/india/taluks",
   authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST),
+  nodePermissionMiddleware,
   getIndiaTaluks,
 );
 
 router.get(
   "/india/post-offices",
   authMiddleware,
-  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST),
+  nodePermissionMiddleware,
   getIndiaPostOfficeAreas,
 );
 

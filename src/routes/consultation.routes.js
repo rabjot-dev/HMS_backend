@@ -2,10 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 
-const ROLES = require("../constants/roles");
-
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
+const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 
 const {
   createConsultation,
@@ -22,7 +20,7 @@ const {
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware(ROLES.DOCTOR),
+  nodePermissionMiddleware,
   createConsultation,
 );
 
@@ -31,12 +29,7 @@ router.post(
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.DOCTOR,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   getConsultations,
 );
 
@@ -45,13 +38,17 @@ router.get(
 router.get(
   "/appointment/:appointmentId",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.DOCTOR,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   getConsultationByAppointment,
+);
+
+// Download prescription
+
+router.get(
+  "/prescription/:consultationId",
+  authMiddleware,
+  nodePermissionMiddleware,
+  downloadPrescriptionPdf,
 );
 
 // Get consultation by id
@@ -59,12 +56,7 @@ router.get(
 router.get(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.DOCTOR,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   getConsultationById,
 );
 
@@ -73,22 +65,8 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(ROLES.DOCTOR),
+  nodePermissionMiddleware,
   updateConsultation,
-);
-
-// Download prescription
-
-router.get(
-  "/prescription/:consultationId",
-  authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.DOCTOR,
-    ROLES.RECEPTIONIST,
-  ),
-  downloadPrescriptionPdf,
 );
 
 // Delete consultation
@@ -96,10 +74,7 @@ router.get(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-  ),
+  nodePermissionMiddleware,
   deleteConsultation,
 );
 

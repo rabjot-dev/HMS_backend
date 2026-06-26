@@ -6,6 +6,7 @@ const ROLES = require("../constants/roles");
 
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
+const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
 
 const {
@@ -34,11 +35,7 @@ const {
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   createPatientValidation,
   validateMiddleware,
   createPatient,
@@ -49,12 +46,7 @@ router.post(
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
-  ),
+  nodePermissionMiddleware,
   getPatients,
 );
 
@@ -92,12 +84,7 @@ router.get(
 router.get(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-    ROLES.DOCTOR,
-  ),
+  nodePermissionMiddleware,
   getPatientById,
 );
 
@@ -106,11 +93,7 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-    ROLES.RECEPTIONIST,
-  ),
+  nodePermissionMiddleware,
   updatePatientValidation,
   validateMiddleware,
   updatePatient,
@@ -130,10 +113,7 @@ router.post(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware(
-    ROLES.SUPER_ADMIN,
-    ROLES.ADMIN,
-  ),
+  nodePermissionMiddleware,
   deletePatient,
 );
 
