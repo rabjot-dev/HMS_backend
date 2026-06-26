@@ -5,6 +5,7 @@ const router = express.Router();
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
 const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
+const validateMiddleware = require("../middleware/validate.middleware");
 const upload = require("../middleware/upload.middleware");
 
 const ROLES = require("../constants/roles");
@@ -19,6 +20,13 @@ const {
   updateMedicalDocument,
   updateLabReport,
 } = require("../controllers/health-record.controller");
+
+const {
+  addLabReportValidation,
+  updateLabReportValidation,
+  addMedicalDocumentValidation,
+  updateMedicalDocumentValidation,
+} = require("../validations/health-record.validation");
 
 // Get all health records
 
@@ -70,6 +78,8 @@ router.post(
   authMiddleware,
   nodePermissionMiddleware,
   upload.single("document"),
+  addLabReportValidation,
+  validateMiddleware,
   addLabReport
 );
 
@@ -80,6 +90,8 @@ router.put(
   authMiddleware,
   nodePermissionMiddleware,
   upload.single("document"),
+  updateLabReportValidation,
+  validateMiddleware,
   updateLabReport
 );
 
@@ -99,6 +111,8 @@ router.post(
   authMiddleware,
   nodePermissionMiddleware,
   upload.single("document"),
+  addMedicalDocumentValidation,
+  validateMiddleware,
   addMedicalDocument
 );
 
@@ -109,6 +123,8 @@ router.put(
   authMiddleware,
   nodePermissionMiddleware,
   upload.single("document"),
+  updateMedicalDocumentValidation,
+  validateMiddleware,
   updateMedicalDocument
 );
 
