@@ -39,7 +39,7 @@ const register = asyncHandler(async (req, res) => {
 });
 
 const forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
   const user = await User.findOne({ email });
 
   if (!user) {
@@ -58,7 +58,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
-  const { email, securityAnswer, newPassword } = req.body;
+  const { securityAnswer, newPassword } = req.body;
+  const email = req.body.email?.trim().toLowerCase();
   const user = await User.findOne({ email });
 
   if (!user) {
