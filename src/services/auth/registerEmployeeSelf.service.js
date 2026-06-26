@@ -5,6 +5,7 @@ const Employee = require("../../models/Employee");
 
 const STATUS = require("../../constants/status");
 const EMPLOYEE_PREFIX = require("../../constants/employee-prefix");
+const ROLES = require("../../constants/roles");
 
 const generateSequentialId = require("../../utils/generateSequentialId");
 const sendEmail = require("../../utils/sendEmail");
@@ -47,7 +48,7 @@ throw ERR.emailExists();  }
 throw ERR.phoneExists();  }
 
   // Check doctor registration number
-  if (designation === "DOCTOR") {
+  if (designation === ROLES.DOCTOR) {
     const existingDoctor = await Employee.findOne({
       medicalRegistrationNo,
     });
@@ -73,7 +74,7 @@ throw ERR.invalidDesignation();  }
   );
 
   // Create employee record
-  const employee = await Employee.create({
+  const employeePayload = {
     employeeCode,
     name,
     email: email.toLowerCase(),
@@ -84,10 +85,15 @@ throw ERR.invalidDesignation();  }
     joiningDate,
     qualification,
     specialization,
-    medicalRegistrationNo,
     consultationFee,
     status: STATUS.PENDING,
-  });
+  };
+
+  if (designation === ROLES.DOCTOR) {
+    employeePayload.medicalRegistrationNo = medicalRegistrationNo;
+  }
+
+  const employee = await Employee.create(employeePayload);
 
   // Create user account
   await User.create({

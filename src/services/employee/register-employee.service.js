@@ -125,6 +125,10 @@ throw ERR.invalidDesignation();
     10
   );
 
+  const hashedSecurityAnswer = securityAnswer
+    ? await bcrypt.hash(securityAnswer.trim().toLowerCase(), 10)
+    : undefined;
+
   // Create user account
   await User.create({
     email: email.toLowerCase(),
@@ -134,7 +138,7 @@ throw ERR.invalidDesignation();
     isFirstLogin: true,
     status: STATUS.ACTIVE,
     securityQuestion,
-    securityAnswer,
+    securityAnswer: hashedSecurityAnswer,
   });
 
   // Send welcome email with login details

@@ -67,6 +67,15 @@ const employeeSchema = new mongoose.Schema(
       trim: true,
       unique: true,
       sparse: true,
+      set: (value) => {
+        if (typeof value !== "string") {
+          return value;
+        }
+
+        const trimmedValue = value.trim();
+
+        return trimmedValue ? trimmedValue : undefined;
+      },
     },
 
     specialization: {
