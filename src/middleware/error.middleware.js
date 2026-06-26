@@ -15,6 +15,15 @@ const errorHandler = (error, req, res, next) => {
       : "Duplicate value already exists";
   }
 
+  if (Array.isArray(error.errors) && error.errors.length > 0) {
+    const firstError = error.errors[0];
+    const fieldName = firstError.path || firstError.param;
+
+    message = fieldName
+      ? `${fieldName}: ${firstError.msg}`
+      : firstError.msg || message;
+  }
+
   const response = {
     success: false,
     message,
