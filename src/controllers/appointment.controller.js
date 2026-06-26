@@ -1,5 +1,10 @@
-const Appointment = require("../models/Appointment");
 const mongoose = require("mongoose");
+
+const asyncHandler = require("../utils/asyncHandler");
+const ApiError = require("../utils/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
+
+const Appointment = require("../models/Appointment");
 const getAvailableSlotsService = require("../services/appointment/get-available-slots.service");
 const bookAppointmentService = require("../services/appointment/book-appointment.service");
 const bookPatientAppointmentService = require("../services/appointment/book-patient-appointment.service");
@@ -10,481 +15,277 @@ const rejectAppointmentService = require("../services/appointment/reject-appoint
 const updateMyAppointmentService = require("../services/appointment/update-my-appointment.service");
 const cancelMyAppointmentService = require("../services/appointment/cancel-my-appointment.service");
 const getAppointmentsService = require("../services/appointment/get-appointments.service");
-const getAvailableSlots = async (req, res) => {
-  try {
-    const { doctorId, appointmentDate } = req.query;
 
-    const availableSlots = await getAvailableSlotsService(
-      doctorId,
-      appointmentDate,
+const validateObjectId = (id, message) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError(400, message, "INVALID_ID");
+  }
+};
+
+const getAvailableSlots = asyncHandler(async (req, res) => {
+  const { doctorId, appointmentDate } = req.query;
+  const availableSlots = await getAvailableSlotsService(doctorId, appointmentDate);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Available slots retrieved successfully", availableSlots));
+});
+
+const bookAppointment = asyncHandler(async (req, res) => {
+  const appointment = await bookAppointmentService(req.body, req.user);
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, "Appointment booked successfully", appointment));
+});
+
+const getAppointments = asyncHandler(async (req, res) => {
+  const result = await getAppointmentsService(req.user, req.query);
+
+  return res.status(200).json({
+    ...new ApiResponse(200, "Appointments retrieved successfully", result.data),
+    meta: result.meta,
+  });
+});
+
+const deleteAppointment = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  validateObjectId(id, "Invalid appointment ID");
+
+  const appointment = await Appointment.findById(id);
+
+  if (!appointment) {
+    throw new ApiError(
+      404,
+      "Appointment not found for the provided ID",
+      "APPOINTMENT_NOT_FOUND",
     );
-
-    return res.status(200).json({
-      success: true,
-      data: availableSlots,
-    });
-  } catch (error) {
-    console.error("GET AVAILABLE SLOTS ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch available appointment slots",
-    });
   }
-};
 
-const bookAppointment = async (req, res) => {
-  try {
-    const appointment = await bookAppointmentService(req.body, req.user);
-
-    return res.status(201).json({
-      success: true,
-      message: "Appointment booked successfully",
-      data: appointment,
-    });
-  } catch (error) {
-    console.error("BOOK APPOINTMENT ERROR:", error);
-
-    if (error.message === "Patient not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Patient record not found",
-      });
-    }
-
-    if (error.message === "Doctor not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Doctor record not found",
-      });
-    }
-
-    if (error.message === "Slot already booked") {
-      return res.status(409).json({
-        success: false,
-        message: "Selected appointment slot is already booked",
-      });
-    }
-
-    if (error.message === "Past date not allowed") {
-      return res.status(422).json({
-        success: false,
-        message: "Appointments cannot be booked for past dates",
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to book appointment",
-    });
+  if (
+    req.user.roles?.includes("PATIENT") &&
+    appointment.patientId.toString() !== req.user.patientId.toString()
+  ) {
+    throw new ApiError(403, "Unauthorized", "FORBIDDEN");
   }
-};
 
-const getAppointments = async (req, res, next) => {
-  try {
-    const result = await getAppointmentsService(req.user, req.query);
+  await Appointment.findByIdAndDelete(id);
 
-    return res.status(200).json({
-      success: true,
-      message: "Appointments retrieved successfully",
-      data: result.data,
-      meta: result.meta,
-    });
-  } catch (error) {
-    next(error);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointment deleted successfully"));
+});
+
+const getAppointmentById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  validateObjectId(id, "Invalid appointment ID");
+
+  const appointment = await Appointment.findById(id)
+    .populate("patientId")
+    .populate("doctorEmployeeId");
+
+  if (!appointment) {
+    throw new ApiError(
+      404,
+      "Appointment not found for the provided ID",
+      "APPOINTMENT_NOT_FOUND",
+    );
   }
-};
-const deleteAppointment = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid appointment ID",
-      });
-    }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointment retrieved successfully", appointment));
+});
 
-    const appointment = await Appointment.findById(id);
+const updateAppointment = asyncHandler(async (req, res) => {
+  const { id } = req.params;
 
-    if (!appointment) {
-      return res.status(404).json({
-        success: false,
-        message: "Appointment not found for the provided ID",
-      });
-    }
-    if (req.user.roles?.includes("PATIENT")) {
-      if (appointment.patientId.toString() !== req.user.patientId.toString()) {
-        return res.status(403).json({
-          success: false,
+  validateObjectId(id, "Invalid appointment ID");
 
-          message: "Unauthorized",
-        });
-      }
-    }
+  const {
+    doctorEmployeeId,
+    appointmentDate,
+    timeSlot,
+    appointmentType,
+    priority,
+    paymentStatus,
+    visitMode,
+    status,
+    reason,
+    notes,
+    symptoms,
+  } = req.body;
 
-    await Appointment.findByIdAndDelete(id);
+  const appointment = await Appointment.findById(id);
 
-    return res.status(200).json({
-      success: true,
-      message: "Appointment deleted successfully",
-    });
-  } catch (error) {
-    console.error("DELETE APPOINTMENT ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to delete appointment",
-    });
+  if (!appointment) {
+    throw new ApiError(404, "Appointment not found", "APPOINTMENT_NOT_FOUND");
   }
-};
 
-const getAppointmentById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid appointment ID",
-      });
-    }
-
-    const appointment = await Appointment.findById(id)
-      .populate("patientId")
-      .populate("doctorEmployeeId");
-
-    if (!appointment) {
-      return res.status(404).json({
-        success: false,
-        message: "Appointment not found for the provided ID",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: appointment,
-    });
-  } catch (error) {
-    console.error("GET APPOINTMENT BY ID ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve appointment details",
-    });
-  }
-};
-
-const updateAppointment = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid appointment ID",
-      });
-    }
-
-    const {
-      doctorEmployeeId,
-      appointmentDate,
-      timeSlot,
-      appointmentType,
-      priority,
-      paymentStatus,
-      visitMode,
-      status,
-      reason,
-      notes,
-      symptoms,
-    } = req.body;
-
-    const appointment = await Appointment.findById(id);
-
-    if (!appointment) {
-      return res.status(404).json({
-        success: false,
-        message: "Appointment not found",
-      });
-    }
-
-    if (appointmentDate) {
-      const [year, month, day] = appointmentDate.split("-").map(Number);
-
-      const selectedDate = new Date(year, month - 1, day);
-      selectedDate.setHours(0, 0, 0, 0);
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (selectedDate < today) {
-        return res.status(422).json({
-          success: false,
-          message: "Appointment date cannot be in the past",
-        });
-      }
-    }
-
-    const updatedDoctorId = doctorEmployeeId || appointment.doctorEmployeeId;
-
-    const updatedAppointmentDate =
-      appointmentDate || appointment.appointmentDate;
-
-    const updatedTimeSlot = timeSlot || appointment.timeSlot;
-
-    const conflictingAppointment = await Appointment.findOne({
-      _id: { $ne: id },
-      doctorEmployeeId: updatedDoctorId,
-      appointmentDate: updatedAppointmentDate,
-      timeSlot: updatedTimeSlot,
-    });
-
-    if (conflictingAppointment) {
-      return res.status(409).json({
-        success: false,
-        message: "Selected time slot is already booked",
-      });
-    }
-
-    let formattedDate = appointment.appointmentDate;
-
-    if (appointmentDate) {
-      formattedDate = appointmentDate;
-    }
-
-    Object.assign(appointment, {
-      doctorEmployeeId,
-      appointmentDate: formattedDate,
-      timeSlot,
-      appointmentType,
-      priority,
-      paymentStatus,
-      visitMode,
-      status,
-      reason,
-      notes,
-      symptoms,
-    });
-
-    await appointment.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Appointment updated successfully",
-      data: appointment,
-    });
-  } catch (error) {
-    console.error("UPDATE APPOINTMENT ERROR:", error);
-
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to update appointment. Please try again later",
-    });
-  }
-};
-
-const getDoctorQueue = async (req, res) => {
-  try {
-    const { doctorEmployeeId } = req.query;
+  if (appointmentDate) {
+    const [year, month, day] = appointmentDate.split("-").map(Number);
+    const selectedDate = new Date(year, month - 1, day);
+    selectedDate.setHours(0, 0, 0, 0);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const appointments = await Appointment.find({
-      doctorEmployeeId,
-      appointmentDate: {
-        $gte: today,
-        $lt: tomorrow,
-      },
-      isDeleted: false,
-      status: {
-        $in: ["BOOKED", "IN_CONSULTATION"],
-      },
-    })
-      .populate("patientId")
-      .sort({
-        tokenNumber: 1,
-      });
-
-    return res.status(200).json({
-      success: true,
-      message:
-        appointments.length > 0
-          ? "Doctor queue retrieved successfully"
-          : "No appointments found in doctor's queue",
-      data: appointments,
-    });
-  } catch (error) {
-    console.error("GET DOCTOR QUEUE ERROR:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Failed to retrieve doctor's queue",
-    });
+    if (selectedDate < today) {
+      throw new ApiError(
+        422,
+        "Appointment date cannot be in the past",
+        "PAST_DATE_NOT_ALLOWED",
+      );
+    }
   }
-};
-// Patient book
-const bookPatientAppointment = async (req, res) => {
-  try {
-    const appointment = await bookPatientAppointmentService(req.body, req.user);
 
-    return res.status(201).json({
-      success: true,
+  const updatedDoctorId = doctorEmployeeId || appointment.doctorEmployeeId;
+  const updatedAppointmentDate = appointmentDate || appointment.appointmentDate;
+  const updatedTimeSlot = timeSlot || appointment.timeSlot;
 
-      message: "Appointment request submitted successfully",
+  const conflictingAppointment = await Appointment.findOne({
+    _id: { $ne: id },
+    doctorEmployeeId: updatedDoctorId,
+    appointmentDate: updatedAppointmentDate,
+    timeSlot: updatedTimeSlot,
+  });
 
-      data: appointment,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-
-      message: error.message,
-    });
-  }
-};
-
-//Patient can see only there appointments
-const getMyAppointments = async (req, res) => {
-  try {
-    const appointments = await getMyAppointmentsService(req.user.patientId);
-
-    return res.status(200).json({
-      success: true,
-
-      data: appointments,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Failed to fetch appointments",
-    });
-  }
-};
-
-// Pending Appointments
-const getPendingAppointments = async (req, res) => {
-  try {
-    const appointments = await getPendingAppointmentsService();
-
-    return res.status(200).json({
-      success: true,
-
-      data: appointments,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Failed to fetch pending appointments",
-    });
-  }
-};
-
-// Appointment approval
-const approveAppointment = async (req, res) => {
-  try {
-    const appointment = await approveAppointmentService(req.params.id);
-
-    return res.status(200).json({
-      success: true,
-
-      message: "Appointment approved successfully",
-
-      data: appointment,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-
-      message: error.message,
-    });
-  }
-};
-
-// Reject appointment
-const rejectAppointment = async (req, res) => {
-  try {
-    const appointment = await rejectAppointmentService(req.params.id);
-
-    return res.status(200).json({
-      success: true,
-
-      message: "Appointment rejected successfully",
-
-      data: appointment,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-
-      message: error.message,
-    });
-  }
-};
-
-// Update Appointment
-const updateMyAppointment = async (req, res) => {
-  try {
-    const appointment = await updateMyAppointmentService(
-      req.params.id,
-
-      req.user.patientId,
-
-      req.body,
+  if (conflictingAppointment) {
+    throw new ApiError(
+      409,
+      "Selected time slot is already booked",
+      "SLOT_ALREADY_BOOKED",
     );
-
-    return res.status(200).json({
-      success: true,
-
-      message: "Appointment updated successfully",
-
-      data: appointment,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-
-      message: error.message,
-    });
   }
-};
-// Cancel Appointment
-const cancelMyAppointment = async (req, res) => {
-  try {
-    const appointment = await cancelMyAppointmentService(
-      req.params.id,
 
-      req.user.patientId,
+  Object.assign(appointment, {
+    doctorEmployeeId,
+    appointmentDate: appointmentDate || appointment.appointmentDate,
+    timeSlot,
+    appointmentType,
+    priority,
+    paymentStatus,
+    visitMode,
+    status,
+    reason,
+    notes,
+    symptoms,
+  });
+
+  await appointment.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointment updated successfully", appointment));
+});
+
+const getDoctorQueue = asyncHandler(async (req, res) => {
+  const { doctorEmployeeId } = req.query;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const appointments = await Appointment.find({
+    doctorEmployeeId,
+    appointmentDate: {
+      $gte: today,
+      $lt: tomorrow,
+    },
+    isDeleted: false,
+    status: {
+      $in: ["BOOKED", "IN_CONSULTATION"],
+    },
+  })
+    .populate("patientId")
+    .sort({
+      tokenNumber: 1,
+    });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      appointments.length > 0
+        ? "Doctor queue retrieved successfully"
+        : "No appointments found in doctor's queue",
+      appointments,
+    ),
+  );
+});
+
+const bookPatientAppointment = asyncHandler(async (req, res) => {
+  const appointment = await bookPatientAppointmentService(req.body, req.user);
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        "Appointment request submitted successfully",
+        appointment,
+      ),
     );
+});
 
-    return res.status(200).json({
-      success: true,
+const getMyAppointments = asyncHandler(async (req, res) => {
+  const appointments = await getMyAppointmentsService(req.user.patientId);
 
-      message: "Appointment cancelled successfully",
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointments retrieved successfully", appointments));
+});
 
-      data: appointment,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
+const getPendingAppointments = asyncHandler(async (req, res) => {
+  const appointments = await getPendingAppointmentsService();
 
-      message: error.message,
-    });
-  }
-};
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Pending appointments retrieved successfully", appointments),
+    );
+});
+
+const approveAppointment = asyncHandler(async (req, res) => {
+  const appointment = await approveAppointmentService(req.params.id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointment approved successfully", appointment));
+});
+
+const rejectAppointment = asyncHandler(async (req, res) => {
+  const appointment = await rejectAppointmentService(req.params.id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointment rejected successfully", appointment));
+});
+
+const updateMyAppointment = asyncHandler(async (req, res) => {
+  const appointment = await updateMyAppointmentService(
+    req.params.id,
+    req.user.patientId,
+    req.body,
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointment updated successfully", appointment));
+});
+
+const cancelMyAppointment = asyncHandler(async (req, res) => {
+  const appointment = await cancelMyAppointmentService(
+    req.params.id,
+    req.user.patientId,
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointment cancelled successfully", appointment));
+});
 
 module.exports = {
   getAvailableSlots,

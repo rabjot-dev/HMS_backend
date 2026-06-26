@@ -1,5 +1,6 @@
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
+const ApiError = require("../../utils/ApiError");
 
 const updateDoctorAvailabilityService = async (
   userId,
@@ -12,7 +13,7 @@ const updateDoctorAvailabilityService = async (
   });
 
   if (!user) {
-    throw new Error("User account not found");
+    throw new ApiError(404, "User account not found", "USER_NOT_FOUND");
   }
 
   const doctor = await Employee.findOne({
@@ -21,7 +22,7 @@ const updateDoctorAvailabilityService = async (
   });
 
   if (!doctor) {
-    throw new Error("Doctor not found");
+    throw new ApiError(404, "Doctor not found", "DOCTOR_NOT_FOUND");
   }
 
   doctor.availability = availabilityData;

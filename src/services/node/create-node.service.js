@@ -1,4 +1,5 @@
 const Node = require("../../models/Node");
+const ApiError = require("../../utils/ApiError");
 
 const createNodeService = async (nodeData, userId) => {
   const existingNode = await Node.findOne({
@@ -7,7 +8,7 @@ const createNodeService = async (nodeData, userId) => {
   });
 
   if (existingNode) {
-    throw new Error("Node already exists");
+    throw new ApiError(409, "Node already exists", "NODE_ALREADY_EXISTS");
   }
 
   return Node.create({

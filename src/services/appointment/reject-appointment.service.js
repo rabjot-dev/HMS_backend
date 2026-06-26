@@ -6,6 +6,7 @@ const STATUS = require("../../constants/status");
 
 const sendEmail = require("../../utils/sendEmail");
 const appointmentRejectedTemplate = require("../../templates/appointment-rejected.template");
+const ApiError = require("../../utils/ApiError");
 
 const rejectAppointment = async (
   appointmentId,
@@ -18,11 +19,15 @@ const rejectAppointment = async (
   });
 
   if (!appointment) {
-    throw new Error("Appointment not found");
+    throw new ApiError(404, "Appointment not found", "APPOINTMENT_NOT_FOUND");
   }
 
   if (appointment.status !== STATUS.PENDING) {
-    throw new Error("Only pending appointments can be rejected");
+    throw new ApiError(
+      400,
+      "Only pending appointments can be rejected",
+      "INVALID_APPOINTMENT_STATUS",
+    );
   }
 
   appointment.status = STATUS.REJECTED;

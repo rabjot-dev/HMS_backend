@@ -6,6 +6,7 @@ const STATUS = require("../../constants/status");
 const getNextTokenNumber = require("../../utils/getNextTokenNumber");
 const sendEmail = require("../../utils/sendEmail");
 const appointmentApprovedTemplate = require("../../templates/appointment-approved.template");
+const ApiError = require("../../utils/ApiError");
 
 const approveAppointment = async (appointmentId, approvedBy) => {
   const appointment = await Appointment.findOne({
@@ -14,11 +15,15 @@ const approveAppointment = async (appointmentId, approvedBy) => {
   });
 
   if (!appointment) {
-    throw new Error("Appointment not found");
+    throw new ApiError(404, "Appointment not found", "APPOINTMENT_NOT_FOUND");
   }
 
   if (appointment.status !== STATUS.PENDING) {
-    throw new Error("Only pending appointments can be approved");
+    throw new ApiError(
+      400,
+      "Only pending appointments can be approved",
+      "INVALID_APPOINTMENT_STATUS",
+    );
   }
 
   // Generate Token number

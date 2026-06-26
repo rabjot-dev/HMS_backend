@@ -1,8 +1,9 @@
-const Consultation = require("../../models/consultation");
+const Consultation = require("../../models/Consultation");
 
 const Appointment = require("../../models/Appointment");
 
 const STATUS = require("../../constants/status");
+const ApiError = require("../../utils/ApiError");
 
 const createConsultationService = async (data, createdBy) => {
   const {
@@ -20,7 +21,11 @@ const createConsultationService = async (data, createdBy) => {
   });
 
   if (existingConsultation) {
-    throw new Error("Consultation already exists");
+    throw new ApiError(
+      409,
+      "Consultation already exists",
+      "CONSULTATION_ALREADY_EXISTS",
+    );
   }
 
   const appointment = await Appointment.findOne({
@@ -30,7 +35,7 @@ const createConsultationService = async (data, createdBy) => {
   });
 
   if (!appointment) {
-    throw new Error("Appointment not found");
+    throw new ApiError(404, "Appointment not found", "APPOINTMENT_NOT_FOUND");
   }
 
   const consultation = await Consultation.create({

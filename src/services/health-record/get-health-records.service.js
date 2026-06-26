@@ -1,4 +1,4 @@
-const Consultation = require("../../models/consultation");
+const Consultation = require("../../models/Consultation");
 
 const ROLES = require("../../constants/roles");
 const mongoose = require("mongoose");

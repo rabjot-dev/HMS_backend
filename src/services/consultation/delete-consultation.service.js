@@ -1,4 +1,5 @@
-const Consultation = require("../../models/consultation");
+const Consultation = require("../../models/Consultation");
+const ApiError = require("../../utils/ApiError");
 
 const deleteConsultationService = async (consultationId, deletedBy) => {
   const consultation = await Consultation.findOne({
@@ -7,7 +8,7 @@ const deleteConsultationService = async (consultationId, deletedBy) => {
   });
 
   if (!consultation) {
-    throw new Error("Consultation not found");
+    throw new ApiError(404, "Consultation not found", "CONSULTATION_NOT_FOUND");
   }
 
   consultation.isDeleted = true;

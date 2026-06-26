@@ -9,6 +9,7 @@ const STATUS = require("../../constants/status");
 
 const generateTemporaryPassword = require("../../utils/generateTemporaryPassword");
 const generateSequentialId = require("../../utils/generateSequentialId");
+const ApiError = require("../../utils/ApiError");
 
 const sendEmail = require("../../utils/sendEmail");
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
@@ -44,7 +45,11 @@ const registerEmployee = async (employeeData, currentUser) => {
     designation === ROLES.ADMIN &&
     !currentUser.roles?.includes(ROLES.SUPER_ADMIN)
   ) {
-    throw new Error("Only Super Admin can create Admin");
+    throw new ApiError(
+      403,
+      "Only Super Admin can create Admin",
+      "FORBIDDEN",
+    );
   }
 
   // Check if email is already in use
@@ -54,7 +59,11 @@ const registerEmployee = async (employeeData, currentUser) => {
   });
 
   if (existingUser) {
-    throw new Error("Employee already exists with this email");
+    throw new ApiError(
+      409,
+      "Employee already exists with this email",
+      "EMAIL_ALREADY_EXISTS",
+    );
   }
 
   // Check if phone number is already in use
@@ -64,7 +73,11 @@ const registerEmployee = async (employeeData, currentUser) => {
   });
 
   if (existingPhone) {
-    throw new Error("Employee already exists with this phone number");
+    throw new ApiError(
+      409,
+      "Employee already exists with this phone number",
+      "PHONE_ALREADY_EXISTS",
+    );
   }
 
   // Validate doctor's registration number
@@ -75,7 +88,11 @@ const registerEmployee = async (employeeData, currentUser) => {
     });
 
     if (existingDoctor) {
-      throw new Error("Medical registration number already exists");
+      throw new ApiError(
+        409,
+        "Medical registration number already exists",
+        "MEDICAL_REGISTRATION_EXISTS",
+      );
     }
   }
 
@@ -83,7 +100,11 @@ const registerEmployee = async (employeeData, currentUser) => {
   const prefix = EMPLOYEE_PREFIX[designation];
 
   if (!prefix) {
-    throw new Error("Invalid employee designation");
+    throw new ApiError(
+      400,
+      "Invalid employee designation",
+      "INVALID_DESIGNATION",
+    );
   }
 
   const employeeCode = await generateSequentialId(prefix);

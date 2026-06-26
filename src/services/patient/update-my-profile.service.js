@@ -1,4 +1,5 @@
 const Patient = require("../../models/Patient");
+const ApiError = require("../../utils/ApiError");
 
 const updateMyProfile = async (patientId, updateData, updatedBy) => {
   if (updateData.maritalStatus === "") {
@@ -15,7 +16,7 @@ const updateMyProfile = async (patientId, updateData, updatedBy) => {
   });
 
   if (!patient) {
-    throw new Error("Patient not found");
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
   Object.assign(patient, updateData);

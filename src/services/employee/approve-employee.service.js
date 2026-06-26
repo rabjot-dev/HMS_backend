@@ -1,6 +1,7 @@
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
 const STATUS = require("../../constants/status");
+const ApiError = require("../../utils/ApiError");
 
 const approveEmployeeService = async (
   employeeId,
@@ -13,7 +14,7 @@ const approveEmployeeService = async (
   });
 
   if (!user) {
-    throw new Error("Employee account not found");
+    throw new ApiError(404, "Employee account not found", "USER_NOT_FOUND");
   }
 
   const employee = await Employee.findOne({
@@ -22,11 +23,15 @@ const approveEmployeeService = async (
   });
 
   if (!employee) {
-    throw new Error("Employee not found");
+    throw new ApiError(404, "Employee not found", "EMPLOYEE_NOT_FOUND");
   }
 
   if (employee.designation === "DOCTOR" && !consultationFee) {
-    throw new Error("Consultation fee is required for doctors");
+    throw new ApiError(
+      400,
+      "Consultation fee is required for doctors",
+      "CONSULTATION_FEE_REQUIRED",
+    );
   }
 
   if (employee.designation === "DOCTOR") {

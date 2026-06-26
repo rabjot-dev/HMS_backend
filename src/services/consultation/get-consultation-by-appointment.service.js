@@ -1,4 +1,5 @@
-const Consultation = require("../../models/consultation");
+const Consultation = require("../../models/Consultation");
+const ApiError = require("../../utils/ApiError");
 
 const getConsultationByAppointmentService = async (appointmentId) => {
   const consultation = await Consultation.findOne({
@@ -28,7 +29,7 @@ const getConsultationByAppointmentService = async (appointmentId) => {
     });
 
   if (!consultation) {
-    throw new Error("Consultation not found");
+    throw new ApiError(404, "Consultation not found", "CONSULTATION_NOT_FOUND");
   }
 
   return consultation;

@@ -3,6 +3,7 @@ const Employee = require("../../models/Employee");
 const Patient = require("../../models/Patient");
 const STATUS = require("../../constants/status");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
+const ApiError = require("../../utils/ApiError");
 
 const bookPatientAppointment = async (appointmentData, user) => {
   const {
@@ -28,7 +29,11 @@ const bookPatientAppointment = async (appointmentData, user) => {
   selectedDate.setHours(0, 0, 0, 0);
 
   if (selectedDate < today) {
-    throw new Error("Cannot book appointment for past dates");
+    throw new ApiError(
+      422,
+      "Cannot book appointment for past dates",
+      "PAST_DATE_NOT_ALLOWED",
+    );
   }
 
   // Verify patient exists
@@ -38,7 +43,7 @@ const bookPatientAppointment = async (appointmentData, user) => {
   });
 
   if (!patient) {
-    throw new Error("Patient not found");
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
   // Verify doctor exists
@@ -48,12 +53,16 @@ const bookPatientAppointment = async (appointmentData, user) => {
   });
 
   if (!doctor) {
-    throw new Error("Doctor not found");
+    throw new ApiError(404, "Doctor not found", "DOCTOR_NOT_FOUND");
   }
 
   // Check if doctor is currently available
   if (!doctor?.availability?.isAvailable) {
-    throw new Error("Doctor is currently unavailable");
+    throw new ApiError(
+      400,
+      "Doctor is currently unavailable",
+      "DOCTOR_UNAVAILABLE",
+    );
   }
 
   // Ensure appointment is on a doctor's working day
@@ -64,7 +73,11 @@ const bookPatientAppointment = async (appointmentData, user) => {
     .toUpperCase();
 
   if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
-    throw new Error(`Doctor is not available on ${appointmentDay}`);
+    throw new ApiError(
+      400,
+      `Doctor is not available on ${appointmentDay}`,
+      "DOCTOR_NOT_AVAILABLE_ON_DAY",
+    );
   }
 
   // Prevent booking during break hours
@@ -73,7 +86,11 @@ const bookPatientAppointment = async (appointmentData, user) => {
 
   if (breakStartTime && breakEndTime) {
     if (appointmentTime >= breakStartTime && appointmentTime < breakEndTime) {
-      throw new Error("Selected slot falls during doctor break time");
+      throw new ApiError(
+        400,
+        "Selected slot falls during doctor break time",
+        "SLOT_DURING_BREAK_TIME",
+      );
     }
   }
 
@@ -99,7 +116,11 @@ const bookPatientAppointment = async (appointmentData, user) => {
   });
 
   if (totalAppointments >= doctor?.availability?.maxPatientsPerDay) {
-    throw new Error("Maximum patient limit reached for this doctor");
+    throw new ApiError(
+      400,
+      "Maximum patient limit reached for this doctor",
+      "DOCTOR_DAILY_LIMIT_REACHED",
+    );
   }
 
   // Prevent double-booking of doctor slot
@@ -117,7 +138,11 @@ const bookPatientAppointment = async (appointmentData, user) => {
   });
 
   if (existingAppointment) {
-    throw new Error("Selected slot already booked");
+    throw new ApiError(
+      409,
+      "Selected slot already booked",
+      "SLOT_ALREADY_BOOKED",
+    );
   }
 
   // Prevent patient from booking multiple appointments at same time
@@ -135,7 +160,11 @@ const bookPatientAppointment = async (appointmentData, user) => {
   });
 
   if (existingPatientAppointment) {
-    throw new Error("Patient already has an appointment at this time");
+    throw new ApiError(
+      409,
+      "Patient already has an appointment at this time",
+      "PATIENT_APPOINTMENT_CONFLICT",
+    );
   }
 
   // Generate unique appointment ID

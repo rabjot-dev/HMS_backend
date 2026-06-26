@@ -1,6 +1,7 @@
 const Patient = require("../../models/Patient");
 
 const User = require("../../models/User");
+const ApiError = require("../../utils/ApiError");
 
 const deletePatientService = async (patientId, deletedBy) => {
   const patient = await Patient.findOne({
@@ -9,7 +10,7 @@ const deletePatientService = async (patientId, deletedBy) => {
   });
 
   if (!patient) {
-    throw new Error("Patient not found");
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
   patient.isDeleted = true;

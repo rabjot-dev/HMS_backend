@@ -9,6 +9,7 @@ const ROLES = require("../../constants/roles");
 const STATUS = require("../../constants/status");
 
 const generatePatientId = require("../../utils/generatePatientId");
+const ApiError = require("../../utils/ApiError");
 
 const selfRegisterPatient = async (patientData) => {
   const { firstName, lastName, email, phone, password } = patientData;
@@ -19,7 +20,7 @@ const selfRegisterPatient = async (patientData) => {
   });
 
   if (existingUser) {
-    throw new Error("Email already registered");
+    throw new ApiError(409, "Email already registered", "EMAIL_ALREADY_REGISTERED");
   }
 
   const existingPatient = await Patient.findOne({
@@ -28,7 +29,7 @@ const selfRegisterPatient = async (patientData) => {
   });
 
   if (existingPatient) {
-    throw new Error("Phone number already registered");
+    throw new ApiError(409, "Phone number already registered", "PHONE_ALREADY_REGISTERED");
   }
 
   const patientId = await generatePatientId();

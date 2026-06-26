@@ -5,6 +5,7 @@ const STATUS = require("../../constants/status");
 
 const cancelFutureDoctorAppointments = require("../appointment/cancel-future-doctor-appointments.service");
 const User = require("../../models/User");
+const ApiError = require("../../utils/ApiError");
 
 const deleteEmployeeService = async (employeeId, deletedBy) => {
   const employee = await Employee.findOne({
@@ -13,7 +14,7 @@ const deleteEmployeeService = async (employeeId, deletedBy) => {
   });
 
   if (!employee) {
-    throw new Error("Employee not found");
+    throw new ApiError(404, "Employee not found", "EMPLOYEE_NOT_FOUND");
   }
 
   employee.isDeleted = true;

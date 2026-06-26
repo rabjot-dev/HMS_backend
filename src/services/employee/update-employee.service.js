@@ -1,4 +1,5 @@
 const Employee = require("../../models/Employee");
+const ApiError = require("../../utils/ApiError");
 
 const updateEmployeeService = async (employeeId, updateData, updatedBy) => {
   if (updateData.medicalRegistrationNo) {
@@ -13,7 +14,11 @@ const updateEmployeeService = async (employeeId, updateData, updatedBy) => {
     });
 
     if (existingDoctor) {
-      throw new Error("Medical registration number already exists");
+      throw new ApiError(
+        409,
+        "Medical registration number already exists",
+        "MEDICAL_REGISTRATION_EXISTS",
+      );
     }
   }
 
@@ -23,7 +28,7 @@ const updateEmployeeService = async (employeeId, updateData, updatedBy) => {
   });
 
   if (!employee) {
-    throw new Error("Employee not found");
+    throw new ApiError(404, "Employee not found", "EMPLOYEE_NOT_FOUND");
   }
 
   Object.assign(employee, updateData);

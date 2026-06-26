@@ -1,4 +1,5 @@
 const Patient = require("../../models/Patient");
+const ApiError = require("../../utils/ApiError");
 const Appointment = require("../../models/Appointment");
 const STATUS = require("../../constants/status");
 
@@ -9,7 +10,7 @@ const getPatientDashboard = async (patientId) => {
   });
 
   if (!patient) {
-    throw new Error("Patient not found");
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
   const baseFilter = {

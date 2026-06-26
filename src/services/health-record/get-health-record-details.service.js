@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const Consultation = require("../../models/consultation");
+const Consultation = require("../../models/Consultation");
 const Patient = require("../../models/Patient");
 
 const ROLES = require("../../constants/roles");

@@ -1,4 +1,5 @@
 const Node = require("../../models/Node");
+const ApiError = require("../../utils/ApiError");
 
 const deleteNodeService = async (id, userId) => {
   const node = await Node.findOneAndUpdate(
@@ -17,7 +18,7 @@ const deleteNodeService = async (id, userId) => {
   );
 
   if (!node) {
-    throw new Error("Node not found");
+    throw new ApiError(404, "Node not found", "NODE_NOT_FOUND");
   }
 
   return {

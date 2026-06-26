@@ -3,10 +3,15 @@ const Employee = require("../../models/Employee");
 
 const generateSlots = require("../../utils/generateSlots");
 const STATUS = require("../../constants/status");
+const ApiError = require("../../utils/ApiError");
 const getAvailableSlots = async (doctorId, appointmentDate) => {
   // Validate required fields
   if (!doctorId || !appointmentDate) {
-    throw new Error("Doctor ID and appointment date are required");
+    throw new ApiError(
+      400,
+      "Doctor ID and appointment date are required",
+      "APPOINTMENT_DATE_REQUIRED",
+    );
   }
 
   // Prevent slot lookup for past dates
@@ -16,7 +21,7 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   today.setHours(0, 0, 0, 0);
 
   if (selectedDate < today) {
-    throw new Error("Cannot select past dates");
+    throw new ApiError(422, "Cannot select past dates", "PAST_DATE_NOT_ALLOWED");
   }
 
   // Find doctor record
@@ -26,12 +31,16 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   });
 
   if (!doctor) {
-    throw new Error("Doctor not found");
+    throw new ApiError(404, "Doctor not found", "DOCTOR_NOT_FOUND");
   }
 
   // Check doctor availability status
   if (!doctor?.availability?.isAvailable) {
-    throw new Error("Doctor is currently unavailable");
+    throw new ApiError(
+      400,
+      "Doctor is currently unavailable",
+      "DOCTOR_UNAVAILABLE",
+    );
   }
 
   // Verify doctor works on selected day
@@ -42,7 +51,11 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
     .toUpperCase();
 
   if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
-    throw new Error(`Doctor is not available on ${appointmentDay}`);
+    throw new ApiError(
+      400,
+      `Doctor is not available on ${appointmentDay}`,
+      "DOCTOR_NOT_AVAILABLE_ON_DAY",
+    );
   }
 
   // Generate all possible slots

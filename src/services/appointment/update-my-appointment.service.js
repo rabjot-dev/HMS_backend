@@ -1,4 +1,6 @@
 const Appointment = require("../../models/Appointment");
+const STATUS = require("../../constants/status");
+const ApiError = require("../../utils/ApiError");
 
 const updateMyAppointment = async (appointmentId, patientId, updateData) => {
   const { appointmentDate, appointmentTime, symptoms } = updateData;
@@ -10,15 +12,19 @@ const updateMyAppointment = async (appointmentId, patientId, updateData) => {
   });
 
   if (!appointment) {
-    throw new Error("Appointment not found");
+    throw new ApiError(404, "Appointment not found", "APPOINTMENT_NOT_FOUND");
   }
 
   if (appointment.patientId.toString() !== patientId) {
-    throw new Error("Unauthorized access");
+    throw new ApiError(403, "Unauthorized access", "FORBIDDEN");
   }
 
   if (appointment.status !== STATUS.PENDING) {
-    throw new Error("Only pending appointments can be modified");
+    throw new ApiError(
+      400,
+      "Only pending appointments can be modified",
+      "INVALID_APPOINTMENT_STATUS",
+    );
   }
 
   const selectedDate = new Date(appointmentDate);
@@ -30,7 +36,7 @@ const updateMyAppointment = async (appointmentId, patientId, updateData) => {
   selectedDate.setHours(0, 0, 0, 0);
 
   if (selectedDate < today) {
-    throw new Error("Past date not allowed");
+    throw new ApiError(422, "Past date not allowed", "PAST_DATE_NOT_ALLOWED");
   }
 
   const [year, month, day] = appointmentDate.split("-").map(Number);
@@ -63,7 +69,11 @@ const updateMyAppointment = async (appointmentId, patientId, updateData) => {
   });
 
   if (existingAppointment) {
-    throw new Error("Selected slot already booked");
+    throw new ApiError(
+      409,
+      "Selected slot already booked",
+      "SLOT_ALREADY_BOOKED",
+    );
   }
 
   appointment.appointmentDate = appointmentDate;

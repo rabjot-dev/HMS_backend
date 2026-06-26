@@ -1,4 +1,5 @@
 const Employee = require("../../models/Employee");
+const ApiError = require("../../utils/ApiError");
 
 const getEmployeeByIdService = async (id) => {
   const employee = await Employee.findOne({
@@ -7,7 +8,7 @@ const getEmployeeByIdService = async (id) => {
   });
 
   if (!employee) {
-    throw new Error("Employee not found");
+    throw new ApiError(404, "Employee not found", "EMPLOYEE_NOT_FOUND");
   }
 
   return employee;

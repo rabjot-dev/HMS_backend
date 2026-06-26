@@ -1,6 +1,7 @@
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
 const STATUS = require("../../constants/status");
+const ApiError = require("../../utils/ApiError");
 
 const deactivateEmployeeService = async (employeeId, userId) => {
   const employee = await Employee.findOne({
@@ -9,7 +10,7 @@ const deactivateEmployeeService = async (employeeId, userId) => {
   });
 
   if (!employee) {
-    throw new Error("Employee not found");
+    throw new ApiError(404, "Employee not found", "EMPLOYEE_NOT_FOUND");
   }
 
   const user = await User.findOne({
@@ -18,7 +19,7 @@ const deactivateEmployeeService = async (employeeId, userId) => {
   });
 
   if (!user) {
-    throw new Error("User account not found");
+    throw new ApiError(404, "User account not found", "USER_NOT_FOUND");
   }
 
   employee.status = STATUS.INACTIVE;

@@ -4,6 +4,7 @@ const INDIA_LOCATION_SOURCE_URL =
 const INDIA_ADMIN_AREA_SOURCE_URL =
   process.env.INDIA_ADMIN_AREA_SOURCE_URL ||
   "https://raw.githubusercontent.com/pranshumaheshwari/indian-cities-and-villages/master/data.json";
+const ApiError = require("../../utils/ApiError");
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const PINCODE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
@@ -92,13 +93,21 @@ const fetchLocationData = async () => {
     });
 
     if (!response.ok) {
-      throw new Error(`Location source failed with ${response.status}`);
+      throw new ApiError(
+        502,
+        `Location source failed with ${response.status}`,
+        "LOCATION_SOURCE_FAILED",
+      );
     }
 
     const data = await response.json();
 
     if (!Array.isArray(data.states)) {
-      throw new Error("Location source returned invalid data");
+      throw new ApiError(
+        502,
+        "Location source returned invalid data",
+        "LOCATION_SOURCE_INVALID_DATA",
+      );
     }
 
     return data.states.map((item, index) => ({
@@ -136,13 +145,21 @@ const fetchAdminAreaData = async () => {
     });
 
     if (!response.ok) {
-      throw new Error(`Admin area source failed with ${response.status}`);
+      throw new ApiError(
+        502,
+        `Admin area source failed with ${response.status}`,
+        "ADMIN_AREA_SOURCE_FAILED",
+      );
     }
 
     const data = await response.json();
 
     if (!Array.isArray(data)) {
-      throw new Error("Admin area source returned invalid data");
+      throw new ApiError(
+        502,
+        "Admin area source returned invalid data",
+        "ADMIN_AREA_SOURCE_INVALID_DATA",
+      );
     }
 
     return data;
@@ -224,7 +241,11 @@ const fetchPostOffices = async (searchTerm) => {
     );
 
     if (!response.ok) {
-      throw new Error(`Postal source failed with ${response.status}`);
+      throw new ApiError(
+        502,
+        `Postal source failed with ${response.status}`,
+        "POSTAL_SOURCE_FAILED",
+      );
     }
 
     const data = await response.json();

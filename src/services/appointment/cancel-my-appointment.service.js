@@ -1,6 +1,7 @@
 const Appointment = require("../../models/Appointment");
 
 const STATUS = require("../../constants/status");
+const ApiError = require("../../utils/ApiError");
 
 const cancelMyAppointment = async (appointmentId, patientId) => {
   const appointment = await Appointment.findOne({
@@ -12,7 +13,7 @@ const cancelMyAppointment = async (appointmentId, patientId) => {
   });
 
   if (!appointment) {
-    throw new Error("Appointment not found");
+    throw new ApiError(404, "Appointment not found", "APPOINTMENT_NOT_FOUND");
   }
 
   if (
@@ -24,7 +25,11 @@ const cancelMyAppointment = async (appointmentId, patientId) => {
       STATUS.CANCELLED,
     ].includes(appointment.status)
   ) {
-    throw new Error("Appointment cannot be cancelled");
+    throw new ApiError(
+      400,
+      "Appointment cannot be cancelled",
+      "APPOINTMENT_CANNOT_BE_CANCELLED",
+    );
   }
 
   appointment.status = STATUS.CANCELLED;

@@ -11,6 +11,7 @@ const STATUS = require("../../constants/status");
 const sendEmail = require("../../utils/sendEmail");
 const patientCreatedTemplate = require("../../templates/patient-created.template");
 const generateTemporaryPassword = require("../../utils/generateTemporaryPassword");
+const ApiError = require("../../utils/ApiError");
 const registerPatient = async (patientData) => {
   const {
     // Basic information
@@ -58,7 +59,11 @@ const registerPatient = async (patientData) => {
   // Generate unique patient ID
   const patientId = await generatePatientId();
   if (dateOfBirth && new Date(dateOfBirth) > new Date()) {
-    throw new Error("Date of Birth cannot be in the future");
+    throw new ApiError(
+      422,
+      "Date of Birth cannot be in the future",
+      "INVALID_DATE_OF_BIRTH",
+    );
   }
 
   // check duplicate
@@ -68,7 +73,11 @@ const registerPatient = async (patientData) => {
   });
 
   if (existingUser) {
-    throw new Error("User with this email already exists");
+    throw new ApiError(
+      409,
+      "User with this email already exists",
+      "EMAIL_ALREADY_EXISTS",
+    );
   }
 
   // Create patient record

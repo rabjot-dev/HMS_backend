@@ -1,4 +1,5 @@
 const Patient = require("../../models/Patient");
+const ApiError = require("../../utils/ApiError");
 
 const getMyProfile = async (patientId) => {
   const patient = await Patient.findOne({
@@ -13,7 +14,7 @@ const getMyProfile = async (patientId) => {
   });
 
   if (!patient) {
-    throw new Error("Patient not found");
+    throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
   return patient;
