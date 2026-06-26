@@ -28,6 +28,8 @@ const registerPatient = async (patientData) => {
     address,
     city,
     state,
+    taluk,
+    postOffice,
     pincode,
     country,
 
@@ -85,6 +87,8 @@ throw ERR.userEmailExists();  }
     address,
     city,
     state,
+    taluk,
+    postOffice,
     pincode,
     country,
 

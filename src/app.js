@@ -10,6 +10,7 @@ const patientRoutes = require("./routes/patient.routes");
 const menuNodeRoutes = require("./routes/menu-node.routes");
 const medicalRecordRoutes = require("./routes/medical-record.routes");
 const apiPermissionRoutes = require("./routes/api-permission.routes");
+const locationRoutes = require("./routes/location.routes");
 
 const cors = require("cors");
 const app = express();
@@ -63,6 +64,7 @@ app.use("/api/api-permissions", apiPermissionRoutes);
 
 app.use("/api/medical-records", medicalRecordRoutes);
 
+app.use("/api/locations", locationRoutes);
 const errorHandler = require("./middleware/error.middleware");
 app.use(errorHandler);
 module.exports = app;

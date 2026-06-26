@@ -68,6 +68,14 @@ const patientSchema = new mongoose.Schema(
       type: String,
     },
 
+    taluk: {
+      type: String,
+    },
+
+    postOffice: {
+      type: String,
+    },
+
     pincode: {
       type: String,
     },
@@ -179,7 +187,7 @@ const patientSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 patientSchema.index({
