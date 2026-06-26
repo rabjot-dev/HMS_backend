@@ -1,13 +1,25 @@
-const HealthRecord = require("../../models/HealthRecord");
+const Patient = require("../../models/Patient");
 const ERR = require("../../utils/errors");
+const {
+  findEmbeddedHealthRecord,
+  isActiveRecord,
+  normalizeHealthRecord,
+} = require("./health-record.helpers");
 
 const deleteHealthRecord = async (id, deletedBy) => {
-  const record = await HealthRecord.findOne({
-    _id: id,
+  const patient = await Patient.findOne({
+    healthRecords: {
+      $elemMatch: {
+        _id: id,
+        isDeleted: { $ne: true },
+      },
+    },
     isDeleted: { $ne: true },
   });
 
-  if (!record) {
+  const record = findEmbeddedHealthRecord(patient || {}, id);
+
+  if (!isActiveRecord(record)) {
     throw ERR.healthRecordNotFound();
   }
 
@@ -15,9 +27,9 @@ const deleteHealthRecord = async (id, deletedBy) => {
   record.deletedBy = deletedBy;
   record.deletedDate = new Date();
 
-  await record.save();
+  await patient.save();
 
-  return record;
+  return normalizeHealthRecord(record, patient);
 };
 
 module.exports = deleteHealthRecord;

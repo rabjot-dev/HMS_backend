@@ -1,6 +1,6 @@
-const HealthRecord = require("../../models/HealthRecord");
 const Patient = require("../../models/Patient");
 const ERR = require("../../utils/errors");
+const { normalizeHealthRecord } = require("./health-record.helpers");
 
 const createHealthRecord = async (recordData, file, user) => {
   const patient = await Patient.findOne({
@@ -12,8 +12,7 @@ const createHealthRecord = async (recordData, file, user) => {
     throw ERR.patientNotFound();
   }
 
-  return HealthRecord.create({
-    patientId: recordData.patientId,
+  const record = {
     title: recordData.title,
     documentType: recordData.documentType,
     documentDate: recordData.documentDate,
@@ -23,7 +22,14 @@ const createHealthRecord = async (recordData, file, user) => {
     mimeType: file.mimetype,
     fileSize: file.size,
     createdBy: user.userId,
-  });
+  };
+
+  patient.healthRecords.push(record);
+  await patient.save();
+
+  const createdRecord = patient.healthRecords[patient.healthRecords.length - 1];
+
+  return normalizeHealthRecord(createdRecord, patient);
 };
 
 module.exports = createHealthRecord;

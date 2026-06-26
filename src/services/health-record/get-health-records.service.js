@@ -1,4 +1,10 @@
-const HealthRecord = require("../../models/HealthRecord");
+const Patient = require("../../models/Patient");
+const {
+  isActiveRecord,
+  matchesDocumentFilter,
+  normalizeHealthRecord,
+  sortHealthRecords,
+} = require("./health-record.helpers");
 
 const getHealthRecords = async ({
   patientId,
@@ -9,39 +15,38 @@ const getHealthRecords = async ({
   limit,
   sort,
 }) => {
-  const filter = {
+  const patientFilter = {
     isDeleted: { $ne: true },
   };
 
   if (patientId) {
-    filter.patientId = patientId;
+    patientFilter._id = patientId;
   }
 
   if (user.roles?.includes("PATIENT")) {
-    filter.patientId = user.patientId;
+    patientFilter._id = user.patientId;
   }
 
-  if (documentType) {
-    filter.documentType = documentType;
-  }
-
-  if (excludeDocumentType) {
-    filter.documentType = { $ne: excludeDocumentType };
-  }
-
-  const total = await HealthRecord.countDocuments(filter);
-
-  const records = await HealthRecord.find(filter)
-    .populate("patientId")
-    .populate("createdBy", "email roles")
-    .populate("updatedBy", "email roles")
-    .sort(sort)
-    .skip(skip)
-    .limit(limit)
+  const patients = await Patient.find(patientFilter)
+    .select("patientId firstName lastName gender status email phone healthRecords")
+    .populate("healthRecords.createdBy", "email roles")
+    .populate("healthRecords.updatedBy", "email roles")
     .lean();
 
+  const records = patients.flatMap((patient) =>
+    (patient.healthRecords || [])
+      .filter(isActiveRecord)
+      .filter((record) =>
+        matchesDocumentFilter({ record, documentType, excludeDocumentType })
+      )
+      .map((record) => normalizeHealthRecord(record, patient))
+  );
+
+  const sortedRecords = sortHealthRecords(records, sort);
+  const total = sortedRecords.length;
+
   return {
-    records,
+    records: sortedRecords.slice(skip, skip + limit),
     total,
   };
 };

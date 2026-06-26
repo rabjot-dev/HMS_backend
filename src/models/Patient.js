@@ -1,5 +1,87 @@
 const mongoose = require("mongoose");
 
+const healthRecordSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    documentType: {
+      type: String,
+      required: true,
+      enum: [
+        "PREVIOUS_DISCHARGE_SUMMARY",
+        "LAB_REPORT",
+        "SCAN_REPORT",
+        "OTHER",
+      ],
+    },
+
+    documentDate: {
+      type: Date,
+      required: true,
+    },
+
+    filePath: {
+      type: String,
+      required: true,
+    },
+
+    originalFileName: {
+      type: String,
+      required: true,
+    },
+
+    mimeType: {
+      type: String,
+      required: true,
+    },
+
+    fileSize: {
+      type: Number,
+      required: true,
+    },
+
+    notes: {
+      type: String,
+      trim: true,
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    deletedDate: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
 const patientSchema = new mongoose.Schema(
   {
     // Basic patient information
@@ -130,6 +212,8 @@ const patientSchema = new mongoose.Schema(
       type: String,
     },
 
+    healthRecords: [healthRecordSchema],
+
     // Insurance information
     insuranceProvider: {
       type: String,
@@ -204,6 +288,15 @@ patientSchema.index({
 patientSchema.index({
   firstName: 1,
   lastName: 1,
+  isDeleted: 1,
+});
+
+patientSchema.index({
+  "healthRecords._id": 1,
+});
+
+patientSchema.index({
+  "healthRecords.documentType": 1,
   isDeleted: 1,
 });
 

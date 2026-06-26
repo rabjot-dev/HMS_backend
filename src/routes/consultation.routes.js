@@ -10,12 +10,18 @@ const {
 
 const authMiddleware = require("../middleware/auth.middleware");
 const permissionMiddleware = require("../middleware/permission.middleware");
+const validateMiddleware = require("../middleware/validate.middleware");
+const {
+  createConsultationValidation,
+} = require("../validations/consultation.validation");
 
 //CREATE CONSULTATION
 router.post(
   "/",
   authMiddleware,
   permissionMiddleware("consultation:create"),
+  createConsultationValidation,
+  validateMiddleware,
   createConsultation,
 );
 

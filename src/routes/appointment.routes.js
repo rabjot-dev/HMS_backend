@@ -21,6 +21,14 @@ const {
 
 const authMiddleware = require("../middleware/auth.middleware");
 const permissionMiddleware = require("../middleware/permission.middleware");
+const validateMiddleware = require("../middleware/validate.middleware");
+const {
+  availableSlotsValidation,
+  bookAppointmentValidation,
+  bookPatientAppointmentValidation,
+  updateAppointmentValidation,
+  updateMyAppointmentValidation,
+} = require("../validations/appointment.validation");
 
 // Get today's queue for a doctor
 router.get(
@@ -35,6 +43,8 @@ router.get(
   "/available-slots",
   authMiddleware,
   permissionMiddleware("appointment:available-slots"),
+  availableSlotsValidation,
+  validateMiddleware,
   getAvailableSlots
 );
 
@@ -51,6 +61,8 @@ router.post(
   "/patient/book",
   authMiddleware,
   permissionMiddleware("appointment:patient-book"),
+  bookPatientAppointmentValidation,
+  validateMiddleware,
   bookPatientAppointment
 );
 // Only patients appointment 
@@ -86,6 +98,8 @@ router.put(
   "/my/:id",
   authMiddleware,
   permissionMiddleware("appointment:my-update"),
+  updateMyAppointmentValidation,
+  validateMiddleware,
   updateMyAppointment
 );
 //cancel appointment
@@ -109,6 +123,8 @@ router.post(
   "/",
   authMiddleware,
   permissionMiddleware("appointment:create"),
+  bookAppointmentValidation,
+  validateMiddleware,
   bookAppointment
 );
 
@@ -117,6 +133,8 @@ router.put(
   "/:id",
   authMiddleware,
   permissionMiddleware("appointment:update"),
+  updateAppointmentValidation,
+  validateMiddleware,
   updateAppointment
 );
 

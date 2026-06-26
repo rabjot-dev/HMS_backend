@@ -1,26 +1,39 @@
-const HealthRecord = require("../../models/HealthRecord");
+const Patient = require("../../models/Patient");
 const ERR = require("../../utils/errors");
+const {
+  findEmbeddedHealthRecord,
+  isActiveRecord,
+  normalizeHealthRecord,
+} = require("./health-record.helpers");
 
 const getHealthRecordById = async (id, user) => {
-  const filter = {
-    _id: id,
+  const patientFilter = {
+    healthRecords: {
+      $elemMatch: {
+        _id: id,
+        isDeleted: { $ne: true },
+      },
+    },
     isDeleted: { $ne: true },
   };
 
   if (user.roles?.includes("PATIENT")) {
-    filter.patientId = user.patientId;
+    patientFilter._id = user.patientId;
   }
 
-  const record = await HealthRecord.findOne(filter)
-    .populate("patientId")
-    .populate("createdBy", "email roles")
-    .populate("updatedBy", "email roles");
+  const patient = await Patient.findOne(patientFilter)
+    .select("patientId firstName lastName gender status email phone healthRecords")
+    .populate("healthRecords.createdBy", "email roles")
+    .populate("healthRecords.updatedBy", "email roles")
+    .lean();
 
-  if (!record) {
+  const record = findEmbeddedHealthRecord(patient || {}, id);
+
+  if (!isActiveRecord(record)) {
     throw ERR.healthRecordNotFound();
   }
 
-  return record;
+  return normalizeHealthRecord(record, patient);
 };
 
 module.exports = getHealthRecordById;

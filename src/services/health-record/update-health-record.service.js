@@ -1,5 +1,10 @@
-const HealthRecord = require("../../models/HealthRecord");
+const Patient = require("../../models/Patient");
 const ERR = require("../../utils/errors");
+const {
+  findEmbeddedHealthRecord,
+  isActiveRecord,
+  normalizeHealthRecord,
+} = require("./health-record.helpers");
 
 const updateHealthRecord = async (id, updateData, file, user) => {
   const { patientId, createdBy, deletedBy, deletedDate, isDeleted, ...safeData } =
@@ -12,26 +17,30 @@ const updateHealthRecord = async (id, updateData, file, user) => {
     safeData.fileSize = file.size;
   }
 
-  const record = await HealthRecord.findOneAndUpdate(
-    {
-      _id: id,
-      isDeleted: { $ne: true },
+  const patient = await Patient.findOne({
+    healthRecords: {
+      $elemMatch: {
+        _id: id,
+        isDeleted: { $ne: true },
+      },
     },
-    {
-      ...safeData,
-      updatedBy: user.userId,
-    },
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+    isDeleted: { $ne: true },
+  });
 
-  if (!record) {
+  const record = findEmbeddedHealthRecord(patient || {}, id);
+
+  if (!isActiveRecord(record)) {
     throw ERR.healthRecordNotFound();
   }
 
-  return record;
+  record.set({
+    ...safeData,
+    updatedBy: user.userId,
+  });
+
+  await patient.save();
+
+  return normalizeHealthRecord(record, patient);
 };
 
 module.exports = updateHealthRecord;

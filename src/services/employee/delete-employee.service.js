@@ -37,10 +37,6 @@ const notifyPatientsAndCancelAppointments = async ({
     isDeleted: { $ne: true },
   }).populate("patientId", "firstName lastName email");
 
-  console.log(
-    `Found ${upcomingAppointments.length} upcoming appointments for Dr. ${doctor.name}`
-  );
-
   for (const appointment of upcomingAppointments) {
     const patient = appointment.patientId;
 
