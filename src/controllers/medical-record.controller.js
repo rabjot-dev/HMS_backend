@@ -299,7 +299,7 @@ const updateLabReport = asyncHandler(async (req, res) => {
     id,
     req.body,
     req.file,
-    req.user
+    req.user,
   );
 
   return res.status(200).json({
@@ -451,7 +451,7 @@ const updateHealthRecord = asyncHandler(async (req, res) => {
     id,
     req.body,
     req.file,
-    req.user
+    req.user,
   );
 
   return res.status(200).json({

@@ -1,5 +1,5 @@
 const express = require("express");
-const path = require("path");
+const path = require("node:path");
 const authRoutes = require("./routes/auth.routes");
 
 const employeeRoutes = require("./routes/employee.routes");
@@ -14,8 +14,8 @@ const locationRoutes = require("./routes/location.routes");
 
 const cors = require("cors");
 const app = express();
-app.disable('x-powered-by');
-app.use(cors({origin: ["http://localhost:4200"],credentials: true}));
+app.disable("x-powered-by");
+app.use(cors({ origin: ["http://localhost:4200"], credentials: true }));
 app.use(express.json());
 
 app.use(

@@ -7,36 +7,38 @@ const generateAccessToken = require("../../utils/generateAccessToken");
 const generateRefreshToken = require("../../utils/generateRefreshToken");
 const ERR = require("../../utils/errors");
 
-const loginUser = async (loginData) => {
-  const { loginId, password } = loginData;
+const findUserByEmail = (loginId) =>
+  User.findOne({
+    email: loginId.toLowerCase(),
+  });
 
-  let user = null;
+const findUserByEmployeeCode = async (loginId) => {
+  const employee = await Employee.findOne({
+    employeeCode: loginId,
+    isDeleted: { $ne: true },
+  });
 
-  // login using email or employee code
-  const isEmailLogin = loginId.includes("@");
-
-  if (isEmailLogin) {
-    user = await User.findOne({
-      email: loginId.toLowerCase(),
-    });
-  } else {
-    const employee = await Employee.findOne({
-      employeeCode: loginId,
-      isDeleted: { $ne: true },
-    });
-
-    if (!employee) {
-throw ERR.invalidCredentials();    }
-
-    user = await User.findOne({
-      employeeId: employee._id,
-    });
+  if (!employee) {
+    throw ERR.invalidCredentials();
   }
 
-  // Validate user account
-  if (!user) {
-throw ERR.invalidCredentials();  }
+  return User.findOne({
+    employeeId: employee._id,
+  });
+};
 
+const findUserByLoginId = (loginId) =>
+  loginId.includes("@")
+    ? findUserByEmail(loginId)
+    : findUserByEmployeeCode(loginId);
+
+const ensureUserExists = (user) => {
+  if (!user) {
+    throw ERR.invalidCredentials();
+  }
+};
+
+const validateLinkedEmployee = async (user) => {
   if (user.employeeId) {
     const employee = await Employee.findOne({
       _id: user.employeeId,
@@ -47,7 +49,9 @@ throw ERR.invalidCredentials();  }
       throw ERR.invalidCredentials();
     }
   }
+};
 
+const validateLinkedPatient = async (user) => {
   if (user.patientId) {
     const patient = await Patient.findOne({
       _id: user.patientId,
@@ -58,40 +62,56 @@ throw ERR.invalidCredentials();  }
       throw ERR.invalidCredentials();
     }
   }
+};
 
-  //  account status
- if (user.status === "PENDING") {
-throw ERR.accountPendingApproval();}
+const validateLinkedAccount = async (user) => {
+  await validateLinkedEmployee(user);
+  await validateLinkedPatient(user);
+};
 
-if (user.status === "REJECTED") {
-throw ERR.registrationRejected();}
+const statusErrorMap = {
+  PENDING: ERR.accountPendingApproval,
+  REJECTED: ERR.registrationRejected,
+  INACTIVE: ERR.accountInactive,
+};
 
-if (user.status === "INACTIVE") {
-throw ERR.accountInactive();}
+const validateAccountStatus = (status) => {
+  const createError = statusErrorMap[status];
 
-  let isPasswordValid = false;
-
-  // Validate password based on login stage
-  if (user.isFirstLogin) {
-    isPasswordValid = await bcrypt.compare(
-      password,
-      user.temporaryPasswordHash,
-    );
-  } else {
-    isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+  if (createError) {
+    throw createError();
   }
+};
 
-  // Reject invalid password
+const getPasswordHash = (user) =>
+  user.isFirstLogin ? user.temporaryPasswordHash : user.passwordHash;
+
+const validatePassword = async (user, password) => {
+  const isPasswordValid = await bcrypt.compare(password, getPasswordHash(user));
+
   if (!isPasswordValid) {
-throw ERR.invalidCredentials();  }
+    throw ERR.invalidCredentials();
+  }
+};
+
+const buildTokenPayload = (user) => ({
+  userId: user._id,
+  employeeId: user.employeeId,
+  patientId: user.patientId,
+  roles: user.roles,
+});
+
+const loginUser = async (loginData) => {
+  const { loginId, password } = loginData;
+  const user = await findUserByLoginId(loginId);
+
+  ensureUserExists(user);
+  await validateLinkedAccount(user);
+  validateAccountStatus(user.status);
+  await validatePassword(user, password);
 
   // Generate JWT token
-  const tokenPayload = {
-    userId: user._id,
-    employeeId: user.employeeId,
-    patientId: user.patientId,
-    roles: user.roles,
-  };
+  const tokenPayload = buildTokenPayload(user);
 
   const accessToken = generateAccessToken(tokenPayload);
 

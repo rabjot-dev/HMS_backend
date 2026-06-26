@@ -46,7 +46,9 @@ const findEmbeddedHealthRecord = (patient, recordId) => {
   return records.find((record) => record._id?.toString() === recordId.toString());
 };
 
-const getSortEntry = (sort = { createdAt: -1 }) => {
+const DEFAULT_SORT = { createdAt: -1 };
+
+const getSortEntry = (sort = DEFAULT_SORT) => {
   const [[field, direction] = ["createdAt", -1]] = Object.entries(sort);
 
   return {

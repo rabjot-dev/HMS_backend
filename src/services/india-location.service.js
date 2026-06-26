@@ -87,6 +87,11 @@ const normalizeAlias = (value) => {
   return aliases[normalized] || normalized;
 };
 
+const compareText = (first, second) => first.localeCompare(second);
+
+const comparePostOfficeArea = (first, second) =>
+  `${first.taluk} ${first.name}`.localeCompare(`${second.taluk} ${second.name}`);
+
 const getNameVariants = (value) => {
   const name = cleanName(value);
   const variants = new Set();
@@ -265,7 +270,7 @@ const getTaluksByDistrict = async (stateName, districtName) => {
         .map((item) => cleanName(item.subDistrict))
         .filter(Boolean),
     ),
-  ].sort();
+  ].sort(compareText);
 };
 
 const fetchPostOffices = async (searchTerm) => {
@@ -375,9 +380,7 @@ const getPostOfficeAreasByDistrict = async (stateName, districtName) => {
         })
         .filter(Boolean),
     ).values(),
-  ].sort((first, second) =>
-    `${first.taluk} ${first.name}`.localeCompare(`${second.taluk} ${second.name}`),
-  );
+  ].sort(comparePostOfficeArea);
 
   areaCache.set(cacheKey, {
     data: areas,
@@ -411,7 +414,7 @@ const getPincodesByDistrict = async (stateName, districtName) => {
         .map((postOffice) => postOffice.Pincode)
         .filter((pincode) => /^\d{6}$/.test(String(pincode))),
     ),
-  ].sort();
+  ].sort(compareText);
 
   pincodeCache.set(cacheKey, {
     data: pincodes,

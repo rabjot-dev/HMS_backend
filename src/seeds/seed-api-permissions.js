@@ -26,13 +26,25 @@ const permissions = [
   { key: "doctor:availability:view", allowedRoles: ["DOCTOR"] },
   { key: "doctor:availability:update", allowedRoles: ["DOCTOR"] },
 
-  { key: "patient:create", allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"] },
-  { key: "patient:list", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
+  {
+    key: "patient:create",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"],
+  },
+  {
+    key: "patient:list",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
   { key: "patient:profile:view", allowedRoles: ["PATIENT"] },
   { key: "patient:profile:update", allowedRoles: ["PATIENT"] },
   { key: "patient:dashboard", allowedRoles: ["PATIENT"] },
-  { key: "patient:detail", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "patient:update", allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"] },
+  {
+    key: "patient:detail",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "patient:update",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"],
+  },
   { key: "patient:delete", allowedRoles: ["SUPER_ADMIN", "ADMIN"] },
 
   { key: "appointment:doctor-queue", allowedRoles: ["DOCTOR"] },
@@ -46,34 +58,94 @@ const permissions = [
   { key: "appointment:my-update", allowedRoles: ["PATIENT"] },
   { key: "appointment:my-cancel", allowedRoles: ["PATIENT"] },
   { key: "appointment:detail", allowedRoles: ALL_ROLES },
-  { key: "appointment:create", allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"] },
-  { key: "appointment:update", allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"] },
+  {
+    key: "appointment:create",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"],
+  },
+  {
+    key: "appointment:update",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"],
+  },
   { key: "appointment:delete", allowedRoles: ["SUPER_ADMIN", "ADMIN"] },
 
   { key: "consultation:create", allowedRoles: ["DOCTOR"] },
-  { key: "consultation:list", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "consultation:pdf", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"] },
+  {
+    key: "consultation:list",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "consultation:pdf",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"],
+  },
   { key: "consultation:by-appointment", allowedRoles: ["DOCTOR"] },
-  { key: "consultation:detail", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"] },
+  {
+    key: "consultation:detail",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"],
+  },
 
-  { key: "medical-record:patients", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "medical-record:prescriptions", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
+  {
+    key: "medical-record:patients",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:prescriptions",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
   { key: "medical-record:prescriptions-my", allowedRoles: ["PATIENT"] },
-  { key: "medical-record:prescriptions-patient", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "medical-record:prescription-detail", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"] },
-  { key: "medical-record:health-records", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
+  {
+    key: "medical-record:prescriptions-patient",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:prescription-detail",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"],
+  },
+  {
+    key: "medical-record:health-records",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
   { key: "medical-record:health-records-my", allowedRoles: ["PATIENT"] },
-  { key: "medical-record:health-records-patient", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "medical-record:health-record-detail", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"] },
-  { key: "medical-record:health-record-create", allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"] },
-  { key: "medical-record:health-record-update", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "medical-record:health-record-delete", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "medical-record:lab-reports", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
+  {
+    key: "medical-record:health-records-patient",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:health-record-detail",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST", "PATIENT"],
+  },
+  {
+    key: "medical-record:health-record-create",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:health-record-update",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:health-record-delete",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:lab-reports",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
   { key: "medical-record:lab-reports-my", allowedRoles: ["PATIENT"] },
-  { key: "medical-record:lab-reports-patient", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "medical-record:lab-report-create", allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"] },
-  { key: "medical-record:lab-report-update", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
-  { key: "medical-record:lab-report-delete", allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"] },
+  {
+    key: "medical-record:lab-reports-patient",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:lab-report-create",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:lab-report-update",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
+  {
+    key: "medical-record:lab-report-delete",
+    allowedRoles: ["SUPER_ADMIN", "ADMIN", "DOCTOR", "RECEPTIONIST"],
+  },
 
   { key: "menu-node:create", allowedRoles: ["SUPER_ADMIN", "ADMIN"] },
   { key: "menu-node:list", allowedRoles: ["SUPER_ADMIN", "ADMIN"] },
@@ -96,7 +168,7 @@ const seedApiPermissions = async () => {
       {
         upsert: true,
         returnDocument: "after",
-      }
+      },
     );
   }
 
@@ -104,9 +176,14 @@ const seedApiPermissions = async () => {
   await mongoose.connection.close();
 };
 
-seedApiPermissions().catch(async (error) => {
-  console.error("API permission seed failed", error);
-  await mongoose.connection.close();
-  process.exit(1);
-});
+const main = async () => {
+  try {
+    await seedApiPermissions();
+  } catch (error) {
+    console.error("API permission seed failed", error);
+    await mongoose.connection.close();
+    process.exit(1);
+  }
+};
 
+main();

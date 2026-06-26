@@ -215,9 +215,15 @@ const seedMenuNodes = async () => {
   await mongoose.connection.close();
 };
 
-seedMenuNodes().catch(async (error) => {
-  console.error("Menu node seed failed", error);
-  await mongoose.connection.close();
-  process.exit(1);
-});
+const main = async () => {
+  try {
+    await seedMenuNodes();
+  } catch (error) {
+    console.error("Menu node seed failed", error);
+    await mongoose.connection.close();
+    process.exit(1);
+  }
+};
+
+main();
 
