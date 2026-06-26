@@ -55,6 +55,7 @@ router.get(
 router.get(
   "/profile",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
   getProfile,
 );
@@ -64,6 +65,7 @@ router.get(
 router.put(
   "/profile",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
   updatePatientValidation,
   validateMiddleware,
@@ -75,6 +77,7 @@ router.put(
 router.get(
   "/dashboard",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
   getPatientDashboard,
 );

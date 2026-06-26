@@ -39,7 +39,12 @@ router.post(
 
 // Doctors
 
-router.get("/doctors", getDoctors);
+router.get(
+  "/doctors",
+  authMiddleware,
+  nodePermissionMiddleware,
+  getDoctors,
+);
 
 router.get(
   "/doctor/availability",

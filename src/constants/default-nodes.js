@@ -12,6 +12,9 @@ module.exports = [
     apiPermissions: [
       { method: "GET", path: "/api/dashboard/admin-stats" },
       { method: "GET", path: "/api/dashboard/recent-employees" },
+      { method: "POST", path: "/api/nodes" },
+      { method: "PUT", path: "/api/nodes/:id" },
+      { method: "DELETE", path: "/api/nodes/:id" },
     ],
   },
 
@@ -49,6 +52,7 @@ module.exports = [
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
     apiPermissions: [
       { method: "GET", path: "/api/employees" },
+      { method: "GET", path: "/api/employees/doctors" },
       { method: "GET", path: "/api/employees/:id" },
       { method: "PUT", path: "/api/employees/:id" },
       { method: "PATCH", path: "/api/employees/:id/activate" },
@@ -87,6 +91,8 @@ module.exports = [
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR],
     apiPermissions: [
       { method: "GET", path: "/api/appointments" },
+      { method: "GET", path: "/api/appointments/available-slots" },
+      { method: "GET", path: "/api/employees/doctors" },
       { method: "GET", path: "/api/appointments/:id" },
       {
         method: "PUT",
@@ -176,5 +182,25 @@ module.exports = [
     icon: "account_circle",
     order: 100,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR],
+  },
+
+  {
+    name: "Patient Portal",
+    path: "/patient-portal",
+    icon: "personal_injury",
+    order: 200,
+    roles: [ROLES.PATIENT],
+    apiPermissions: [
+      { method: "GET", path: "/api/patients/profile" },
+      { method: "PUT", path: "/api/patients/profile" },
+      { method: "GET", path: "/api/patients/dashboard" },
+      { method: "GET", path: "/api/appointments/available-slots" },
+      { method: "GET", path: "/api/employees/doctors" },
+      { method: "POST", path: "/api/appointments/patient/book" },
+      { method: "GET", path: "/api/appointments/my" },
+      { method: "PUT", path: "/api/appointments/my/:id" },
+      { method: "PATCH", path: "/api/appointments/my/:id/cancel" },
+      { method: "GET", path: "/api/health-records/me" },
+    ],
   },
 ];

@@ -39,6 +39,7 @@ router.get(
 router.get(
   "/available-slots",
   authMiddleware,
+  nodePermissionMiddleware,
   getAvailableSlots,
 );
 
@@ -56,6 +57,7 @@ router.get(
 router.post(
   "/patient/book",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
   bookPatientAppointment,
 );
@@ -65,6 +67,7 @@ router.post(
 router.get(
   "/my",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
   getMyAppointments,
 );
@@ -101,6 +104,7 @@ router.patch(
 router.put(
   "/my/:id",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
   updateMyAppointment,
 );
@@ -110,6 +114,7 @@ router.put(
 router.patch(
   "/my/:id/cancel",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
   cancelMyAppointment,
 );

@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const authMiddleware = require("../middleware/auth.middleware");
+const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 
 const roleMiddleware = require("../middleware/role.middleware");
 
@@ -20,6 +21,7 @@ router.get("/", authMiddleware, getNodes);
 router.post(
   "/",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
   createNode,
 );
@@ -27,6 +29,7 @@ router.post(
 router.put(
   "/:id",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
   updateNode,
 );
@@ -34,6 +37,7 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
   deleteNode,
 );

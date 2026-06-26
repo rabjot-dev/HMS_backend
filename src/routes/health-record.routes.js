@@ -34,6 +34,7 @@ router.get(
 router.get(
   "/me",
   authMiddleware,
+  nodePermissionMiddleware,
   roleMiddleware(
     ROLES.PATIENT
   ),
