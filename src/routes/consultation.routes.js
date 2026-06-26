@@ -4,6 +4,7 @@ const router = express.Router();
 
 const authMiddleware = require("../middleware/auth.middleware");
 const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
+const validateMiddleware = require("../middleware/validate.middleware");
 
 const {
   createConsultation,
@@ -15,12 +16,19 @@ const {
   deleteConsultation,
 } = require("../controllers/consultation.controller");
 
+const {
+  createConsultationValidation,
+  updateConsultationValidation,
+} = require("../validations/consultation.validation");
+
 // Create consultation
 
 router.post(
   "/",
   authMiddleware,
   nodePermissionMiddleware,
+  createConsultationValidation,
+  validateMiddleware,
   createConsultation,
 );
 
@@ -66,6 +74,8 @@ router.put(
   "/:id",
   authMiddleware,
   nodePermissionMiddleware,
+  updateConsultationValidation,
+  validateMiddleware,
   updateConsultation,
 );
 

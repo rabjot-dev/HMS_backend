@@ -2,10 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
-const ROLES = require("../constants/roles");
-
 const authMiddleware = require("../middleware/auth.middleware");
-const roleMiddleware = require("../middleware/role.middleware");
 const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
 
@@ -56,7 +53,6 @@ router.get(
   "/profile",
   authMiddleware,
   nodePermissionMiddleware,
-  roleMiddleware(ROLES.PATIENT),
   getProfile,
 );
 
@@ -66,7 +62,6 @@ router.put(
   "/profile",
   authMiddleware,
   nodePermissionMiddleware,
-  roleMiddleware(ROLES.PATIENT),
   updatePatientValidation,
   validateMiddleware,
   updateProfile,
@@ -78,7 +73,6 @@ router.get(
   "/dashboard",
   authMiddleware,
   nodePermissionMiddleware,
-  roleMiddleware(ROLES.PATIENT),
   getPatientDashboard,
 );
 
