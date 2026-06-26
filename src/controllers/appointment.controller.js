@@ -99,6 +99,32 @@ const getAppointmentById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Appointment retrieved successfully", appointment));
 });
 
+const getMyAppointmentById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  validateObjectId(id, "Invalid appointment ID");
+
+  const appointment = await Appointment.findOne({
+    _id: id,
+    patientId: req.user.patientId,
+    isDeleted: false,
+  })
+    .populate("patientId")
+    .populate("doctorEmployeeId");
+
+  if (!appointment) {
+    throw new ApiError(
+      404,
+      "Appointment not found for the provided ID",
+      "APPOINTMENT_NOT_FOUND",
+    );
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Appointment retrieved successfully", appointment));
+});
+
 const updateAppointment = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -231,11 +257,12 @@ const bookPatientAppointment = asyncHandler(async (req, res) => {
 });
 
 const getMyAppointments = asyncHandler(async (req, res) => {
-  const appointments = await getMyAppointmentsService(req.user.patientId);
+  const result = await getMyAppointmentsService(req.user.patientId, req.query);
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "Appointments retrieved successfully", appointments));
+  return res.status(200).json({
+    ...new ApiResponse(200, "Appointments retrieved successfully", result.data),
+    meta: result.meta,
+  });
 });
 
 const getPendingAppointments = asyncHandler(async (req, res) => {
@@ -297,6 +324,7 @@ module.exports = {
   getDoctorQueue,
   bookPatientAppointment,
   getMyAppointments,
+  getMyAppointmentById,
   getPendingAppointments,
   approveAppointment,
   rejectAppointment,

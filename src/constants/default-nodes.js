@@ -198,6 +198,7 @@ module.exports = [
       { method: "GET", path: "/api/employees/doctors" },
       { method: "POST", path: "/api/appointments/patient/book" },
       { method: "GET", path: "/api/appointments/my" },
+      { method: "GET", path: "/api/appointments/my/:id" },
       { method: "PUT", path: "/api/appointments/my/:id" },
       { method: "PATCH", path: "/api/appointments/my/:id/cancel" },
       { method: "GET", path: "/api/health-records/me" },

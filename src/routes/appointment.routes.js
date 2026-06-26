@@ -14,6 +14,7 @@ const {
   getDoctorQueue,
   bookPatientAppointment,
   getMyAppointments,
+  getMyAppointmentById,
   getPendingAppointments,
   approveAppointment,
   rejectAppointment,
@@ -70,6 +71,14 @@ router.get(
   nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
   getMyAppointments,
+);
+
+router.get(
+  "/my/:id",
+  authMiddleware,
+  nodePermissionMiddleware,
+  roleMiddleware(ROLES.PATIENT),
+  getMyAppointmentById,
 );
 
 // Pending appointments

@@ -10,6 +10,7 @@ const normalizePath = (path) => {
 };
 
 const getMatchedRoutePath = (req) => {
+  
   const routePath = Array.isArray(req.route?.path)
     ? req.route.path[0]
     : req.route?.path;
