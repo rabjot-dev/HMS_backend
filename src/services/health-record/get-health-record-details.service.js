@@ -7,11 +7,7 @@ const ROLES = require("../../constants/roles");
 const ApiError = require("../../utils/ApiError");
 
 const getHealthRecordDetailsService = async (patientId, user, query) => {
-  /*
-  |--------------------------------------------------------------------------
-  | Pagination Params
-  |--------------------------------------------------------------------------
-  */
+
 
   const limit = Number(query.limit) || 5;
 
@@ -21,11 +17,6 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
 
   const documentPage = Number(query.documentPage) || 1;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Patient
-  |--------------------------------------------------------------------------
-  */
 
   const patient = await Patient.findOne({
     _id: patientId,
@@ -54,11 +45,6 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Doctor Access Check
-  |--------------------------------------------------------------------------
-  */
 
   if (user.roles?.includes(ROLES.DOCTOR)) {
     const hasAccess = await Consultation.exists({
@@ -72,11 +58,7 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Consultation Filter
-  |--------------------------------------------------------------------------
-  */
+
 
   const filter = {
     patientId,
@@ -87,11 +69,6 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     filter.doctorEmployeeId = new mongoose.Types.ObjectId(user.employeeId);
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Timeline Pagination
-  |--------------------------------------------------------------------------
-  */
 
   const totalConsultations = await Consultation.countDocuments(filter);
 

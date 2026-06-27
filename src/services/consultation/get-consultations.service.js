@@ -17,21 +17,10 @@ const getConsultationsService = async (user, query) => {
     isDeleted: false,
   };
 
-  /*
-    |--------------------------------------------------------------------------
-    | Doctor Visibility
-    |--------------------------------------------------------------------------
-    */
-
+//doctor visibilty
   if (user.roles?.includes("DOCTOR")) {
     filter.doctorEmployeeId = user.employeeId;
   }
-
-  /*
-    |--------------------------------------------------------------------------
-    | Filters
-    |--------------------------------------------------------------------------
-    */
 
   if (doctor) {
     filter.doctorEmployeeId = doctor;
@@ -44,11 +33,6 @@ const getConsultationsService = async (user, query) => {
   if (status) {
     filter.status = status;
   }
-  /*
-|--------------------------------------------------------------------------
-| Date Range Filter
-|--------------------------------------------------------------------------
-*/
 
   if (startDate || endDate) {
     filter.createdAt = {};
@@ -65,11 +49,6 @@ const getConsultationsService = async (user, query) => {
     }
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Search
-    |--------------------------------------------------------------------------
-    */
 
   if (search?.trim()) {
     const patients = await Patient.find({
@@ -126,11 +105,6 @@ const getConsultationsService = async (user, query) => {
     ];
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Pagination
-    |--------------------------------------------------------------------------
-    */
 
   const pagination = getPagination(page, limit);
 

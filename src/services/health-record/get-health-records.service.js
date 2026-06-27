@@ -16,11 +16,6 @@ const getHealthRecordsService = async (user, query) => {
     isDeleted: false,
   };
 
-  /*
-    |--------------------------------------------------------------------------
-    | Doctor Visibility
-    |--------------------------------------------------------------------------
-    */
 
   if (user.roles?.includes(ROLES.DOCTOR)) {
     matchStage.doctorEmployeeId = new mongoose.Types.ObjectId(user.employeeId);
@@ -68,11 +63,7 @@ const getHealthRecordsService = async (user, query) => {
     },
   ];
 
-  /*
-    |--------------------------------------------------------------------------
-    | Search
-    |--------------------------------------------------------------------------
-    */
+
 
   if (search?.trim()) {
     pipeline.push({
@@ -101,11 +92,7 @@ const getHealthRecordsService = async (user, query) => {
     });
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Total Count
-    |--------------------------------------------------------------------------
-    */
+
 
   const countPipeline = [
     ...pipeline,
@@ -118,11 +105,7 @@ const getHealthRecordsService = async (user, query) => {
 
   const total = countResult[0]?.total || 0;
 
-  /*
-    |--------------------------------------------------------------------------
-    | Pagination
-    |--------------------------------------------------------------------------
-    */
+
 
   pipeline.push(
     {

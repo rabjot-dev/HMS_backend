@@ -95,6 +95,14 @@ const normalizeError = (error) => {
   }
 
   if (error?.name === "MulterError") {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return {
+        statusCode: 400,
+        message: "File size must not exceed 5 MB",
+        errorCode: "FILE_TOO_LARGE",
+      };
+    }
+
     return {
       statusCode: 400,
       message: error.message,

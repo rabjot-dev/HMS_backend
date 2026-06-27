@@ -2,6 +2,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const multer = require("multer");
 
+const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let folder = "uploads";
@@ -51,6 +53,6 @@ module.exports = multer({
   fileFilter,
 
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: MAX_UPLOAD_SIZE_BYTES,
   },
 });
