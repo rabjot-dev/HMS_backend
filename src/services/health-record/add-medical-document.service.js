@@ -12,10 +12,14 @@ const addMedicalDocumentService = async (patientId, data, file, uploadedBy) => {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
+  if (!file) {
+    throw new ApiError(400, "Document file is required", "VALIDATION_ERROR");
+  }
+
   patient.medicalDocuments.push({
     ...data,
 
-    documentUrl: file ? `/uploads/medical-documents/${file.filename}` : null,
+    documentUrl: `/uploads/medical-documents/${file.filename}`,
 
     uploadedBy,
     uploadedAt: new Date(),

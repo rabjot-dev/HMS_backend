@@ -12,10 +12,14 @@ const addLabReportService = async (patientId, data, file, uploadedBy) => {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
+  if (!file) {
+    throw new ApiError(400, "Report file is required", "VALIDATION_ERROR");
+  }
+
   patient.labReports.push({
     ...data,
 
-    documentUrl: file ? `/uploads/lab-reports/${file.filename}` : null,
+    documentUrl: `/uploads/lab-reports/${file.filename}`,
 
     uploadedBy,
     uploadedAt: new Date(),
