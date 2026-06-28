@@ -25,6 +25,10 @@ const {
 const authMiddleware = require("../middleware/auth.middleware");
 const roleMiddleware = require("../middleware/role.middleware");
 const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
+const validateMiddleware = require("../middleware/validate.middleware");
+const {
+  paginationQueryValidation,
+} = require("../validations/common.validation");
 
 // Get today's queue for a doctor
 
@@ -50,6 +54,8 @@ router.get(
   "/",
   authMiddleware,
   nodePermissionMiddleware,
+  paginationQueryValidation,
+  validateMiddleware,
   getAppointments,
 );
 
@@ -70,6 +76,8 @@ router.get(
   authMiddleware,
   nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
+  paginationQueryValidation,
+  validateMiddleware,
   getMyAppointments,
 );
 

@@ -7,6 +7,9 @@ const validateMiddleware = require("../middleware/validate.middleware");
 const {
   registerEmployeeValidation,
 } = require("../validations/employee.validation");
+const {
+  paginationQueryValidation,
+} = require("../validations/common.validation");
 
 const {
   createEmployee,
@@ -66,6 +69,8 @@ router.get(
   "/",
   authMiddleware,
   nodePermissionMiddleware,
+  paginationQueryValidation,
+  validateMiddleware,
   getEmployees,
 );
 

@@ -9,13 +9,13 @@ const ApiError = require("../../utils/ApiError");
 const getHealthRecordDetailsService = async (patientId, user, query) => {
 
 
-  const limit = Number(query.limit) || 5;
+  const limit = Math.min(Math.max(Number(query.limit) || 5, 1), 10000);
 
-  const timelinePage = Number(query.timelinePage) || 1;
+  const timelinePage = Math.max(Number(query.timelinePage) || 1, 1);
 
-  const labPage = Number(query.labPage) || 1;
+  const labPage = Math.max(Number(query.labPage) || 1, 1);
 
-  const documentPage = Number(query.documentPage) || 1;
+  const documentPage = Math.max(Number(query.documentPage) || 1, 1);
 
 
   const patient = await Patient.findOne({
@@ -114,9 +114,19 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
   |--------------------------------------------------------------------------
   */
 
+  const getSortableTime = (value, fallback) => {
+    const timestamp = new Date(value || fallback || 0).getTime();
+
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+  };
+
   const labReports = (
     patient.labReports?.filter((report) => !report.isDeleted) ?? []
-  ).sort((a, b) => new Date(b.reportDate) - new Date(a.reportDate));
+  ).sort(
+    (a, b) =>
+      getSortableTime(b.reportDate, b.createdAt) -
+      getSortableTime(a.reportDate, a.createdAt),
+  );
 
   const paginatedLabReports = labReports.slice(
     (labPage - 1) * limit,
@@ -131,7 +141,15 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
 
   const medicalDocuments = (
     patient.medicalDocuments?.filter((document) => !document.isDeleted) ?? []
-  ).sort((a, b) => new Date(b.recordDate) - new Date(a.recordDate));
+  ).sort(
+    (a, b) =>
+      getSortableTime(b.recordDate, b.createdAt) -
+      getSortableTime(a.recordDate, a.createdAt),
+  );
+
+  const consultationTotalPages = Math.max(Math.ceil(totalConsultations / limit), 1);
+  const labTotalPages = Math.max(Math.ceil(labReports.length / limit), 1);
+  const documentTotalPages = Math.max(Math.ceil(medicalDocuments.length / limit), 1);
   const paginatedMedicalDocuments = medicalDocuments.slice(
     (documentPage - 1) * limit,
     documentPage * limit,
@@ -154,21 +172,21 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
         page: timelinePage,
         limit,
         totalRecords: totalConsultations,
-        totalPages: Math.ceil(totalConsultations / limit),
+        totalPages: consultationTotalPages,
       },
 
       labReports: {
         page: labPage,
         limit,
         totalRecords: labReports.length,
-        totalPages: Math.ceil(labReports.length / limit),
+        totalPages: labTotalPages,
       },
 
       medicalDocuments: {
         page: documentPage,
         limit,
         totalRecords: medicalDocuments.length,
-        totalPages: Math.ceil(medicalDocuments.length / limit),
+        totalPages: documentTotalPages,
       },
     },
   };

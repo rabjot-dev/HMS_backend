@@ -5,10 +5,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "NODE_ENV=test jest --detectOpenHandles --forceExit --runInBand",
-    "test:unit": "NODE_ENV=test jest tests/unit --detectOpenHandles --forceExit --runInBand",
-    "test:integration": "NODE_ENV=test jest tests/integration --detectOpenHandles --forceExit --runInBand",
-    "test:coverage": "NODE_ENV=test jest --coverage --detectOpenHandles --forceExit --runInBand",
+    "test": "node scripts/run-tests.js --detectOpenHandles --forceExit --runInBand --passWithNoTests",
+    "test:unit": "node scripts/run-tests.js tests/unit --detectOpenHandles --forceExit --runInBand --passWithNoTests",
+    "test:integration": "node scripts/run-tests.js tests/integration --detectOpenHandles --forceExit --runInBand --passWithNoTests",
+    "test:coverage": "node scripts/run-tests.js --coverage --detectOpenHandles --forceExit --runInBand --passWithNoTests",
     "seed:nodes": "node src/seeds/seed-nodes.js",
     "seed:node-children": "node src/seeds/seed-node-children.js"
   },

@@ -5,6 +5,9 @@ const router = express.Router();
 const authMiddleware = require("../middleware/auth.middleware");
 const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
 const validateMiddleware = require("../middleware/validate.middleware");
+const {
+  paginationQueryValidation,
+} = require("../validations/common.validation");
 
 const {
   createPatient,
@@ -44,6 +47,8 @@ router.get(
   "/",
   authMiddleware,
   nodePermissionMiddleware,
+  paginationQueryValidation,
+  validateMiddleware,
   getPatients,
 );
 

@@ -1,16 +1,19 @@
 const Consultation = require("../../models/Consultation");
+const mongoose = require("mongoose");
 
 const Patient = require("../../models/Patient");
 
 const Employee = require("../../models/Employee");
 
 const {
+  buildCursorPaginationMeta,
+  decodeCursor,
   getPagination,
   buildPaginationMeta,
 } = require("../../utils/pagination");
 
 const getConsultationsService = async (user, query) => {
-  const { search, doctor, patient, status, startDate, endDate, page, limit } =
+  const { search, doctor, patient, status, startDate, endDate, page, limit, cursor, pagination: paginationMode } =
     query;
 
   const filter = {
@@ -107,6 +110,35 @@ const getConsultationsService = async (user, query) => {
 
 
   const pagination = getPagination(page, limit);
+  const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
+
+  if (isCursorPagination && cursor) {
+    const decodedCursor = decodeCursor(cursor);
+
+    if (decodedCursor) {
+      const existingSearch = filter.$or;
+      delete filter.$or;
+
+      filter.$and = [
+        ...(existingSearch ? [{ $or: existingSearch }] : []),
+        {
+          $or: [
+            {
+              createdAt: {
+                $lt: new Date(decodedCursor.createdAt),
+              },
+            },
+            {
+              createdAt: new Date(decodedCursor.createdAt),
+              _id: {
+                $lt: new mongoose.Types.ObjectId(decodedCursor.id),
+              },
+            },
+          ],
+        },
+      ];
+    }
+  }
 
   const total = await Consultation.countDocuments(filter);
 
@@ -147,14 +179,20 @@ const getConsultationsService = async (user, query) => {
     )
     .sort({
       createdAt: -1,
+      _id: -1,
     })
-    .skip(pagination.skip)
-    .limit(pagination.limit)
+    .skip(isCursorPagination ? 0 : pagination.skip)
+    .limit(isCursorPagination ? pagination.limit + 1 : pagination.limit)
     .lean();
 
+  const hasNextCursorPage = isCursorPagination && consultations.length > pagination.limit;
+  const data = hasNextCursorPage ? consultations.slice(0, pagination.limit) : consultations;
+
   return {
-    data: consultations,
-    meta: buildPaginationMeta(pagination.page, pagination.limit, total),
+    data,
+    meta: isCursorPagination
+      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage)
+      : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };
 

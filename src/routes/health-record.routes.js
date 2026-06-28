@@ -27,6 +27,9 @@ const {
   addMedicalDocumentValidation,
   updateMedicalDocumentValidation,
 } = require("../validations/health-record.validation");
+const {
+  paginationQueryValidation,
+} = require("../validations/common.validation");
 
 // Get all health records
 
@@ -34,6 +37,8 @@ router.get(
   "/",
   authMiddleware,
   nodePermissionMiddleware,
+  paginationQueryValidation,
+  validateMiddleware,
   getHealthRecords
 );
 

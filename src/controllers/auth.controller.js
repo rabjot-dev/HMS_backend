@@ -9,13 +9,22 @@ const registerEmployeeSelf = require("../services/auth/registerEmployeeSelf.serv
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const generateRefreshToken = require("../utils/generateRefreshToken");
+const {
+  clearRefreshCookie,
+  getRefreshTokenFromRequest,
+  setRefreshCookie,
+} = require("../utils/refresh-cookie");
 
 const login = asyncHandler(async (req, res) => {
   const loginResponse = await loginUser(req.body);
+  const { refreshToken, ...safeLoginResponse } = loginResponse;
+
+  setRefreshCookie(res, refreshToken);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Login successful", loginResponse));
+    .json(new ApiResponse(200, "Login successful", safeLoginResponse));
 });
 
 const createPassword = asyncHandler(async (req, res) => {
@@ -99,7 +108,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 const refreshToken = asyncHandler(async (req, res) => {
-  const { refreshToken } = req.body;
+  const refreshToken = getRefreshTokenFromRequest(req);
 
   if (!refreshToken) {
     throw new ApiError(401, "Refresh token is required", "UNAUTHORIZED");
@@ -112,18 +121,21 @@ const refreshToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Invalid refresh token", "UNAUTHORIZED");
   }
 
-  const accessToken = jwt.sign(
-    {
-      userId: user._id,
-      employeeId: user.employeeId,
-      patientId: user.patientId,
-      roles: user.roles,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: "15m",
-    },
-  );
+  const tokenPayload = {
+    userId: user._id,
+    employeeId: user.employeeId,
+    patientId: user.patientId,
+    roles: user.roles,
+  };
+
+  const accessToken = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+    expiresIn: "15m",
+  });
+  const nextRefreshToken = generateRefreshToken(tokenPayload);
+
+  user.refreshToken = nextRefreshToken;
+  await user.save();
+  setRefreshCookie(res, nextRefreshToken);
 
   return res.status(200).json(
     new ApiResponse(200, "Access token refreshed successfully", {
@@ -133,9 +145,11 @@ const refreshToken = asyncHandler(async (req, res) => {
 });
 
 const logout = asyncHandler(async (req, res) => {
-  const { refreshToken } = req.body;
+  const refreshToken = getRefreshTokenFromRequest(req);
 
   if (!refreshToken) {
+    clearRefreshCookie(res);
+
     return res
       .status(200)
       .json(new ApiResponse(200, "Logged out successfully"));
@@ -147,6 +161,8 @@ const logout = asyncHandler(async (req, res) => {
     user.refreshToken = null;
     await user.save();
   }
+
+  clearRefreshCookie(res);
 
   return res.status(200).json(new ApiResponse(200, "Logged out successfully"));
 });

@@ -3,14 +3,17 @@ const Consultation = require("../../models/Consultation");
 const ROLES = require("../../constants/roles");
 const mongoose = require("mongoose");
 const {
+  buildCursorPaginationMeta,
+  decodeCursor,
   getPagination,
   buildPaginationMeta,
 } = require("../../utils/pagination");
 
 const getHealthRecordsService = async (user, query) => {
-  const { page, limit, search } = query;
+  const { page, limit, search, cursor, pagination: paginationMode } = query;
 
   const pagination = getPagination(page, limit);
+  const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
 
   const matchStage = {
     isDeleted: false,
@@ -92,6 +95,30 @@ const getHealthRecordsService = async (user, query) => {
     });
   }
 
+  if (isCursorPagination && cursor) {
+    const decodedCursor = decodeCursor(cursor);
+
+    if (decodedCursor) {
+      pipeline.push({
+        $match: {
+          $or: [
+            {
+              lastVisit: {
+                $lt: new Date(decodedCursor.createdAt),
+              },
+            },
+            {
+              lastVisit: new Date(decodedCursor.createdAt),
+              _id: {
+                $lt: new mongoose.Types.ObjectId(decodedCursor.id),
+              },
+            },
+          ],
+        },
+      });
+    }
+  }
+
 
 
   const countPipeline = [
@@ -111,13 +138,14 @@ const getHealthRecordsService = async (user, query) => {
     {
       $sort: {
         lastVisit: -1,
+        _id: -1,
       },
     },
     {
-      $skip: pagination.skip,
+      $skip: isCursorPagination ? 0 : pagination.skip,
     },
     {
-      $limit: pagination.limit,
+      $limit: isCursorPagination ? pagination.limit + 1 : pagination.limit,
     },
     {
       $project: {
@@ -137,6 +165,10 @@ const getHealthRecordsService = async (user, query) => {
           bloodGroup: "$patient.bloodGroup",
         },
 
+        _id: 1,
+
+        createdAt: "$lastVisit",
+
         totalVisits: 1,
 
         lastVisit: 1,
@@ -145,11 +177,15 @@ const getHealthRecordsService = async (user, query) => {
   );
 
   const healthRecords = await Consultation.aggregate(pipeline);
+  const hasNextCursorPage = isCursorPagination && healthRecords.length > pagination.limit;
+  const data = hasNextCursorPage ? healthRecords.slice(0, pagination.limit) : healthRecords;
 
   return {
-    data: healthRecords,
+    data,
 
-    meta: buildPaginationMeta(pagination.page, pagination.limit, total),
+    meta: isCursorPagination
+      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage)
+      : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };
 

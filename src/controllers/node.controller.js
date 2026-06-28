@@ -15,7 +15,7 @@ const createNode = asyncHandler(async (req, res) => {
 });
 
 const getNodes = asyncHandler(async (req, res) => {
-  const nodes = await getNodesService(req.user);
+  const nodes = await getNodesService(req.user, req.query);
 
   return res
     .status(200)

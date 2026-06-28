@@ -20,6 +20,9 @@ const {
   createConsultationValidation,
   updateConsultationValidation,
 } = require("../validations/consultation.validation");
+const {
+  paginationQueryValidation,
+} = require("../validations/common.validation");
 
 // Create consultation
 
@@ -38,6 +41,8 @@ router.get(
   "/",
   authMiddleware,
   nodePermissionMiddleware,
+  paginationQueryValidation,
+  validateMiddleware,
   getConsultations,
 );
 

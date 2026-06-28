@@ -1,12 +1,15 @@
 const Employee = require("../../models/Employee");
+const mongoose = require("mongoose");
 
 const {
+  buildCursorPaginationMeta,
+  decodeCursor,
   getPagination,
   buildPaginationMeta,
 } = require("../../utils/pagination");
 
 const getEmployeesService = async (query) => {
-  const { search, status, department, designation, page, limit } = query;
+  const { search, status, department, designation, page, limit, cursor, pagination: paginationMode } = query;
 
   const filter = {
     isDeleted: false,
@@ -60,6 +63,37 @@ const getEmployeesService = async (query) => {
   // pagination
 
   const pagination = getPagination(page, limit);
+  const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
+
+  if (isCursorPagination && cursor) {
+    const decodedCursor = decodeCursor(cursor);
+
+    if (decodedCursor) {
+      const existingSearch = filter.$or;
+      delete filter.$or;
+
+      const cursorFilter = [
+        {
+          createdAt: {
+            $lt: new Date(decodedCursor.createdAt),
+          },
+        },
+        {
+          createdAt: new Date(decodedCursor.createdAt),
+          _id: {
+            $lt: new mongoose.Types.ObjectId(decodedCursor.id),
+          },
+        },
+      ];
+
+      filter.$and = [
+        ...(existingSearch ? [{ $or: existingSearch }] : []),
+        {
+          $or: cursorFilter,
+        },
+      ];
+    }
+  }
 
   const total = await Employee.countDocuments(filter);
 
@@ -69,14 +103,20 @@ const getEmployeesService = async (query) => {
     )
     .sort({
       createdAt: -1,
+      _id: -1,
     })
-    .skip(pagination.skip)
-    .limit(pagination.limit)
+    .skip(isCursorPagination ? 0 : pagination.skip)
+    .limit(isCursorPagination ? pagination.limit + 1 : pagination.limit)
     .lean();
 
+  const hasNextCursorPage = isCursorPagination && employees.length > pagination.limit;
+  const data = hasNextCursorPage ? employees.slice(0, pagination.limit) : employees;
+
   return {
-    data: employees,
-    meta: buildPaginationMeta(pagination.page, pagination.limit, total),
+    data,
+    meta: isCursorPagination
+      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage)
+      : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };
 

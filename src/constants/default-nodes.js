@@ -177,6 +177,36 @@ module.exports = [
   },
 
   {
+    name: "Node Management",
+    path: "/node-management",
+    icon: "account_tree",
+    order: 90,
+    roles: [ROLES.SUPER_ADMIN],
+    apiPermissions: [
+      {
+        method: "GET",
+        path: "/api/nodes",
+        roles: [ROLES.SUPER_ADMIN],
+      },
+      {
+        method: "POST",
+        path: "/api/nodes",
+        roles: [ROLES.SUPER_ADMIN],
+      },
+      {
+        method: "PUT",
+        path: "/api/nodes/:id",
+        roles: [ROLES.SUPER_ADMIN],
+      },
+      {
+        method: "DELETE",
+        path: "/api/nodes/:id",
+        roles: [ROLES.SUPER_ADMIN],
+      },
+    ],
+  },
+
+  {
     name: "My Profile",
     path: "/my-profile",
     icon: "account_circle",

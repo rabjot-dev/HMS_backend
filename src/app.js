@@ -1,5 +1,4 @@
 const express = require("express");
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 const authRoutes = require("./routes/auth.routes");
 const path = require("node:path");
 const upload = require("../src/middleware/upload.middleware");
@@ -13,10 +12,46 @@ const nodeRoutes = require("./routes/node.routes");
 const healthRecordRoutes = require("./routes/health-record.routes");
 const locationRoutes = require("../src/routes/loaction.routes");
 const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const swaggerUi = require("swagger-ui-express");
+const openApiDocument = require("../docs/openapi.json");
+const createRateLimitMiddleware = require("./middleware/rate-limit.middleware");
 const app = express();
 app.disable("x-powered-by");
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+
+const allowedOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(helmet());
+app.use(
+  cors({
+    origin: allowedOrigins.length
+      ? (origin, callback) => {
+          if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+          }
+
+          return callback(new Error("Not allowed by CORS"));
+        }
+      : true,
+    credentials: true,
+  }),
+);
+app.use(
+  createRateLimitMiddleware({
+    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
+    maxRequests: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 300,
+  }),
+);
+
+if (process.env.NODE_ENV !== "test") {
+  app.use(morgan("combined"));
+}
+
+app.use(express.json({ limit: "1mb" }));
 
 app.use(
   express.urlencoded({
@@ -30,6 +65,8 @@ app.get("/health", (req, res) => {
     message: "Server is running",
   });
 });
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use("/api/auth", authRoutes);
 
