@@ -5,17 +5,62 @@ const Patient = require("../../models/Patient");
 
 const ROLES = require("../../constants/roles");
 const ApiError = require("../../utils/ApiError");
+const {
+  buildPaginationMeta,
+  decodeCursor,
+} = require("../../utils/pagination");
 
 const getHealthRecordDetailsService = async (patientId, user, query) => {
 
 
   const limit = Math.min(Math.max(Number(query.limit) || 5, 1), 10000);
+  const isCursorPagination =
+    query.pagination === "cursor" ||
+    Boolean(query.timelineCursor || query.labCursor || query.documentCursor);
 
   const timelinePage = Math.max(Number(query.timelinePage) || 1, 1);
 
   const labPage = Math.max(Number(query.labPage) || 1, 1);
 
   const documentPage = Math.max(Number(query.documentPage) || 1, 1);
+  const timelineCursor = decodeCursor(query.timelineCursor);
+  const labCursor = decodeCursor(query.labCursor);
+  const documentCursor = decodeCursor(query.documentCursor);
+
+  const encodeSectionCursor = (item, dateField) => {
+    const dateValue = item?.[dateField] || item?.createdAt;
+
+    if (!dateValue || !item?._id) {
+      return null;
+    }
+
+    return Buffer.from(
+      JSON.stringify({
+        createdAt: dateValue,
+        id: item._id,
+      }),
+    ).toString("base64url");
+  };
+
+  const buildSectionCursorMeta = (items, hasNextPage, dateField) => ({
+    limit,
+    nextCursor: hasNextPage
+      ? encodeSectionCursor(items[items.length - 1], dateField)
+      : null,
+    hasNextPage,
+  });
+
+  const isAfterCursor = (item, cursor, dateField) => {
+    if (!cursor) {
+      return true;
+    }
+
+    const itemTime = getSortableTime(item?.[dateField], item?.createdAt);
+    const cursorTime = getSortableTime(cursor.createdAt);
+    const itemId = String(item?._id || "");
+
+    return itemTime < cursorTime || (itemTime === cursorTime && itemId < cursor.id);
+  };
 
 
   const patient = await Patient.findOne({
@@ -69,8 +114,28 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     filter.doctorEmployeeId = new mongoose.Types.ObjectId(user.employeeId);
   }
 
+  const totalConsultationFilter = {
+    ...filter,
+  };
 
-  const totalConsultations = await Consultation.countDocuments(filter);
+  if (isCursorPagination && timelineCursor) {
+    filter.$or = [
+      {
+        createdAt: {
+          $lt: new Date(timelineCursor.createdAt),
+        },
+      },
+      {
+        createdAt: new Date(timelineCursor.createdAt),
+        _id: {
+          $lt: new mongoose.Types.ObjectId(timelineCursor.id),
+        },
+      },
+    ];
+  }
+
+
+  const totalConsultations = await Consultation.countDocuments(totalConsultationFilter);
 
   const consultations = await Consultation.find(filter)
     .populate({
@@ -103,10 +168,16 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     )
     .sort({
       createdAt: -1,
+      _id: -1,
     })
-    .skip((timelinePage - 1) * limit)
-    .limit(limit)
+    .skip(isCursorPagination ? 0 : (timelinePage - 1) * limit)
+    .limit(isCursorPagination ? limit + 1 : limit)
     .lean();
+  const hasNextConsultationsPage =
+    isCursorPagination && consultations.length > limit;
+  const paginatedConsultations = hasNextConsultationsPage
+    ? consultations.slice(0, limit)
+    : consultations;
 
   /*
   |--------------------------------------------------------------------------
@@ -120,18 +191,26 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     return Number.isNaN(timestamp) ? 0 : timestamp;
   };
 
-  const labReports = (
+  const allLabReports = (
     patient.labReports?.filter((report) => !report.isDeleted) ?? []
   ).sort(
     (a, b) =>
       getSortableTime(b.reportDate, b.createdAt) -
       getSortableTime(a.reportDate, a.createdAt),
   );
+  const labReports = isCursorPagination
+    ? allLabReports.filter((report) => isAfterCursor(report, labCursor, "reportDate"))
+    : allLabReports;
 
   const paginatedLabReports = labReports.slice(
-    (labPage - 1) * limit,
-    labPage * limit,
+    isCursorPagination ? 0 : (labPage - 1) * limit,
+    isCursorPagination ? limit + 1 : labPage * limit,
   );
+  const hasNextLabReportsPage =
+    isCursorPagination && paginatedLabReports.length > limit;
+  const visibleLabReports = hasNextLabReportsPage
+    ? paginatedLabReports.slice(0, limit)
+    : paginatedLabReports;
 
   /*
   |--------------------------------------------------------------------------
@@ -139,21 +218,31 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
   |--------------------------------------------------------------------------
   */
 
-  const medicalDocuments = (
+  const allMedicalDocuments = (
     patient.medicalDocuments?.filter((document) => !document.isDeleted) ?? []
   ).sort(
     (a, b) =>
       getSortableTime(b.recordDate, b.createdAt) -
       getSortableTime(a.recordDate, a.createdAt),
   );
+  const medicalDocuments = isCursorPagination
+    ? allMedicalDocuments.filter((document) =>
+        isAfterCursor(document, documentCursor, "recordDate"),
+      )
+    : allMedicalDocuments;
 
   const consultationTotalPages = Math.max(Math.ceil(totalConsultations / limit), 1);
-  const labTotalPages = Math.max(Math.ceil(labReports.length / limit), 1);
-  const documentTotalPages = Math.max(Math.ceil(medicalDocuments.length / limit), 1);
+  const labTotalPages = Math.max(Math.ceil(allLabReports.length / limit), 1);
+  const documentTotalPages = Math.max(Math.ceil(allMedicalDocuments.length / limit), 1);
   const paginatedMedicalDocuments = medicalDocuments.slice(
-    (documentPage - 1) * limit,
-    documentPage * limit,
+    isCursorPagination ? 0 : (documentPage - 1) * limit,
+    isCursorPagination ? limit + 1 : documentPage * limit,
   );
+  const hasNextMedicalDocumentsPage =
+    isCursorPagination && paginatedMedicalDocuments.length > limit;
+  const visibleMedicalDocuments = hasNextMedicalDocumentsPage
+    ? paginatedMedicalDocuments.slice(0, limit)
+    : paginatedMedicalDocuments;
 
   /*
   |--------------------------------------------------------------------------
@@ -163,31 +252,36 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
 
   return {
     patient,
-    consultations,
-    labReports: paginatedLabReports,
-    medicalDocuments: paginatedMedicalDocuments,
+    consultations: paginatedConsultations,
+    labReports: visibleLabReports,
+    medicalDocuments: visibleMedicalDocuments,
 
     meta: {
-      consultations: {
-        page: timelinePage,
-        limit,
-        totalRecords: totalConsultations,
-        totalPages: consultationTotalPages,
-      },
+      consultations: isCursorPagination
+        ? buildSectionCursorMeta(
+            paginatedConsultations,
+            hasNextConsultationsPage,
+            "createdAt",
+          )
+        : buildPaginationMeta(timelinePage, limit, totalConsultations),
 
-      labReports: {
-        page: labPage,
-        limit,
-        totalRecords: labReports.length,
-        totalPages: labTotalPages,
-      },
+      labReports: isCursorPagination
+        ? buildSectionCursorMeta(visibleLabReports, hasNextLabReportsPage, "reportDate")
+        : {
+            ...buildPaginationMeta(labPage, limit, allLabReports.length),
+            totalPages: labTotalPages,
+          },
 
-      medicalDocuments: {
-        page: documentPage,
-        limit,
-        totalRecords: medicalDocuments.length,
-        totalPages: documentTotalPages,
-      },
+      medicalDocuments: isCursorPagination
+        ? buildSectionCursorMeta(
+            visibleMedicalDocuments,
+            hasNextMedicalDocumentsPage,
+            "recordDate",
+          )
+        : {
+            ...buildPaginationMeta(documentPage, limit, allMedicalDocuments.length),
+            totalPages: documentTotalPages,
+          },
     },
   };
 };

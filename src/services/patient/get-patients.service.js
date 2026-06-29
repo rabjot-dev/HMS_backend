@@ -127,6 +127,7 @@ const getPatientsService = async (user, query) => {
 
   const pagination = getPagination(page, limit);
   const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
+  const totalFilter = { ...filter };
 
   if (isCursorPagination && cursor) {
     const decodedCursor = decodeCursor(cursor);
@@ -158,7 +159,7 @@ const getPatientsService = async (user, query) => {
     }
   }
 
-  const total = await Patient.countDocuments(filter);
+  const total = await Patient.countDocuments(totalFilter);
 
   const patients = await Patient.find(filter)
     .populate({
@@ -197,7 +198,7 @@ const getPatientsService = async (user, query) => {
   return {
     data,
     meta: isCursorPagination
-      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage)
+      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage, total)
       : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };

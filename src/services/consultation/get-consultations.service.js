@@ -191,7 +191,7 @@ const getConsultationsService = async (user, query) => {
   return {
     data,
     meta: isCursorPagination
-      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage)
+      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage, total)
       : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };

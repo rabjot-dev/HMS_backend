@@ -102,6 +102,7 @@ const approveEmployee = asyncHandler(async (req, res) => {
   const employee = await approveEmployeeService(
     req.params.id,
     req.body.consultationFee,
+    req.user.userId,
   );
 
   return res
@@ -110,7 +111,11 @@ const approveEmployee = asyncHandler(async (req, res) => {
 });
 
 const rejectEmployee = asyncHandler(async (req, res) => {
-  await rejectEmployeeService(req.params.id);
+  await rejectEmployeeService(
+    req.params.id,
+    req.user.userId,
+    req.body.rejectionReason,
+  );
 
   return res
     .status(200)

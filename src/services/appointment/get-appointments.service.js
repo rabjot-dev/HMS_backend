@@ -160,6 +160,7 @@ const getAppointmentsService = async (user, query) => {
 
   const pagination = getPagination(page, limit);
   const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
+  const totalFilter = { ...filter };
 
   if (isCursorPagination && cursor) {
     const decodedCursor = decodeCursor(cursor);
@@ -189,7 +190,7 @@ const getAppointmentsService = async (user, query) => {
     }
   }
 
-  const total = await Appointment.countDocuments(filter);
+  const total = await Appointment.countDocuments(totalFilter);
 
   const appointments = await Appointment.find(filter)
     .populate({
@@ -242,7 +243,7 @@ const getAppointmentsService = async (user, query) => {
   return {
     data,
     meta: isCursorPagination
-      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage)
+      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage, total)
       : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };

@@ -2,6 +2,8 @@ const Employee = require("../../models/Employee");
 const User = require("../../models/User");
 const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
+const sendEmail = require("../../utils/sendEmail");
+const employeeRejectedTemplate = require("../../templates/employee-rejected.template");
 
 const rejectEmployeeService = async (
   employeeId,
@@ -38,6 +40,23 @@ const rejectEmployeeService = async (
 
   await employee.save();
   await user.save();
+
+  if (employee.email) {
+    const htmlContent = employeeRejectedTemplate({
+      name: employee.name,
+      department: employee.department,
+      designation: employee.designation,
+      rejectionReason,
+    });
+
+    await sendEmail({
+      to: employee.email,
+      subject: "Your HMS employee registration update",
+      htmlContent,
+    }).catch((error) => {
+      console.error("Employee rejection email failed:", error.message);
+    });
+  }
 
   return employee;
 };

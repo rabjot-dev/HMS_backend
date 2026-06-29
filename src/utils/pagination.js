@@ -43,8 +43,10 @@ const decodeCursor = (cursor) => {
   }
 };
 
-const buildCursorPaginationMeta = (limit, items, hasNextPage) => ({
+const buildCursorPaginationMeta = (limit, items, hasNextPage, total = 0) => ({
   limit,
+  total,
+  totalRecords: total,
   nextCursor: hasNextPage ? encodeCursor(items[items.length - 1]) : null,
   hasNextPage,
 });

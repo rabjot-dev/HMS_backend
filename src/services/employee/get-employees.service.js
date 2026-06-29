@@ -64,6 +64,7 @@ const getEmployeesService = async (query) => {
 
   const pagination = getPagination(page, limit);
   const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
+  const totalFilter = { ...filter };
 
   if (isCursorPagination && cursor) {
     const decodedCursor = decodeCursor(cursor);
@@ -95,7 +96,7 @@ const getEmployeesService = async (query) => {
     }
   }
 
-  const total = await Employee.countDocuments(filter);
+  const total = await Employee.countDocuments(totalFilter);
 
   const employees = await Employee.find(filter)
     .select(
@@ -115,7 +116,7 @@ const getEmployeesService = async (query) => {
   return {
     data,
     meta: isCursorPagination
-      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage)
+      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage, total)
       : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };
