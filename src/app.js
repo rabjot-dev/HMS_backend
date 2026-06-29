@@ -47,8 +47,16 @@ app.use(
   }),
 );
 
-if (process.env.NODE_ENV !== "test") {
-  app.use(morgan("combined"));
+const shouldLogHttpRequests =
+  process.env.ENABLE_HTTP_LOGS === "true" ||
+  process.env.NODE_ENV === "production";
+
+if (shouldLogHttpRequests) {
+  app.use(
+    morgan("combined", {
+      skip: (_req, res) => res.statusCode === 304,
+    }),
+  );
 }
 
 app.use(express.json({ limit: "1mb" }));
