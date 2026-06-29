@@ -26,7 +26,13 @@ const getRecentEmployees = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Recent employees retrieved successfully", employees));
+    .json(
+      new ApiResponse(
+        200,
+        "Recent employees retrieved successfully",
+        employees,
+      ),
+    );
 });
 
 const getDoctorStats = asyncHandler(async (req, res) => {
@@ -62,7 +68,9 @@ const getTodayAppointments = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Appointments retrieved successfully", appointments));
+    .json(
+      new ApiResponse(200, "Appointments retrieved successfully", appointments),
+    );
 });
 
 module.exports = {

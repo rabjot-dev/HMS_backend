@@ -26,12 +26,7 @@ const updateMedicalDocumentService = async (
     throw new ApiError(404, "Medical document not found", "DOCUMENT_NOT_FOUND");
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Update Metadata
-  |--------------------------------------------------------------------------
-  */
-
+  /* Update Metadata */
   document.title = data.title ?? document.title;
 
   document.documentType = data.documentType ?? document.documentType;
@@ -47,12 +42,7 @@ const updateMedicalDocumentService = async (
 
   document.updatedAt = new Date();
 
-  /*
-  |--------------------------------------------------------------------------
-  | Replace File
-  |--------------------------------------------------------------------------
-  */
-
+  /* Replace File */
   if (file) {
     if (document.documentUrl) {
       const oldFilePath = path.join(

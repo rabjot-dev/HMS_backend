@@ -10,11 +10,11 @@ const getNodesService = async (user, query = {}) => {
         isDeleted: false,
       }
     : {
-    isDeleted: false,
-    isActive: true,
-    roles: {
-      $in: user.roles,
-    },
+        isDeleted: false,
+        isActive: true,
+        roles: {
+          $in: user.roles,
+        },
       };
 
   const nodes = await Node.find(filter)
@@ -27,7 +27,6 @@ const getNodesService = async (user, query = {}) => {
 
   return parents.map((parent) => ({
     ...parent,
-
     children: nodes.filter(
       (node) => node.parent?.toString() === parent._id.toString(),
     ),

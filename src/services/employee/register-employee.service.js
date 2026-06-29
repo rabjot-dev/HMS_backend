@@ -45,11 +45,7 @@ const registerEmployee = async (employeeData, currentUser) => {
     designation === ROLES.ADMIN &&
     !currentUser.roles?.includes(ROLES.SUPER_ADMIN)
   ) {
-    throw new ApiError(
-      403,
-      "Only Super Admin can create Admin",
-      "FORBIDDEN",
-    );
+    throw new ApiError(403, "Only Super Admin can create Admin", "FORBIDDEN");
   }
 
   // Check if email is already in use

@@ -31,12 +31,7 @@ const getAppointmentsService = async (user, query) => {
     isDeleted: false,
   };
 
-  /*
-    |--------------------------------------------------------------------------
-    | Role Based Visibility
-    |--------------------------------------------------------------------------
-    */
-
+  /* Role Based Visibility */
   if (user.roles?.includes("DOCTOR")) {
     filter.doctorEmployeeId = user.employeeId;
   }
@@ -45,12 +40,7 @@ const getAppointmentsService = async (user, query) => {
     filter.patientId = user.patientId;
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Filters
-    |--------------------------------------------------------------------------
-    */
-
+  /* Filters */
   if (status && status !== "ALL") {
     filter.status = status;
   }
@@ -70,12 +60,7 @@ const getAppointmentsService = async (user, query) => {
     filter.priority = priority;
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Appointment Date
-    |--------------------------------------------------------------------------
-    */
-
+  /* Appointment Date */
   if (appointmentDate) {
     const selectedDate = new Date(appointmentDate);
 
@@ -91,12 +76,7 @@ const getAppointmentsService = async (user, query) => {
     };
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Search
-    |--------------------------------------------------------------------------
-    */
-
+  /* Search */
   if (search?.trim()) {
     const patients = await Patient.find({
       $or: [
@@ -152,12 +132,7 @@ const getAppointmentsService = async (user, query) => {
     ];
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | Pagination
-    |--------------------------------------------------------------------------
-    */
-
+  /* Pagination */
   const pagination = getPagination(page, limit);
   const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
   const totalFilter = { ...filter };
@@ -237,13 +212,21 @@ const getAppointmentsService = async (user, query) => {
     .limit(isCursorPagination ? pagination.limit + 1 : pagination.limit)
     .lean();
 
-  const hasNextCursorPage = isCursorPagination && appointments.length > pagination.limit;
-  const data = hasNextCursorPage ? appointments.slice(0, pagination.limit) : appointments;
+  const hasNextCursorPage =
+    isCursorPagination && appointments.length > pagination.limit;
+  const data = hasNextCursorPage
+    ? appointments.slice(0, pagination.limit)
+    : appointments;
 
   return {
     data,
     meta: isCursorPagination
-      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage, total)
+      ? buildCursorPaginationMeta(
+          pagination.limit,
+          data,
+          hasNextCursorPage,
+          total,
+        )
       : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };

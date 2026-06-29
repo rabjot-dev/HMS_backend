@@ -9,14 +9,22 @@ const {
 } = require("../../utils/pagination");
 
 const getEmployeesService = async (query) => {
-  const { search, status, department, designation, page, limit, cursor, pagination: paginationMode } = query;
+  const {
+    search,
+    status,
+    department,
+    designation,
+    page,
+    limit,
+    cursor,
+    pagination: paginationMode,
+  } = query;
 
   const filter = {
     isDeleted: false,
   };
 
   // search
-
   if (search?.trim()) {
     filter.$or = [
       {
@@ -41,7 +49,6 @@ const getEmployeesService = async (query) => {
   }
 
   // filters
-
   if (status) {
     filter.status = status;
   }
@@ -61,7 +68,6 @@ const getEmployeesService = async (query) => {
   }
 
   // pagination
-
   const pagination = getPagination(page, limit);
   const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
   const totalFilter = { ...filter };
@@ -110,13 +116,21 @@ const getEmployeesService = async (query) => {
     .limit(isCursorPagination ? pagination.limit + 1 : pagination.limit)
     .lean();
 
-  const hasNextCursorPage = isCursorPagination && employees.length > pagination.limit;
-  const data = hasNextCursorPage ? employees.slice(0, pagination.limit) : employees;
+  const hasNextCursorPage =
+    isCursorPagination && employees.length > pagination.limit;
+  const data = hasNextCursorPage
+    ? employees.slice(0, pagination.limit)
+    : employees;
 
   return {
     data,
     meta: isCursorPagination
-      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage, total)
+      ? buildCursorPaginationMeta(
+          pagination.limit,
+          data,
+          hasNextCursorPage,
+          total,
+        )
       : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };

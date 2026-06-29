@@ -20,10 +20,7 @@ const seedNodeChildren = async () => {
       path: "/appointments",
     });
 
-    // =====================
     // Employee Children
-    // =====================
-
     await Node.findOneAndUpdate(
       {
         path: "/employees/create",
@@ -34,9 +31,7 @@ const seedNodeChildren = async () => {
         parent: employees._id,
         order: 11,
         roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-        apiPermissions: [
-          { method: "POST", path: "/api/employees" },
-        ],
+        apiPermissions: [{ method: "POST", path: "/api/employees" }],
         isDeleted: false,
         isActive: true,
       },
@@ -71,10 +66,7 @@ const seedNodeChildren = async () => {
       },
     );
 
-    // =====================
     // Patient Children
-    // =====================
-
     await Node.findOneAndUpdate(
       {
         path: "/patients/create",
@@ -105,9 +97,7 @@ const seedNodeChildren = async () => {
         setDefaultsOnInsert: true,
       },
     );
-    // =====================
     // Appointment Children
-    // =====================
     await Node.findOneAndUpdate(
       {
         path: "/appointments/book",

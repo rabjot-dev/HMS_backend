@@ -7,29 +7,25 @@ const registerPatientMobileValidation = [
     .withMessage("First name is required")
     .matches(/^[A-Za-z\s'-]+$/)
     .withMessage("Invalid first name"),
-
   body("lastName")
     .trim()
     .notEmpty()
     .withMessage("Last name is required")
     .matches(/^[A-Za-z\s'-]+$/)
     .withMessage("Invalid last name"),
-
   body("email")
     .trim()
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
     .withMessage("Invalid email"),
-
   body("phone")
     .trim()
     .notEmpty()
     .withMessage("Phone number is required")
     .matches(/^\d{10}$/)
     .withMessage("Phone number must be 10 digits"),
-
-    body("newPassword")
+  body("newPassword")
     .notEmpty()
     .withMessage("New password is required")
     .isLength({ min: 8, max: 20 })
@@ -38,7 +34,6 @@ const registerPatientMobileValidation = [
     .withMessage(
       "Password must contain uppercase, lowercase, number and special character",
     ),
-
   body("confirmPassword")
     .notEmpty()
     .withMessage("Confirm password is required")

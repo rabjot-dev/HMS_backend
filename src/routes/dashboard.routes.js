@@ -14,7 +14,12 @@ const {
 const router = express.Router();
 
 // Get admin dashboard statistics
-router.get("/admin-stats", authMiddleware, nodePermissionMiddleware, getAdminStats);
+router.get(
+  "/admin-stats",
+  authMiddleware,
+  nodePermissionMiddleware,
+  getAdminStats,
+);
 
 // Get recently added employees
 router.get(

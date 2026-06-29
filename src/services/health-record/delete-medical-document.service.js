@@ -28,12 +28,7 @@ const deleteMedicalDocumentService = async (
 
   const document = patient.medicalDocuments[index];
 
-  /*
-  |--------------------------------------------------------------------------
-  | Delete Physical File
-  |--------------------------------------------------------------------------
-  */
-
+  /* Delete Physical File */
   if (document.documentUrl) {
     const filePath = path.join(
       process.cwd(),
@@ -49,12 +44,7 @@ const deleteMedicalDocumentService = async (
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Remove Document
-  |--------------------------------------------------------------------------
-  */
-
+  /* Remove Document */
   document.isDeleted = true;
   document.deletedBy = deletedBy;
   document.deletedAt = new Date();

@@ -2,7 +2,6 @@ const ROLES = require("./roles");
 
 module.exports = [
   //dashboards
-
   {
     name: "Admin Dashboard",
     path: "/dashboard/admin",
@@ -17,7 +16,6 @@ module.exports = [
       { method: "DELETE", path: "/api/nodes/:id" },
     ],
   },
-
   {
     name: "Doctor Dashboard",
     path: "/dashboard/doctor",
@@ -29,7 +27,6 @@ module.exports = [
       { method: "GET", path: "/api/dashboard/today-appointments" },
     ],
   },
-
   {
     name: "Receptionist Dashboard",
     path: "/dashboard/receptionist",
@@ -41,9 +38,7 @@ module.exports = [
       { method: "GET", path: "/api/dashboard/today-appointments" },
     ],
   },
-
   // parent menus
-
   {
     name: "Employees",
     path: "/employees",
@@ -60,7 +55,6 @@ module.exports = [
       { method: "DELETE", path: "/api/employees/:id" },
     ],
   },
-
   {
     name: "Patients",
     path: "/patients",
@@ -82,7 +76,6 @@ module.exports = [
       },
     ],
   },
-
   {
     name: "Appointments",
     path: "/appointments",
@@ -106,7 +99,6 @@ module.exports = [
       },
     ],
   },
-
   {
     name: "Health Records",
     path: "/health-records",
@@ -142,7 +134,10 @@ module.exports = [
       { method: "GET", path: "/api/consultations" },
       { method: "GET", path: "/api/consultations/appointment/:appointmentId" },
       { method: "GET", path: "/api/consultations/:id" },
-      { method: "GET", path: "/api/consultations/prescription/:consultationId" },
+      {
+        method: "GET",
+        path: "/api/consultations/prescription/:consultationId",
+      },
       {
         method: "DELETE",
         path: "/api/consultations/:id",
@@ -150,7 +145,6 @@ module.exports = [
       },
     ],
   },
-
   {
     name: "Doctor Queue",
     path: "/doctor-queue",
@@ -163,7 +157,6 @@ module.exports = [
       { method: "PUT", path: "/api/consultations/:id" },
     ],
   },
-
   {
     name: "Doctor Availability",
     path: "/doctor-availability",
@@ -175,7 +168,6 @@ module.exports = [
       { method: "PATCH", path: "/api/employees/doctor/availability" },
     ],
   },
-
   {
     name: "Node Management",
     path: "/node-management",
@@ -205,7 +197,6 @@ module.exports = [
       },
     ],
   },
-
   {
     name: "My Profile",
     path: "/my-profile",
@@ -213,7 +204,6 @@ module.exports = [
     order: 100,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.RECEPTIONIST, ROLES.DOCTOR],
   },
-
   {
     name: "Patient Portal",
     path: "/patient-portal",

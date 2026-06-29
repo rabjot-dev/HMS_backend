@@ -74,8 +74,12 @@ const namesMatch = (first, second) => {
     firstName === secondName ||
     firstName.includes(secondName) ||
     secondName.includes(firstName) ||
-    getNameVariants(first).some((variant) => normalizeName(variant) === secondName) ||
-    getNameVariants(second).some((variant) => normalizeName(variant) === firstName)
+    getNameVariants(first).some(
+      (variant) => normalizeName(variant) === secondName,
+    ) ||
+    getNameVariants(second).some(
+      (variant) => normalizeName(variant) === firstName,
+    )
   );
 };
 
@@ -275,7 +279,11 @@ const matchesLocation = (postOffice, stateSearch, districtSearch) => {
   );
 };
 
-const getMatchingPostOffices = async (stateSearch, districtSearch, district) => {
+const getMatchingPostOffices = async (
+  stateSearch,
+  districtSearch,
+  district,
+) => {
   for (const variant of getNameVariants(district)) {
     const postOffices = await fetchPostOffices(variant);
     const matchingPostOffices = postOffices.filter((postOffice) =>
@@ -336,7 +344,9 @@ const getPostOfficeAreasByDistrict = async (stateName, districtName) => {
         .filter(Boolean),
     ).values(),
   ].sort((first, second) =>
-    `${first.taluk} ${first.name}`.localeCompare(`${second.taluk} ${second.name}`),
+    `${first.taluk} ${first.name}`.localeCompare(
+      `${second.taluk} ${second.name}`,
+    ),
   );
 
   areaCache.set(cacheKey, {
@@ -388,4 +398,3 @@ module.exports = {
   getPostOfficeAreasByDistrict,
   getPincodesByDistrict,
 };
- 

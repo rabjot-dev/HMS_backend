@@ -24,7 +24,9 @@ const createPatient = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, "Patient registered successfully", serviceResponse));
+    .json(
+      new ApiResponse(201, "Patient registered successfully", serviceResponse),
+    );
 });
 
 const getPatients = asyncHandler(async (req, res) => {
@@ -76,7 +78,9 @@ const registerPatientMobile = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, "Patient registered successfully", serviceResponse));
+    .json(
+      new ApiResponse(201, "Patient registered successfully", serviceResponse),
+    );
 });
 
 const getProfile = asyncHandler(async (req, res) => {
@@ -84,7 +88,9 @@ const getProfile = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Patient profile retrieved successfully", patient));
+    .json(
+      new ApiResponse(200, "Patient profile retrieved successfully", patient),
+    );
 });
 
 const updateProfile = asyncHandler(async (req, res) => {
@@ -100,7 +106,13 @@ const getPatientDashboard = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Patient dashboard retrieved successfully", dashboard));
+    .json(
+      new ApiResponse(
+        200,
+        "Patient dashboard retrieved successfully",
+        dashboard,
+      ),
+    );
 });
 
 const deletePatient = asyncHandler(async (req, res) => {

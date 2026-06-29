@@ -24,11 +24,20 @@ const validateObjectId = (id, message) => {
 
 const getAvailableSlots = asyncHandler(async (req, res) => {
   const { doctorId, appointmentDate } = req.query;
-  const availableSlots = await getAvailableSlotsService(doctorId, appointmentDate);
+  const availableSlots = await getAvailableSlotsService(
+    doctorId,
+    appointmentDate,
+  );
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Available slots retrieved successfully", availableSlots));
+    .json(
+      new ApiResponse(
+        200,
+        "Available slots retrieved successfully",
+        availableSlots,
+      ),
+    );
 });
 
 const bookAppointment = asyncHandler(async (req, res) => {
@@ -96,7 +105,9 @@ const getAppointmentById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Appointment retrieved successfully", appointment));
+    .json(
+      new ApiResponse(200, "Appointment retrieved successfully", appointment),
+    );
 });
 
 const getMyAppointmentById = asyncHandler(async (req, res) => {
@@ -122,7 +133,9 @@ const getMyAppointmentById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Appointment retrieved successfully", appointment));
+    .json(
+      new ApiResponse(200, "Appointment retrieved successfully", appointment),
+    );
 });
 
 const updateAppointment = asyncHandler(async (req, res) => {
@@ -204,7 +217,9 @@ const updateAppointment = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Appointment updated successfully", appointment));
+    .json(
+      new ApiResponse(200, "Appointment updated successfully", appointment),
+    );
 });
 
 const getDoctorQueue = asyncHandler(async (req, res) => {
@@ -231,15 +246,17 @@ const getDoctorQueue = asyncHandler(async (req, res) => {
       tokenNumber: 1,
     });
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      appointments.length > 0
-        ? "Doctor queue retrieved successfully"
-        : "No appointments found in doctor's queue",
-      appointments,
-    ),
-  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        appointments.length > 0
+          ? "Doctor queue retrieved successfully"
+          : "No appointments found in doctor's queue",
+        appointments,
+      ),
+    );
 });
 
 const bookPatientAppointment = asyncHandler(async (req, res) => {
@@ -271,7 +288,11 @@ const getPendingAppointments = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, "Pending appointments retrieved successfully", appointments),
+      new ApiResponse(
+        200,
+        "Pending appointments retrieved successfully",
+        appointments,
+      ),
     );
 });
 
@@ -280,7 +301,9 @@ const approveAppointment = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Appointment approved successfully", appointment));
+    .json(
+      new ApiResponse(200, "Appointment approved successfully", appointment),
+    );
 });
 
 const rejectAppointment = asyncHandler(async (req, res) => {
@@ -288,7 +311,9 @@ const rejectAppointment = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Appointment rejected successfully", appointment));
+    .json(
+      new ApiResponse(200, "Appointment rejected successfully", appointment),
+    );
 });
 
 const updateMyAppointment = asyncHandler(async (req, res) => {
@@ -300,7 +325,9 @@ const updateMyAppointment = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Appointment updated successfully", appointment));
+    .json(
+      new ApiResponse(200, "Appointment updated successfully", appointment),
+    );
 });
 
 const cancelMyAppointment = asyncHandler(async (req, res) => {
@@ -311,7 +338,9 @@ const cancelMyAppointment = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Appointment cancelled successfully", appointment));
+    .json(
+      new ApiResponse(200, "Appointment cancelled successfully", appointment),
+    );
 });
 
 module.exports = {

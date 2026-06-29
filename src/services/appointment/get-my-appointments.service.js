@@ -80,9 +80,7 @@ const getMyAppointments = async (patientId, query = {}) => {
   const appointments = await Appointment.find(filter)
     .populate({
       path: "doctorEmployeeId",
-
       select: "name department specialization",
-
       match: {
         isDeleted: false,
       },

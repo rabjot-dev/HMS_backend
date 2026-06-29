@@ -9,29 +9,24 @@ const nodeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
     path: {
       type: String,
       required: true,
       trim: true,
     },
-
     icon: {
       type: String,
       default: "",
     },
-
     order: {
       type: Number,
       default: 0,
     },
-
     roles: {
       type: [String],
       enum: Object.values(ROLES),
       default: [],
     },
-
     apiPermissions: [
       {
         method: {
@@ -41,13 +36,11 @@ const nodeSchema = new mongoose.Schema(
           uppercase: true,
           trim: true,
         },
-
         path: {
           type: String,
           required: true,
           trim: true,
         },
-
         roles: {
           type: [String],
           enum: Object.values(ROLES),
@@ -55,7 +48,6 @@ const nodeSchema = new mongoose.Schema(
         },
       },
     ],
-
     isActive: {
       type: Boolean,
       default: true,
@@ -65,30 +57,25 @@ const nodeSchema = new mongoose.Schema(
       ref: "Node",
       default: null,
     },
-
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
     },
-
     deletedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
     deletedAt: {
       type: Date,
       default: null,

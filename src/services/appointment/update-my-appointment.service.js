@@ -7,7 +7,6 @@ const updateMyAppointment = async (appointmentId, patientId, updateData) => {
 
   const appointment = await Appointment.findOne({
     _id: appointmentId,
-
     isDeleted: false,
   });
 
@@ -51,17 +50,12 @@ const updateMyAppointment = async (appointmentId, patientId, updateData) => {
     _id: {
       $ne: appointmentId,
     },
-
     doctorEmployeeId: appointment.doctorEmployeeId,
-
     timeSlot: appointmentTime,
-
     appointmentDate: {
       $gte: normalizedDate,
-
       $lt: nextDay,
     },
-
     status: {
       $nin: [STATUS.CANCELLED, STATUS.REJECTED, STATUS.NO_SHOW],
     },

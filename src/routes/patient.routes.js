@@ -31,7 +31,6 @@ const {
 } = require("../validations/register-patient-mobile.validation");
 
 // Create patient
-
 router.post(
   "/",
   authMiddleware,
@@ -42,7 +41,6 @@ router.post(
 );
 
 // Get all patients
-
 router.get(
   "/",
   authMiddleware,
@@ -53,16 +51,9 @@ router.get(
 );
 
 // Patient profile
-
-router.get(
-  "/profile",
-  authMiddleware,
-  nodePermissionMiddleware,
-  getProfile,
-);
+router.get("/profile", authMiddleware, nodePermissionMiddleware, getProfile);
 
 // Update patient profile
-
 router.put(
   "/profile",
   authMiddleware,
@@ -73,7 +64,6 @@ router.put(
 );
 
 // Patient dashboard
-
 router.get(
   "/dashboard",
   authMiddleware,
@@ -82,16 +72,9 @@ router.get(
 );
 
 // Get patient by id
-
-router.get(
-  "/:id",
-  authMiddleware,
-  nodePermissionMiddleware,
-  getPatientById,
-);
+router.get("/:id", authMiddleware, nodePermissionMiddleware, getPatientById);
 
 // Update patient
-
 router.put(
   "/:id",
   authMiddleware,
@@ -102,7 +85,6 @@ router.put(
 );
 
 // Mobile registration
-
 router.post(
   "/register",
   registerPatientMobileValidation,
@@ -111,12 +93,6 @@ router.post(
 );
 
 // Delete patient
-
-router.delete(
-  "/:id",
-  authMiddleware,
-  nodePermissionMiddleware,
-  deletePatient,
-);
+router.delete("/:id", authMiddleware, nodePermissionMiddleware, deletePatient);
 
 module.exports = router;

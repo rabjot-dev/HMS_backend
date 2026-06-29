@@ -40,16 +40,13 @@ const getPatientDashboard = async (patientId) => {
 
   const upcomingAppointment = await Appointment.findOne({
     ...baseFilter,
-
     status: {
       $in: [STATUS.PENDING, STATUS.BOOKED],
     },
   })
     .populate({
       path: "doctorEmployeeId",
-
       select: "name department specialization",
-
       match: {
         isDeleted: false,
       },
@@ -61,22 +58,15 @@ const getPatientDashboard = async (patientId) => {
   return {
     patient: {
       firstName: patient.firstName,
-
       lastName: patient.lastName,
-
       patientId: patient.patientId,
     },
-
     appointmentSummary: {
       pending: pendingCount,
-
       booked: bookedCount,
-
       completed: completedCount,
-
       cancelled: cancelledCount,
     },
-
     upcomingAppointment,
   };
 };

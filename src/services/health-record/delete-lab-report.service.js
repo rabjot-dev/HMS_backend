@@ -24,12 +24,7 @@ const deleteLabReportService = async (patientId, reportId, deletedBy) => {
 
   const report = patient.labReports[index];
 
-  /*
-  |--------------------------------------------------------------------------
-  | Delete Physical File
-  |--------------------------------------------------------------------------
-  */
-
+  /* Delete Physical File */
   if (report.documentUrl) {
     const filePath = path.join(
       process.cwd(),
@@ -45,11 +40,7 @@ const deleteLabReportService = async (patientId, reportId, deletedBy) => {
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Remove Report
-  |--------------------------------------------------------------------------
-  */
+  /* Remove Report */
   report.isDeleted = true;
   report.deletedBy = deletedBy;
   report.deletedAt = new Date();

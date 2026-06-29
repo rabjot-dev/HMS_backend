@@ -27,12 +27,7 @@ const getPatientsService = async (user, query) => {
     isDeleted: false,
   };
 
-  /*
-  |--------------------------------------------------------------------------
-  | Search
-  |--------------------------------------------------------------------------
-  */
-
+  /* Search */
   if (search?.trim()) {
     filter.$or = [
       {
@@ -68,12 +63,7 @@ const getPatientsService = async (user, query) => {
     ];
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Filters
-  |--------------------------------------------------------------------------
-  */
-
+  /* Filters */
   if (status) {
     filter.status = status;
   }
@@ -94,12 +84,7 @@ const getPatientsService = async (user, query) => {
     filter.gender = gender;
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Doctor Visibility
-  |--------------------------------------------------------------------------
-  */
-
+  /* Doctor Visibility */
   if (user.roles?.includes("DOCTOR")) {
     const appointments = await Appointment.find({
       doctorEmployeeId: user.employeeId,
@@ -119,12 +104,7 @@ const getPatientsService = async (user, query) => {
     };
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Pagination
-  |--------------------------------------------------------------------------
-  */
-
+  /* Pagination */
   const pagination = getPagination(page, limit);
   const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
   const totalFilter = { ...filter };
@@ -192,13 +172,21 @@ const getPatientsService = async (user, query) => {
     .limit(isCursorPagination ? pagination.limit + 1 : pagination.limit)
     .lean();
 
-  const hasNextCursorPage = isCursorPagination && patients.length > pagination.limit;
-  const data = hasNextCursorPage ? patients.slice(0, pagination.limit) : patients;
+  const hasNextCursorPage =
+    isCursorPagination && patients.length > pagination.limit;
+  const data = hasNextCursorPage
+    ? patients.slice(0, pagination.limit)
+    : patients;
 
   return {
     data,
     meta: isCursorPagination
-      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage, total)
+      ? buildCursorPaginationMeta(
+          pagination.limit,
+          data,
+          hasNextCursorPage,
+          total,
+        )
       : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };

@@ -9,7 +9,9 @@ const runValidation = async (body) => {
     body,
   };
 
-  await Promise.all(nodePayloadValidation.map((validation) => validation.run(req)));
+  await Promise.all(
+    nodePayloadValidation.map((validation) => validation.run(req)),
+  );
 
   return validationResult(req);
 };
@@ -51,7 +53,9 @@ describe("node validation", () => {
     const messages = result.array().map((error) => error.msg);
 
     expect(messages).toContain("Node name must be 2 to 80 characters");
-    expect(messages).toContain("Node path must start with / and contain a valid route path");
+    expect(messages).toContain(
+      "Node path must start with / and contain a valid route path",
+    );
     expect(messages).toContain("Invalid node role");
     expect(messages).toContain("Invalid API permission method");
     expect(messages).toContain("API permission path must start with /api/");

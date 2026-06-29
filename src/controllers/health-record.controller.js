@@ -23,7 +23,11 @@ const getHealthRecords = asyncHandler(async (req, res) => {
   const result = await getHealthRecordsService(req.user, req.query);
 
   return res.status(200).json({
-    ...new ApiResponse(200, "Health records retrieved successfully", result.data),
+    ...new ApiResponse(
+      200,
+      "Health records retrieved successfully",
+      result.data,
+    ),
     meta: result.meta,
   });
 });
@@ -115,7 +119,9 @@ const updateMedicalDocument = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Medical document updated successfully", result));
+    .json(
+      new ApiResponse(200, "Medical document updated successfully", result),
+    );
 });
 
 module.exports = {

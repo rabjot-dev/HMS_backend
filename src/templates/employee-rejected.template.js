@@ -1,4 +1,9 @@
-const employeeRejectedTemplate = ({ name, department, designation, rejectionReason }) => {
+const employeeRejectedTemplate = ({
+  name,
+  department,
+  designation,
+  rejectionReason,
+}) => {
   const reasonSection = rejectionReason
     ? `
       <p>

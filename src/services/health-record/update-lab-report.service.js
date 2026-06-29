@@ -41,12 +41,7 @@ const updateLabReportService = async (
 
   report.updatedAt = new Date();
 
-  /*
-  |--------------------------------------------------------------------------
-  | Replace File
-  |--------------------------------------------------------------------------
-  */
-
+  /* Replace File */
   if (file) {
     if (report.documentUrl) {
       const oldFilePath = path.join(

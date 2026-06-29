@@ -21,7 +21,11 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   today.setHours(0, 0, 0, 0);
 
   if (selectedDate < today) {
-    throw new ApiError(422, "Cannot select past dates", "PAST_DATE_NOT_ALLOWED");
+    throw new ApiError(
+      422,
+      "Cannot select past dates",
+      "PAST_DATE_NOT_ALLOWED",
+    );
   }
 
   // Find doctor record
@@ -78,17 +82,13 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   // Fetch existing appointments
   const bookedAppointments = await Appointment.find({
     doctorEmployeeId: doctorId,
-
     appointmentDate: {
       $gte: normalizedDate,
-
       $lt: nextDay,
     },
-
     status: {
       $nin: [STATUS.CANCELLED, STATUS.REJECTED, STATUS.NO_SHOW],
     },
-
     isDeleted: false,
   });
   // Create set of booked time slots
@@ -96,7 +96,6 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
     bookedAppointments.map((appointment) => appointment.timeSlot),
   );
   // Remove past slots if selected date is today
-
   let availableSlots = allSlots.filter((slot) => !bookedSlots.has(slot));
 
   const currentDate = new Date();

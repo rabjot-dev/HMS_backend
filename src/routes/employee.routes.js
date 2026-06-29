@@ -30,7 +30,6 @@ const {
 const router = express.Router();
 
 // Create Employee
-
 router.post(
   "/",
   authMiddleware,
@@ -41,13 +40,7 @@ router.post(
 );
 
 // Doctors
-
-router.get(
-  "/doctors",
-  authMiddleware,
-  nodePermissionMiddleware,
-  getDoctors,
-);
+router.get("/doctors", authMiddleware, nodePermissionMiddleware, getDoctors);
 
 router.get(
   "/doctor/availability",
@@ -64,7 +57,6 @@ router.patch(
 );
 
 // Employee List
-
 router.get(
   "/",
   authMiddleware,
@@ -75,7 +67,6 @@ router.get(
 );
 
 // Pending Employees
-
 router.get(
   "/pending-employees",
   authMiddleware,
@@ -84,7 +75,6 @@ router.get(
 );
 
 // Employee Approval
-
 router.patch(
   "/:id/approve-employee",
   authMiddleware,
@@ -100,25 +90,12 @@ router.patch(
 );
 
 // Employee Details
-
-router.get(
-  "/:id",
-  authMiddleware,
-  nodePermissionMiddleware,
-  getEmployeeById,
-);
+router.get("/:id", authMiddleware, nodePermissionMiddleware, getEmployeeById);
 
 // Update Employee
-
-router.put(
-  "/:id",
-  authMiddleware,
-  nodePermissionMiddleware,
-  updateEmployee,
-);
+router.put("/:id", authMiddleware, nodePermissionMiddleware, updateEmployee);
 
 // Activate Employee
-
 router.patch(
   "/:id/activate",
   authMiddleware,
@@ -127,7 +104,6 @@ router.patch(
 );
 
 // Deactivate Employee
-
 router.patch(
   "/:id/deactivate",
   authMiddleware,
@@ -136,12 +112,6 @@ router.patch(
 );
 
 // Delete Employee
-
-router.delete(
-  "/:id",
-  authMiddleware,
-  nodePermissionMiddleware,
-  deleteEmployee,
-);
+router.delete("/:id", authMiddleware, nodePermissionMiddleware, deleteEmployee);
 
 module.exports = router;

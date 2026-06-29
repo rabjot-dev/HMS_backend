@@ -31,7 +31,9 @@ const decodeCursor = (cursor) => {
   }
 
   try {
-    const parsed = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+    const parsed = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf8"),
+    );
 
     if (!parsed.createdAt || !parsed.id) {
       return null;

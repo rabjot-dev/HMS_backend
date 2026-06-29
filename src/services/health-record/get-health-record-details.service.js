@@ -5,14 +5,9 @@ const Patient = require("../../models/Patient");
 
 const ROLES = require("../../constants/roles");
 const ApiError = require("../../utils/ApiError");
-const {
-  buildPaginationMeta,
-  decodeCursor,
-} = require("../../utils/pagination");
+const { buildPaginationMeta, decodeCursor } = require("../../utils/pagination");
 
 const getHealthRecordDetailsService = async (patientId, user, query) => {
-
-
   const limit = Math.min(Math.max(Number(query.limit) || 5, 1), 10000);
   const isCursorPagination =
     query.pagination === "cursor" ||
@@ -59,9 +54,10 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     const cursorTime = getSortableTime(cursor.createdAt);
     const itemId = String(item?._id || "");
 
-    return itemTime < cursorTime || (itemTime === cursorTime && itemId < cursor.id);
+    return (
+      itemTime < cursorTime || (itemTime === cursorTime && itemId < cursor.id)
+    );
   };
-
 
   const patient = await Patient.findOne({
     _id: patientId,
@@ -90,7 +86,6 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
-
   if (user.roles?.includes(ROLES.DOCTOR)) {
     const hasAccess = await Consultation.exists({
       patientId,
@@ -102,8 +97,6 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
       throw new ApiError(403, "Access denied", "ACCESS_DENIED");
     }
   }
-
-
 
   const filter = {
     patientId,
@@ -134,19 +127,18 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     ];
   }
 
-
-  const totalConsultations = await Consultation.countDocuments(totalConsultationFilter);
+  const totalConsultations = await Consultation.countDocuments(
+    totalConsultationFilter,
+  );
 
   const consultations = await Consultation.find(filter)
     .populate({
       path: "doctorEmployeeId",
-
       select: `
           name
           department
           specialization
         `,
-
       match: {
         isDeleted: false,
       },
@@ -179,12 +171,7 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     ? consultations.slice(0, limit)
     : consultations;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Lab Reports Pagination
-  |--------------------------------------------------------------------------
-  */
-
+  /* Lab Reports Pagination */
   const getSortableTime = (value, fallback) => {
     const timestamp = new Date(value || fallback || 0).getTime();
 
@@ -199,7 +186,9 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
       getSortableTime(a.reportDate, a.createdAt),
   );
   const labReports = isCursorPagination
-    ? allLabReports.filter((report) => isAfterCursor(report, labCursor, "reportDate"))
+    ? allLabReports.filter((report) =>
+        isAfterCursor(report, labCursor, "reportDate"),
+      )
     : allLabReports;
 
   const paginatedLabReports = labReports.slice(
@@ -212,12 +201,7 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     ? paginatedLabReports.slice(0, limit)
     : paginatedLabReports;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Medical Documents Pagination
-  |--------------------------------------------------------------------------
-  */
-
+  /* Medical Documents Pagination */
   const allMedicalDocuments = (
     patient.medicalDocuments?.filter((document) => !document.isDeleted) ?? []
   ).sort(
@@ -231,9 +215,15 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
       )
     : allMedicalDocuments;
 
-  const consultationTotalPages = Math.max(Math.ceil(totalConsultations / limit), 1);
+  const consultationTotalPages = Math.max(
+    Math.ceil(totalConsultations / limit),
+    1,
+  );
   const labTotalPages = Math.max(Math.ceil(allLabReports.length / limit), 1);
-  const documentTotalPages = Math.max(Math.ceil(allMedicalDocuments.length / limit), 1);
+  const documentTotalPages = Math.max(
+    Math.ceil(allMedicalDocuments.length / limit),
+    1,
+  );
   const paginatedMedicalDocuments = medicalDocuments.slice(
     isCursorPagination ? 0 : (documentPage - 1) * limit,
     isCursorPagination ? limit + 1 : documentPage * limit,
@@ -244,18 +234,12 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     ? paginatedMedicalDocuments.slice(0, limit)
     : paginatedMedicalDocuments;
 
-  /*
-  |--------------------------------------------------------------------------
-  | Response
-  |--------------------------------------------------------------------------
-  */
-
+  /* Response */
   return {
     patient,
     consultations: paginatedConsultations,
     labReports: visibleLabReports,
     medicalDocuments: visibleMedicalDocuments,
-
     meta: {
       consultations: isCursorPagination
         ? buildSectionCursorMeta(
@@ -264,14 +248,16 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
             "createdAt",
           )
         : buildPaginationMeta(timelinePage, limit, totalConsultations),
-
       labReports: isCursorPagination
-        ? buildSectionCursorMeta(visibleLabReports, hasNextLabReportsPage, "reportDate")
+        ? buildSectionCursorMeta(
+            visibleLabReports,
+            hasNextLabReportsPage,
+            "reportDate",
+          )
         : {
             ...buildPaginationMeta(labPage, limit, allLabReports.length),
             totalPages: labTotalPages,
           },
-
       medicalDocuments: isCursorPagination
         ? buildSectionCursorMeta(
             visibleMedicalDocuments,
@@ -279,7 +265,11 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
             "recordDate",
           )
         : {
-            ...buildPaginationMeta(documentPage, limit, allMedicalDocuments.length),
+            ...buildPaginationMeta(
+              documentPage,
+              limit,
+              allMedicalDocuments.length,
+            ),
             totalPages: documentTotalPages,
           },
     },

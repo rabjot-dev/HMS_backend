@@ -21,7 +21,13 @@ const {
   deleteNode,
 } = require("../controllers/node.controller");
 
-router.get("/", authMiddleware, nodeManagementQueryValidation, validateMiddleware, getNodes);
+router.get(
+  "/",
+  authMiddleware,
+  nodeManagementQueryValidation,
+  validateMiddleware,
+  getNodes,
+);
 
 router.post(
   "/",

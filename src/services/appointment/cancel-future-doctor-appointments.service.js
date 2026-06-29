@@ -13,13 +13,10 @@ const cancelFutureDoctorAppointments = async (doctorEmployeeId, deletedBy) => {
 
   const appointments = await Appointment.find({
     doctorEmployeeId,
-
     appointmentDate: {
       $gte: today,
     },
-
     isDeleted: false,
-
     status: {
       $nin: [
         STATUS.CANCELLED,
@@ -50,22 +47,17 @@ const cancelFutureDoctorAppointments = async (doctorEmployeeId, deletedBy) => {
     if (appointment.patientId?.email) {
       const htmlContent = appointmentCancelledTemplate({
         patientName: `${appointment.patientId.firstName} ${appointment.patientId.lastName}`,
-
         appointmentDate: appointment.appointmentDate
           .toISOString()
           .split("T")[0],
-
         appointmentTime: appointment.timeSlot,
-
         reason: "Doctor is no longer available.",
       });
 
       try {
         await sendEmail({
           to: appointment.patientId.email,
-
           subject: "Appointment Cancelled",
-
           htmlContent,
         });
       } catch (error) {

@@ -26,7 +26,6 @@ const storage = multer.diskStorage({
 
     cb(null, absolutePath);
   },
-
   filename: (req, file, cb) => {
     const extension = path.extname(file.originalname);
 
@@ -51,7 +50,6 @@ const fileFilter = (req, file, cb) => {
 module.exports = multer({
   storage,
   fileFilter,
-
   limits: {
     fileSize: MAX_UPLOAD_SIZE_BYTES,
   },

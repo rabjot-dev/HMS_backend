@@ -95,7 +95,13 @@ const getPendingEmployees = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Pending employees retrieved successfully", employees));
+    .json(
+      new ApiResponse(
+        200,
+        "Pending employees retrieved successfully",
+        employees,
+      ),
+    );
 });
 
 const approveEmployee = asyncHandler(async (req, res) => {
@@ -131,11 +137,16 @@ const getDoctors = asyncHandler(async (req, res) => {
 });
 
 const updateDoctorAvailability = asyncHandler(async (req, res) => {
-  const doctor = await updateDoctorAvailabilityService(req.user.userId, req.body);
+  const doctor = await updateDoctorAvailabilityService(
+    req.user.userId,
+    req.body,
+  );
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Doctor availability updated successfully", doctor));
+    .json(
+      new ApiResponse(200, "Doctor availability updated successfully", doctor),
+    );
 });
 
 const getDoctorAvailability = asyncHandler(async (req, res) => {

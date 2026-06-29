@@ -19,7 +19,6 @@ const getHealthRecordsService = async (user, query) => {
     isDeleted: false,
   };
 
-
   if (user.roles?.includes(ROLES.DOCTOR)) {
     matchStage.doctorEmployeeId = new mongoose.Types.ObjectId(user.employeeId);
   }
@@ -28,45 +27,34 @@ const getHealthRecordsService = async (user, query) => {
     {
       $match: matchStage,
     },
-
     {
       $group: {
         _id: "$patientId",
-
         totalVisits: {
           $sum: 1,
         },
-
         lastVisit: {
           $max: "$createdAt",
         },
       },
     },
-
     {
       $lookup: {
         from: "patients",
-
         localField: "_id",
-
         foreignField: "_id",
-
         as: "patient",
       },
     },
-
     {
       $unwind: "$patient",
     },
-
     {
       $match: {
         "patient.isDeleted": false,
       },
     },
   ];
-
-
 
   if (search?.trim()) {
     pipeline.push({
@@ -119,8 +107,6 @@ const getHealthRecordsService = async (user, query) => {
     }
   }
 
-
-
   const countPipeline = [
     ...pipeline,
     {
@@ -131,8 +117,6 @@ const getHealthRecordsService = async (user, query) => {
   const countResult = await Consultation.aggregate(countPipeline);
 
   const total = countResult[0]?.total || 0;
-
-
 
   pipeline.push(
     {
@@ -151,40 +135,37 @@ const getHealthRecordsService = async (user, query) => {
       $project: {
         patient: {
           _id: "$patient._id",
-
           patientId: "$patient.patientId",
-
           firstName: "$patient.firstName",
-
           lastName: "$patient.lastName",
-
           phone: "$patient.phone",
-
           gender: "$patient.gender",
-
           bloodGroup: "$patient.bloodGroup",
         },
-
         _id: 1,
-
         createdAt: "$lastVisit",
-
         totalVisits: 1,
-
         lastVisit: 1,
       },
     },
   );
 
   const healthRecords = await Consultation.aggregate(pipeline);
-  const hasNextCursorPage = isCursorPagination && healthRecords.length > pagination.limit;
-  const data = hasNextCursorPage ? healthRecords.slice(0, pagination.limit) : healthRecords;
+  const hasNextCursorPage =
+    isCursorPagination && healthRecords.length > pagination.limit;
+  const data = hasNextCursorPage
+    ? healthRecords.slice(0, pagination.limit)
+    : healthRecords;
 
   return {
     data,
-
     meta: isCursorPagination
-      ? buildCursorPaginationMeta(pagination.limit, data, hasNextCursorPage, total)
+      ? buildCursorPaginationMeta(
+          pagination.limit,
+          data,
+          hasNextCursorPage,
+          total,
+        )
       : buildPaginationMeta(pagination.page, pagination.limit, total),
   };
 };

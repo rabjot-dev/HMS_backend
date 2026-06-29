@@ -20,11 +20,16 @@ const validateObjectId = (id, message) => {
 };
 
 const createConsultation = asyncHandler(async (req, res) => {
-  const consultation = await createConsultationService(req.body, req.user.userId);
+  const consultation = await createConsultationService(
+    req.body,
+    req.user.userId,
+  );
 
   return res
     .status(201)
-    .json(new ApiResponse(201, "Consultation created successfully", consultation));
+    .json(
+      new ApiResponse(201, "Consultation created successfully", consultation),
+    );
 });
 
 const getConsultationByAppointment = asyncHandler(async (req, res) => {
@@ -36,7 +41,9 @@ const getConsultationByAppointment = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Consultation retrieved successfully", consultation));
+    .json(
+      new ApiResponse(200, "Consultation retrieved successfully", consultation),
+    );
 });
 
 const updateConsultation = asyncHandler(async (req, res) => {
@@ -52,14 +59,20 @@ const updateConsultation = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Consultation updated successfully", consultation));
+    .json(
+      new ApiResponse(200, "Consultation updated successfully", consultation),
+    );
 });
 
 const getConsultations = asyncHandler(async (req, res) => {
   const result = await getConsultationsService(req.user, req.query);
 
   return res.status(200).json({
-    ...new ApiResponse(200, "Consultations retrieved successfully", result.data),
+    ...new ApiResponse(
+      200,
+      "Consultations retrieved successfully",
+      result.data,
+    ),
     meta: result.meta,
   });
 });
@@ -83,11 +96,16 @@ const getConsultationById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "Consultation retrieved successfully", consultation));
+    .json(
+      new ApiResponse(200, "Consultation retrieved successfully", consultation),
+    );
 });
 
 const deleteConsultation = asyncHandler(async (req, res) => {
-  const result = await deleteConsultationService(req.params.id, req.user.userId);
+  const result = await deleteConsultationService(
+    req.params.id,
+    req.user.userId,
+  );
 
   return res.status(200).json(new ApiResponse(200, result.message, result));
 });

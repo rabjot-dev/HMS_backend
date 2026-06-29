@@ -9,34 +9,28 @@ const appointmentSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patient",
       required: true,
     },
-
     doctorEmployeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
       required: true,
     },
-
     appointmentDate: {
       type: Date,
       required: true,
     },
-
     timeSlot: {
       type: String,
       required: true,
       trim: true,
     },
-
     tokenNumber: {
       type: Number,
     },
-
     status: {
       type: String,
       enum: [
@@ -50,7 +44,6 @@ const appointmentSchema = new mongoose.Schema(
       ],
       default: STATUS.BOOKED,
     },
-
     createdByEmployeeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
@@ -61,7 +54,6 @@ const appointmentSchema = new mongoose.Schema(
       ref: "Patient",
       default: null,
     },
-
     // Type of appointment
     appointmentType: {
       type: String,
@@ -74,28 +66,24 @@ const appointmentSchema = new mongoose.Schema(
       ],
       default: "CONSULTATION",
     },
-
     // Appointment priority level
     priority: {
       type: String,
       enum: ["NORMAL", "URGENT", "CRITICAL"],
       default: "NORMAL",
     },
-
     // Payment status of the appointment
     paymentStatus: {
       type: String,
       enum: ["PENDING", "PAID", "INSURANCE"],
       default: "PENDING",
     },
-
     // Consultation mode
     visitMode: {
       type: String,
       enum: ["OFFLINE", "ONLINE", "HOME_VISIT"],
       default: "OFFLINE",
     },
-
     // Patient symptoms
     symptoms: [
       {
@@ -107,46 +95,38 @@ const appointmentSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
-
     approvedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
     approvalDate: {
       type: Date,
       default: null,
     },
-
     rejectedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
     rejectedDate: {
       type: Date,
       default: null,
     },
-
     rejectionReason: {
       type: String,
       trim: true,
       default: null,
     },
-
     isDeleted: {
       type: Boolean,
       default: false,
     },
-
     deletedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
     deletedAt: {
       type: Date,
       default: null,

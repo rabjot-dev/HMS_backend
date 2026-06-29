@@ -86,7 +86,10 @@ const normalizeError = (error) => {
     };
   }
 
-  if (error?.name === "JsonWebTokenError" || error?.name === "TokenExpiredError") {
+  if (
+    error?.name === "JsonWebTokenError" ||
+    error?.name === "TokenExpiredError"
+  ) {
     return {
       statusCode: 401,
       message: "Invalid or expired token",

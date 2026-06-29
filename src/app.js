@@ -79,28 +79,12 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 app.use("/api/auth", authRoutes);
 
 app.use("/api/employees", employeeRoutes);
-app.use(
-  "/api/dashboard",
-
-  dashboardRoutes,
-);
-app.use(
-  "/api/appointments",
-
-  appointmentRoutes,
-);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/appointments", appointmentRoutes);
 app.use("/api/locations", locationRoutes);
-app.use(
-  "/api/patients",
+app.use("/api/patients", patientRoutes);
 
-  patientRoutes,
-);
-
-app.use(
-  "/api/consultations",
-
-  consultationRoutes,
-);
+app.use("/api/consultations", consultationRoutes);
 app.use("/api/health-records", healthRecordRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
