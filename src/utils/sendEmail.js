@@ -1,6 +1,7 @@
 const https = require("node:https");
 
 const SibApiV3Sdk = require("sib-api-v3-sdk");
+const logger = require("./logger");
 
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications["api-key"];
@@ -43,12 +44,12 @@ const withEmailTlsFallback = async (sendOperation) => {
 const sendEmail = async ({ to, subject, htmlContent }) => {
   try {
     if (!process.env.BREVO_API_KEY || !process.env.SENDER_EMAIL) {
-      console.warn("Email skipped: BREVO_API_KEY or SENDER_EMAIL is missing.");
+      logger.warn("Email skipped because email configuration is missing");
 
       return null;
     }
 
-    console.log("Sending email...");
+    logger.info("Sending email", { to, subject });
 
     const sender = {
       email: process.env.SENDER_EMAIL,
@@ -70,15 +71,16 @@ const sendEmail = async ({ to, subject, htmlContent }) => {
       }),
     );
 
-    console.log("Email sent successfully");
+    logger.info("Email sent successfully", { to, subject });
 
     return response;
   } catch (error) {
-    console.error("EMAIL ERROR:", error);
-
-    if (error.response) {
-      console.error(error.response.body);
-    }
+    logger.error("Email send failed", {
+      to,
+      subject,
+      error,
+      providerResponse: error.response?.body,
+    });
 
     throw error;
   }

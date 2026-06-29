@@ -3,6 +3,7 @@ const path = require("path");
 
 const Patient = require("../../models/Patient");
 const ApiError = require("../../utils/ApiError");
+const logger = require("../../utils/logger");
 
 const deleteLabReportService = async (patientId, reportId, deletedBy) => {
   const patient = await Patient.findOne({
@@ -36,7 +37,12 @@ const deleteLabReportService = async (patientId, reportId, deletedBy) => {
         await fs.promises.unlink(filePath);
       }
     } catch (error) {
-      console.error("Unable to delete lab report file", error);
+      logger.warn("Unable to delete lab report file", {
+        patientId,
+        reportId,
+        filePath,
+        error,
+      });
     }
   }
 

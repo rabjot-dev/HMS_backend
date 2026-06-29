@@ -3,6 +3,7 @@ const path = require("path");
 
 const Patient = require("../../models/Patient");
 const ApiError = require("../../utils/ApiError");
+const logger = require("../../utils/logger");
 
 const deleteMedicalDocumentService = async (
   patientId,
@@ -40,7 +41,12 @@ const deleteMedicalDocumentService = async (
         await fs.promises.unlink(filePath);
       }
     } catch (error) {
-      console.error("Unable to delete medical document file", error);
+      logger.warn("Unable to delete medical document file", {
+        patientId,
+        documentId,
+        filePath,
+        error,
+      });
     }
   }
 

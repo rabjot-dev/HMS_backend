@@ -5,6 +5,7 @@ const STATUS = require("../../constants/status");
 const sendEmail = require("../../utils/sendEmail");
 
 const appointmentCancelledTemplate = require("../../templates/appointment-cancelled.template");
+const logger = require("../../utils/logger");
 
 const cancelFutureDoctorAppointments = async (doctorEmployeeId, deletedBy) => {
   const today = new Date();
@@ -27,9 +28,10 @@ const cancelFutureDoctorAppointments = async (doctorEmployeeId, deletedBy) => {
     },
   }).populate("patientId");
 
-  console.log(
-    `${appointments.length} future appointment(s) found for cancelled doctor.`,
-  );
+  logger.info("Cancelling future appointments for inactive doctor", {
+    doctorEmployeeId,
+    count: appointments.length,
+  });
 
   for (const appointment of appointments) {
     appointment.status = STATUS.CANCELLED;
@@ -61,7 +63,11 @@ const cancelFutureDoctorAppointments = async (doctorEmployeeId, deletedBy) => {
           htmlContent,
         });
       } catch (error) {
-        console.error("EMAIL ERROR:", error);
+        logger.warn("Appointment cancellation email failed", {
+          appointmentId: appointment._id,
+          patientId: appointment.patientId?._id,
+          error,
+        });
       }
     }
   }

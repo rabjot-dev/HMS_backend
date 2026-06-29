@@ -3,6 +3,7 @@ const path = require("node:path");
 
 const Patient = require("../../models/Patient");
 const ApiError = require("../../utils/ApiError");
+const logger = require("../../utils/logger");
 
 const updateMedicalDocumentService = async (
   patientId,
@@ -55,7 +56,12 @@ const updateMedicalDocumentService = async (
           await fs.promises.unlink(oldFilePath);
         }
       } catch (error) {
-        console.error("Unable to delete old file", error);
+        logger.warn("Unable to delete old medical document file", {
+          patientId,
+          documentId,
+          filePath: oldFilePath,
+          error,
+        });
       }
     }
 

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const ApiError = require("../utils/ApiError");
+const logger = require("../utils/logger");
 
 const authMiddleware = (req, res, next) => {
   try {
@@ -31,7 +32,11 @@ const authMiddleware = (req, res, next) => {
 
     next();
   } catch (error) {
-    console.log("AUTH MIDDLEWARE ERROR:", error);
+    logger.warn("Authentication failed", {
+      requestId: req.requestId,
+      path: req.originalUrl,
+      error,
+    });
 
     next(
       error instanceof ApiError

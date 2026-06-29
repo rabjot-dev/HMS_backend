@@ -17,6 +17,8 @@ const morgan = require("morgan");
 const swaggerUi = require("swagger-ui-express");
 const openApiDocument = require("../docs/openapi.json");
 const createRateLimitMiddleware = require("./middleware/rate-limit.middleware");
+const requestContextMiddleware = require("./middleware/request-context.middleware");
+const logger = require("./utils/logger");
 const app = express();
 app.disable("x-powered-by");
 
@@ -26,6 +28,7 @@ const allowedOrigins = (process.env.CORS_ORIGINS || "")
   .filter(Boolean);
 
 app.use(helmet());
+app.use(requestContextMiddleware);
 app.use(
   cors({
     origin: allowedOrigins.length
@@ -53,8 +56,11 @@ const shouldLogHttpRequests =
 
 if (shouldLogHttpRequests) {
   app.use(
-    morgan("combined", {
+    morgan(":method :url :status :res[content-length] - :response-time ms", {
       skip: (_req, res) => res.statusCode === 304,
+      stream: {
+        write: (message) => logger.http(message.trim()),
+      },
     }),
   );
 }

@@ -1,4 +1,5 @@
 const ApiError = require("../utils/ApiError");
+const logger = require("../utils/logger");
 
 const messageStatusMap = [
   {
@@ -134,9 +135,21 @@ const normalizeError = (error) => {
 };
 
 const errorMiddleware = (error, req, res, next) => {
-  console.error(error);
-
   const normalizedError = normalizeError(error);
+  const logLevel = normalizedError.statusCode >= 500 ? "error" : "warn";
+
+  logger[logLevel]("Request failed", {
+    requestId: req.requestId,
+    method: req.method,
+    path: req.originalUrl,
+    statusCode: normalizedError.statusCode,
+    errorCode: normalizedError.errorCode,
+    userId: req.user?._id || req.user?.id,
+    employeeId: req.user?.employeeId,
+    roles: req.user?.roles,
+    message: normalizedError.message,
+    stack: normalizedError.statusCode >= 500 ? error.stack : undefined,
+  });
 
   return res
     .status(normalizedError.statusCode)

@@ -4,6 +4,7 @@ const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
 const sendEmail = require("../../utils/sendEmail");
 const employeeRejectedTemplate = require("../../templates/employee-rejected.template");
+const logger = require("../../utils/logger");
 
 const rejectEmployeeService = async (
   employeeId,
@@ -54,7 +55,11 @@ const rejectEmployeeService = async (
       subject: "Your HMS employee registration update",
       htmlContent,
     }).catch((error) => {
-      console.error("Employee rejection email failed:", error.message);
+      logger.warn("Employee rejection email failed", {
+        employeeId,
+        email: employee.email,
+        error,
+      });
     });
   }
 
