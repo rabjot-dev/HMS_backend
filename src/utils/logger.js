@@ -51,10 +51,17 @@ const redact = (payload) => {
   }, {});
 };
 
+const redactLogInfo = winston.format((info) => {
+  Object.entries(info).forEach(([key, value]) => {
+    info[key] = redactValue(key, value);
+  });
+  return info;
+});
+
 const loggerFormat = winston.format.combine(
   winston.format.timestamp(),
   winston.format.errors({ stack: true }),
-  winston.format((info) => redact(info))(),
+  redactLogInfo(),
   isProduction ? winston.format.json() : winston.format.simple(),
 );
 

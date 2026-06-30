@@ -215,10 +215,6 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
       )
     : allMedicalDocuments;
 
-  const consultationTotalPages = Math.max(
-    Math.ceil(totalConsultations / limit),
-    1,
-  );
   const labTotalPages = Math.max(Math.ceil(allLabReports.length / limit), 1);
   const documentTotalPages = Math.max(
     Math.ceil(allMedicalDocuments.length / limit),

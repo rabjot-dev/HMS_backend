@@ -51,8 +51,7 @@ app.use(
 );
 
 const shouldLogHttpRequests =
-  process.env.ENABLE_HTTP_LOGS === "true" ||
-  process.env.NODE_ENV === "production";
+  process.env.ENABLE_HTTP_LOGS !== "false" && process.env.NODE_ENV !== "test";
 
 if (shouldLogHttpRequests) {
   app.use(
