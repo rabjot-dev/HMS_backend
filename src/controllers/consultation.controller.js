@@ -12,6 +12,7 @@ const getConsultationsService = require("../services/consultation/get-consultati
 const getPrescriptionDataService = require("../services/consultation/download-prescription-pdf.service");
 const deleteConsultationService = require("../services/consultation/delete-consultation.service");
 const generatePrescriptionPdf = require("../utils/generatePrescriptionPdf");
+const { auditFromRequestSafe } = require("../services/audit-log/audit-log.service");
 
 const validateObjectId = (id, message) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -24,6 +25,35 @@ const createConsultation = asyncHandler(async (req, res) => {
     req.body,
     req.user.userId,
   );
+
+  auditFromRequestSafe(req, {
+    action:
+      consultation.status === "COMPLETED"
+        ? "Consultation Completed"
+        : "Consultation Created",
+    module: "Consultation",
+    entityId: consultation._id,
+    entityType: "Consultation",
+    details: {
+      appointmentId: consultation.appointmentId,
+      patientId: consultation.patientId,
+      doctorEmployeeId: consultation.doctorEmployeeId,
+      status: consultation.status,
+    },
+  });
+
+  if (consultation.prescriptions?.length) {
+    auditFromRequestSafe(req, {
+      action: "Prescription Added",
+      module: "Consultation",
+      entityId: consultation._id,
+      entityType: "Consultation",
+      details: {
+        appointmentId: consultation.appointmentId,
+        prescriptionCount: consultation.prescriptions.length,
+      },
+    });
+  }
 
   return res
     .status(201)
@@ -56,6 +86,35 @@ const updateConsultation = asyncHandler(async (req, res) => {
     req.body,
     req.user.userId,
   );
+
+  auditFromRequestSafe(req, {
+    action:
+      consultation.status === "COMPLETED"
+        ? "Consultation Completed"
+        : "Consultation Updated",
+    module: "Consultation",
+    entityId: consultation._id,
+    entityType: "Consultation",
+    details: {
+      appointmentId: consultation.appointmentId,
+      patientId: consultation.patientId,
+      status: consultation.status,
+      updatedFields: Object.keys(req.body),
+    },
+  });
+
+  if (req.body.prescriptions?.length) {
+    auditFromRequestSafe(req, {
+      action: "Prescription Added",
+      module: "Consultation",
+      entityId: consultation._id,
+      entityType: "Consultation",
+      details: {
+        appointmentId: consultation.appointmentId,
+        prescriptionCount: req.body.prescriptions.length,
+      },
+    });
+  }
 
   return res
     .status(200)
@@ -106,6 +165,13 @@ const deleteConsultation = asyncHandler(async (req, res) => {
     req.params.id,
     req.user.userId,
   );
+
+  auditFromRequestSafe(req, {
+    action: "Consultation Deleted",
+    module: "Consultation",
+    entityId: req.params.id,
+    entityType: "Consultation",
+  });
 
   return res.status(200).json(new ApiResponse(200, result.message, result));
 });

@@ -15,6 +15,7 @@ const rejectAppointmentService = require("../services/appointment/reject-appoint
 const updateMyAppointmentService = require("../services/appointment/update-my-appointment.service");
 const cancelMyAppointmentService = require("../services/appointment/cancel-my-appointment.service");
 const getAppointmentsService = require("../services/appointment/get-appointments.service");
+const { auditFromRequestSafe } = require("../services/audit-log/audit-log.service");
 
 const validateObjectId = (id, message) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -42,6 +43,19 @@ const getAvailableSlots = asyncHandler(async (req, res) => {
 
 const bookAppointment = asyncHandler(async (req, res) => {
   const appointment = await bookAppointmentService(req.body, req.user);
+
+  auditFromRequestSafe(req, {
+    action: "Appointment Booked",
+    module: "Appointment",
+    entityId: appointment._id,
+    entityType: "Appointment",
+    details: {
+      appointmentId: appointment.appointmentId,
+      patientId: appointment.patientId,
+      doctorEmployeeId: appointment.doctorEmployeeId,
+      status: appointment.status,
+    },
+  });
 
   return res
     .status(201)
@@ -80,6 +94,17 @@ const deleteAppointment = asyncHandler(async (req, res) => {
   }
 
   await Appointment.findByIdAndDelete(id);
+
+  auditFromRequestSafe(req, {
+    action: "Appointment Deleted",
+    module: "Appointment",
+    entityId: appointment._id,
+    entityType: "Appointment",
+    details: {
+      appointmentId: appointment.appointmentId,
+      status: appointment.status,
+    },
+  });
 
   return res
     .status(200)
@@ -215,6 +240,18 @@ const updateAppointment = asyncHandler(async (req, res) => {
 
   await appointment.save();
 
+  auditFromRequestSafe(req, {
+    action: "Appointment Updated",
+    module: "Appointment",
+    entityId: appointment._id,
+    entityType: "Appointment",
+    details: {
+      appointmentId: appointment.appointmentId,
+      status: appointment.status,
+      updatedFields: Object.keys(req.body),
+    },
+  });
+
   return res
     .status(200)
     .json(
@@ -262,6 +299,20 @@ const getDoctorQueue = asyncHandler(async (req, res) => {
 const bookPatientAppointment = asyncHandler(async (req, res) => {
   const appointment = await bookPatientAppointmentService(req.body, req.user);
 
+  auditFromRequestSafe(req, {
+    action: "Appointment Booked",
+    module: "Appointment",
+    entityId: appointment._id,
+    entityType: "Appointment",
+    details: {
+      appointmentId: appointment.appointmentId,
+      patientId: appointment.patientId,
+      doctorEmployeeId: appointment.doctorEmployeeId,
+      status: appointment.status,
+      source: "Patient",
+    },
+  });
+
   return res
     .status(201)
     .json(
@@ -299,6 +350,17 @@ const getPendingAppointments = asyncHandler(async (req, res) => {
 const approveAppointment = asyncHandler(async (req, res) => {
   const appointment = await approveAppointmentService(req.params.id);
 
+  auditFromRequestSafe(req, {
+    action: "Appointment Approved",
+    module: "Appointment",
+    entityId: appointment._id,
+    entityType: "Appointment",
+    details: {
+      appointmentId: appointment.appointmentId,
+      status: appointment.status,
+    },
+  });
+
   return res
     .status(200)
     .json(
@@ -308,6 +370,17 @@ const approveAppointment = asyncHandler(async (req, res) => {
 
 const rejectAppointment = asyncHandler(async (req, res) => {
   const appointment = await rejectAppointmentService(req.params.id);
+
+  auditFromRequestSafe(req, {
+    action: "Appointment Rejected",
+    module: "Appointment",
+    entityId: appointment._id,
+    entityType: "Appointment",
+    details: {
+      appointmentId: appointment.appointmentId,
+      status: appointment.status,
+    },
+  });
 
   return res
     .status(200)
@@ -323,6 +396,18 @@ const updateMyAppointment = asyncHandler(async (req, res) => {
     req.body,
   );
 
+  auditFromRequestSafe(req, {
+    action: "Appointment Updated",
+    module: "Appointment",
+    entityId: appointment._id,
+    entityType: "Appointment",
+    details: {
+      appointmentId: appointment.appointmentId,
+      status: appointment.status,
+      updatedFields: Object.keys(req.body),
+    },
+  });
+
   return res
     .status(200)
     .json(
@@ -335,6 +420,17 @@ const cancelMyAppointment = asyncHandler(async (req, res) => {
     req.params.id,
     req.user.patientId,
   );
+
+  auditFromRequestSafe(req, {
+    action: "Appointment Cancelled",
+    module: "Appointment",
+    entityId: appointment._id,
+    entityType: "Appointment",
+    details: {
+      appointmentId: appointment.appointmentId,
+      status: appointment.status,
+    },
+  });
 
   return res
     .status(200)
