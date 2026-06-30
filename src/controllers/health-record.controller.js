@@ -12,6 +12,7 @@ const addMedicalDocumentService = require("../services/health-record/add-medical
 const deleteMedicalDocumentService = require("../services/health-record/delete-medical-document.service");
 const updateLabReportService = require("../services/health-record/update-lab-report.service");
 const updateMedicalDocumentService = require("../services/health-record/update-medical-document.service");
+const { auditFromRequestSafe } = require("../services/audit-log/audit-log.service");
 
 const validateObjectId = (id, message) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -56,6 +57,18 @@ const addLabReport = asyncHandler(async (req, res) => {
     req.user.userId,
   );
 
+  auditFromRequestSafe(req, {
+    action: "Lab Report Uploaded",
+    module: "Health Record",
+    entityId: result._id,
+    entityType: "LabReport",
+    details: {
+      patientId: req.params.patientId,
+      reportType: result.reportType,
+      title: result.title,
+    },
+  });
+
   return res
     .status(201)
     .json(new ApiResponse(201, "Lab report added successfully", result));
@@ -68,6 +81,16 @@ const deleteLabReport = asyncHandler(async (req, res) => {
     req.user.userId,
   );
 
+  auditFromRequestSafe(req, {
+    action: "Lab Report Deleted",
+    module: "Health Record",
+    entityId: req.params.reportId,
+    entityType: "LabReport",
+    details: {
+      patientId: req.params.patientId,
+    },
+  });
+
   return res.status(200).json(new ApiResponse(200, result.message, result));
 });
 
@@ -78,6 +101,18 @@ const addMedicalDocument = asyncHandler(async (req, res) => {
     req.file,
     req.user.userId,
   );
+
+  auditFromRequestSafe(req, {
+    action: "Medical Document Uploaded",
+    module: "Health Record",
+    entityId: result._id,
+    entityType: "MedicalDocument",
+    details: {
+      patientId: req.params.patientId,
+      documentType: result.documentType,
+      title: result.title,
+    },
+  });
 
   return res
     .status(201)
@@ -91,6 +126,16 @@ const deleteMedicalDocument = asyncHandler(async (req, res) => {
     req.user.userId,
   );
 
+  auditFromRequestSafe(req, {
+    action: "Medical Document Deleted",
+    module: "Health Record",
+    entityId: req.params.documentId,
+    entityType: "MedicalDocument",
+    details: {
+      patientId: req.params.patientId,
+    },
+  });
+
   return res.status(200).json(new ApiResponse(200, result.message, result));
 });
 
@@ -102,6 +147,18 @@ const updateLabReport = asyncHandler(async (req, res) => {
     req.file,
     req.user.userId,
   );
+
+  auditFromRequestSafe(req, {
+    action: "Lab Report Updated",
+    module: "Health Record",
+    entityId: result._id,
+    entityType: "LabReport",
+    details: {
+      patientId: req.params.patientId,
+      updatedFields: Object.keys(req.body),
+      fileUpdated: Boolean(req.file),
+    },
+  });
 
   return res
     .status(200)
@@ -116,6 +173,18 @@ const updateMedicalDocument = asyncHandler(async (req, res) => {
     req.file,
     req.user.userId,
   );
+
+  auditFromRequestSafe(req, {
+    action: "Medical Document Updated",
+    module: "Health Record",
+    entityId: result._id,
+    entityType: "MedicalDocument",
+    details: {
+      patientId: req.params.patientId,
+      updatedFields: Object.keys(req.body),
+      fileUpdated: Boolean(req.file),
+    },
+  });
 
   return res
     .status(200)
