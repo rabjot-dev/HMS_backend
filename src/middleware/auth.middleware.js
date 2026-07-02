@@ -1,8 +1,11 @@
 const jwt = require("jsonwebtoken");
 const ApiError = require("../utils/ApiError");
 const logger = require("../utils/logger");
+const {
+  isAccessTokenBlacklisted,
+} = require("../services/auth/token-blacklist.service");
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
     const authorizationHeader = req.headers.authorization;
 
@@ -27,6 +30,10 @@ const authMiddleware = (req, res, next) => {
     }
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (await isAccessTokenBlacklisted(decodedToken)) {
+      throw new ApiError(401, "Token has been revoked", "TOKEN_REVOKED");
+    }
 
     req.user = decodedToken;
 

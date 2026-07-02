@@ -1,5 +1,7 @@
 require("dotenv").config();
+const { validateEnv } = require("./config/env");
 const connnectDB = require("./config/db");
+const { connectRedis } = require("./config/redis");
 const app = require("./app");
 const seedAdmin = require("./seeds/seed-admin");
 const mongoose = require("mongoose");
@@ -8,7 +10,9 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
+    validateEnv();
     await connnectDB();
+    await connectRedis();
     await seedAdmin();
     app.listen(PORT, () => {
       logger.info("Server started", { port: PORT });

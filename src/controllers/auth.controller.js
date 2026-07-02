@@ -9,22 +9,40 @@ const registerEmployeeSelf = require("../services/auth/registerEmployeeSelf.serv
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const generateAccessToken = require("../utils/generateAccessToken");
 const generateRefreshToken = require("../utils/generateRefreshToken");
+const { blacklistAccessToken } = require("../services/auth/token-blacklist.service");
 const {
   clearRefreshCookie,
   getRefreshTokenFromRequest,
   setRefreshCookie,
 } = require("../utils/refresh-cookie");
 
+const getAccessTokenFromRequest = (req) => {
+  const authorizationHeader = req.headers.authorization || "";
+
+  return authorizationHeader.startsWith("Bearer ")
+    ? authorizationHeader.split(" ")[1]
+    : null;
+};
+
 const login = asyncHandler(async (req, res) => {
   const loginResponse = await loginUser(req.body);
   const { refreshToken, ...safeLoginResponse } = loginResponse;
+  const isMobileClient = req.headers["x-client-type"] === "mobile";
 
   setRefreshCookie(res, refreshToken);
 
+  const responseData = isMobileClient
+    ? {
+        ...safeLoginResponse,
+        refreshToken,
+      }
+    : safeLoginResponse;
+
   return res
     .status(200)
-    .json(new ApiResponse(200, "Login successful", safeLoginResponse));
+    .json(new ApiResponse(200, "Login successful", responseData));
 });
 
 const createPassword = asyncHandler(async (req, res) => {
@@ -128,24 +146,42 @@ const refreshToken = asyncHandler(async (req, res) => {
     roles: user.roles,
   };
 
-  const accessToken = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
-    expiresIn: "15m",
-  });
+  const accessToken = generateAccessToken(tokenPayload);
   const nextRefreshToken = generateRefreshToken(tokenPayload);
 
   user.refreshToken = nextRefreshToken;
   await user.save();
   setRefreshCookie(res, nextRefreshToken);
 
+  const responseData = req.body?.refreshToken
+    ? {
+        accessToken,
+        refreshToken: nextRefreshToken,
+      }
+    : {
+        accessToken,
+      };
+
   return res.status(200).json(
-    new ApiResponse(200, "Access token refreshed successfully", {
-      accessToken,
-    }),
+    new ApiResponse(
+      200,
+      "Access token refreshed successfully",
+      responseData,
+    ),
   );
 });
 
 const logout = asyncHandler(async (req, res) => {
   const refreshToken = getRefreshTokenFromRequest(req);
+  const accessToken = getAccessTokenFromRequest(req);
+
+  if (accessToken) {
+    try {
+      const decodedAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+
+      await blacklistAccessToken(decodedAccessToken);
+    } catch {}
+  }
 
   if (!refreshToken) {
     clearRefreshCookie(res);
