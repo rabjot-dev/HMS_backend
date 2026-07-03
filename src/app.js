@@ -79,7 +79,9 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
+if (process.env.NODE_ENV !== "production") {
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
+}
 
 app.use("/api/auth", authRoutes);
 

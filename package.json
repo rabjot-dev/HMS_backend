@@ -9,6 +9,7 @@
     "test:unit": "node scripts/run-tests.js tests/unit --detectOpenHandles --forceExit --runInBand --passWithNoTests",
     "test:integration": "node scripts/run-tests.js tests/integration --detectOpenHandles --forceExit --runInBand --passWithNoTests",
     "test:coverage": "node scripts/run-tests.js --coverage --detectOpenHandles --forceExit --runInBand --passWithNoTests",
+    "seed:admin": "node src/seeds/seed-admin.js",
     "seed:nodes": "node src/seeds/seed-nodes.js",
     "seed:node-children": "node src/seeds/seed-node-children.js"
   },
@@ -21,6 +22,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
     "express-validator": "^7.3.2",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",

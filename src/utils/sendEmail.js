@@ -10,7 +10,17 @@ apiKey.apiKey = process.env.BREVO_API_KEY;
 
 const tranEmailApi = new SibApiV3Sdk.TransactionalEmailsApi();
 
-const LOCAL_ISSUER_CERT_ERROR = "UNABLE_TO_GET_ISSUER_CERT_LOCALLY";
+const TLS_ERROR_CODES = new Set([
+  "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+  "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+  "DEPTH_ZERO_SELF_SIGNED_CERT",
+  "SELF_SIGNED_CERT_IN_CHAIN",
+  "ECONNRESET",
+]);
+
+const isTlsError = (error) =>
+  TLS_ERROR_CODES.has(error?.code) ||
+  /tls|ssl|certificate|socket disconnected/i.test(error?.message || "");
 
 const shouldUseInsecureEmailTlsFallback = () =>
   process.env.NODE_ENV !== "production" &&
@@ -20,10 +30,7 @@ const withEmailTlsFallback = async (sendOperation) => {
   try {
     return await sendOperation();
   } catch (error) {
-    if (
-      error?.code !== LOCAL_ISSUER_CERT_ERROR ||
-      !shouldUseInsecureEmailTlsFallback()
-    ) {
+    if (!isTlsError(error) || !shouldUseInsecureEmailTlsFallback()) {
       throw error;
     }
 
@@ -78,7 +85,9 @@ const sendEmail = async ({ to, subject, htmlContent }) => {
     logger.error("Email send failed", {
       to,
       subject,
-      error,
+      errorMessage: error.message,
+      errorCode: error.code,
+      providerStatus: error.status,
       providerResponse: error.response?.body,
     });
 

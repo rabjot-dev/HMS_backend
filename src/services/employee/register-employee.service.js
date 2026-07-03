@@ -13,6 +13,7 @@ const ApiError = require("../../utils/ApiError");
 
 const sendEmail = require("../../utils/sendEmail");
 const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
+const logger = require("../../utils/logger");
 
 const registerEmployee = async (employeeData, currentUser) => {
   const {
@@ -151,7 +152,7 @@ const registerEmployee = async (employeeData, currentUser) => {
     createdBy: currentUser.userId,
   });
 
-  // Send welcome email with login details
+  // Send welcome email — non-blocking: failure does not roll back employee creation
   const loginLink = `${process.env.FRONTEND_URL}/login`;
 
   const htmlContent = employeeWelcomeTemplate({
@@ -162,11 +163,20 @@ const registerEmployee = async (employeeData, currentUser) => {
     loginLink,
   });
 
-  await sendEmail({
-    to: email,
-    subject: "Welcome to HMS",
-    htmlContent,
-  });
+  try {
+    await sendEmail({
+      to: email,
+      subject: "Welcome to HMS",
+      htmlContent,
+    });
+  } catch (emailError) {
+    logger.warn("Welcome email could not be sent; employee was still created", {
+      email,
+      employeeCode,
+      errorMessage: emailError.message,
+      errorCode: emailError.code,
+    });
+  }
 
   return {
     message: "Employee registered successfully",

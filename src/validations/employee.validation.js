@@ -1,5 +1,7 @@
 const { body } = require("express-validator");
-const ROLES = require("../constants/roles");
+const EMPLOYEE_PREFIX = require("../constants/employee-prefix");
+
+const VALID_DESIGNATIONS = Object.keys(EMPLOYEE_PREFIX);
 
 const registerEmployeeValidation = [
   body("name")
@@ -39,11 +41,11 @@ const registerEmployeeValidation = [
     .withMessage("Joining date is required")
     .isISO8601()
     .withMessage("Invalid joining date format"),
-  body("role")
+  body("designation")
     .notEmpty()
-    .withMessage("Role is required")
-    .isIn(Object.values(ROLES))
-    .withMessage("Invalid employee role"),
+    .withMessage("Designation is required")
+    .isIn(VALID_DESIGNATIONS)
+    .withMessage(`Invalid employee designation. Must be one of: ${VALID_DESIGNATIONS.join(", ")}`),
   body("consultationFee")
     .optional()
     .isNumeric()

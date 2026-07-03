@@ -5,7 +5,9 @@ const winston = require("winston");
 const isProduction = process.env.NODE_ENV === "production";
 const logsDir = path.join(process.cwd(), "logs");
 
-if (isProduction && !fs.existsSync(logsDir)) {
+const shouldWriteFileLogs = isProduction || process.env.ENABLE_FILE_LOGS === "true";
+
+if (shouldWriteFileLogs && !fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
@@ -20,7 +22,7 @@ const sensitiveKeys = [
   "brevo_api_key",
 ];
 
-const redactValue = (key, value) => {
+const redactValue = (key, value, seen) => {
   if (
     sensitiveKeys.some((sensitiveKey) =>
       key.toLowerCase().includes(sensitiveKey.toLowerCase()),
@@ -30,30 +32,38 @@ const redactValue = (key, value) => {
   }
 
   if (Array.isArray(value)) {
-    return value.map((item) => redact(item));
+    return value.map((item) => redact(item, seen));
   }
 
   if (value && typeof value === "object") {
-    return redact(value);
+    return redact(value, seen);
   }
 
   return value;
 };
 
-const redact = (payload) => {
+const redact = (payload, seen = new WeakSet()) => {
   if (!payload || typeof payload !== "object") {
     return payload;
   }
 
+  if (seen.has(payload)) {
+    return "[Circular]";
+  }
+
+  seen.add(payload);
+
   return Object.entries(payload).reduce((safePayload, [key, value]) => {
-    safePayload[key] = redactValue(key, value);
+    safePayload[key] = redactValue(key, value, seen);
     return safePayload;
   }, {});
 };
 
 const redactLogInfo = winston.format((info) => {
+  const seen = new WeakSet();
+  seen.add(info);
   Object.entries(info).forEach(([key, value]) => {
-    info[key] = redactValue(key, value);
+    info[key] = redactValue(key, value, seen);
   });
   return info;
 });
@@ -67,7 +77,7 @@ const loggerFormat = winston.format.combine(
 
 const transports = [new winston.transports.Console()];
 
-if (isProduction || process.env.ENABLE_FILE_LOGS === "true") {
+if (shouldWriteFileLogs) {
   transports.push(
     new winston.transports.File({
       filename: path.join(logsDir, "error.log"),
