@@ -12,7 +12,7 @@ const generateSequentialId = require("../../utils/generateSequentialId");
 const ApiError = require("../../utils/ApiError");
 
 const sendEmail = require("../../utils/sendEmail");
-const employeeWelcomeTemplate = require("../../templates/employeeWelcomeTemplate");
+const employeeWelcomeTemplate = require("../../templates/employeeWelcometemplate");
 
 const registerEmployee = async (employeeData, currentUser) => {
   const {
