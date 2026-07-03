@@ -1,7 +1,7 @@
 const { createClient } = require("redis");
 const logger = require("../utils/logger");
 
-const isBlacklistEnabled = () => process.env.TOKEN_BLACKLIST_ENABLED !== "false";
+const isBlacklistEnabled = () => process.env.TOKEN_BLACKLIST_ENABLED === "true";
 
 let redisClient = null;
 let connectionPromise = null;
@@ -24,10 +24,17 @@ const connectRedis = async () => {
 
   redisClient = createClient({
     url: process.env.REDIS_URL || "redis://localhost:6379",
+    socket: {
+      reconnectStrategy: false,
+    },
   });
 
+  let errorLogged = false;
   redisClient.on("error", (error) => {
-    logger.warn("Redis client error", { error });
+    if (!errorLogged) {
+      logger.warn("Redis client error", { error });
+      errorLogged = true;
+    }
   });
 
   connectionPromise = redisClient
@@ -45,6 +52,7 @@ const connectRedis = async () => {
         throw error;
       }
 
+      redisClient = null;
       return null;
     })
     .finally(() => {

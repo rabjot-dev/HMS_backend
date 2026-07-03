@@ -31,7 +31,7 @@ const validateEnv = () => {
   }
 
   if (
-    process.env.TOKEN_BLACKLIST_ENABLED !== "false" &&
+    process.env.TOKEN_BLACKLIST_ENABLED === "true" &&
     process.env.REDIS_REQUIRED === "true" &&
     !process.env.REDIS_URL
   ) {
