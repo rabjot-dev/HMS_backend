@@ -7,58 +7,61 @@ const ROLES = require("../../constants/roles");
 const ApiError = require("../../utils/ApiError");
 const { buildPaginationMeta, decodeCursor } = require("../../utils/pagination");
 
-const getHealthRecordDetailsService = async (patientId, user, query) => {
-  const limit = Math.min(Math.max(Number(query.limit) || 5, 1), 10000);
-  const isCursorPagination =
+const getPagingOptions = (query) => ({
+  limit: Math.min(Math.max(Number(query.limit) || 5, 1), 10000),
+  isCursorPagination:
     query.pagination === "cursor" ||
-    Boolean(query.timelineCursor || query.labCursor || query.documentCursor);
+    Boolean(query.timelineCursor || query.labCursor || query.documentCursor),
+  timelinePage: Math.max(Number(query.timelinePage) || 1, 1),
+  labPage: Math.max(Number(query.labPage) || 1, 1),
+  documentPage: Math.max(Number(query.documentPage) || 1, 1),
+  timelineCursor: decodeCursor(query.timelineCursor),
+  labCursor: decodeCursor(query.labCursor),
+  documentCursor: decodeCursor(query.documentCursor),
+});
 
-  const timelinePage = Math.max(Number(query.timelinePage) || 1, 1);
+const encodeSectionCursor = (item, dateField) => {
+  const dateValue = item?.[dateField] || item?.createdAt;
 
-  const labPage = Math.max(Number(query.labPage) || 1, 1);
+  if (!dateValue || !item?._id) {
+    return null;
+  }
 
-  const documentPage = Math.max(Number(query.documentPage) || 1, 1);
-  const timelineCursor = decodeCursor(query.timelineCursor);
-  const labCursor = decodeCursor(query.labCursor);
-  const documentCursor = decodeCursor(query.documentCursor);
+  return Buffer.from(
+    JSON.stringify({
+      createdAt: dateValue,
+      id: item._id,
+    }),
+  ).toString("base64url");
+};
 
-  const encodeSectionCursor = (item, dateField) => {
-    const dateValue = item?.[dateField] || item?.createdAt;
+const buildSectionCursorMeta = (items, hasNextPage, dateField, limit) => ({
+  limit,
+  nextCursor: hasNextPage
+    ? encodeSectionCursor(items[items.length - 1], dateField)
+    : null,
+  hasNextPage,
+});
 
-    if (!dateValue || !item?._id) {
-      return null;
-    }
+const getSortableTime = (value, fallback) => {
+  const timestamp = new Date(value || fallback || 0).getTime();
 
-    return Buffer.from(
-      JSON.stringify({
-        createdAt: dateValue,
-        id: item._id,
-      }),
-    ).toString("base64url");
-  };
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
 
-  const buildSectionCursorMeta = (items, hasNextPage, dateField) => ({
-    limit,
-    nextCursor: hasNextPage
-      ? encodeSectionCursor(items[items.length - 1], dateField)
-      : null,
-    hasNextPage,
-  });
+const isAfterCursor = (item, cursor, dateField) => {
+  if (!cursor) {
+    return true;
+  }
 
-  const isAfterCursor = (item, cursor, dateField) => {
-    if (!cursor) {
-      return true;
-    }
+  const itemTime = getSortableTime(item?.[dateField], item?.createdAt);
+  const cursorTime = getSortableTime(cursor.createdAt);
+  const itemId = String(item?._id || "");
 
-    const itemTime = getSortableTime(item?.[dateField], item?.createdAt);
-    const cursorTime = getSortableTime(cursor.createdAt);
-    const itemId = String(item?._id || "");
+  return itemTime < cursorTime || (itemTime === cursorTime && itemId < cursor.id);
+};
 
-    return (
-      itemTime < cursorTime || (itemTime === cursorTime && itemId < cursor.id)
-    );
-  };
-
+const getPatient = async (patientId) => {
   const patient = await Patient.findOne({
     _id: patientId,
     isDeleted: false,
@@ -86,18 +89,26 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
-  if (user.roles?.includes(ROLES.DOCTOR)) {
-    const hasAccess = await Consultation.exists({
-      patientId,
-      doctorEmployeeId: user.employeeId,
-      isDeleted: false,
-    });
+  return patient;
+};
 
-    if (!hasAccess) {
-      throw new ApiError(403, "Access denied", "ACCESS_DENIED");
-    }
+const assertDoctorCanAccessPatient = async (patientId, user) => {
+  if (!user.roles?.includes(ROLES.DOCTOR)) {
+    return;
   }
 
+  const hasAccess = await Consultation.exists({
+    patientId,
+    doctorEmployeeId: user.employeeId,
+    isDeleted: false,
+  });
+
+  if (!hasAccess) {
+    throw new ApiError(403, "Access denied", "ACCESS_DENIED");
+  }
+};
+
+const buildConsultationFilter = (patientId, user) => {
   const filter = {
     patientId,
     isDeleted: false,
@@ -107,31 +118,37 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     filter.doctorEmployeeId = new mongoose.Types.ObjectId(user.employeeId);
   }
 
-  const totalConsultationFilter = {
-    ...filter,
-  };
+  return filter;
+};
 
-  if (isCursorPagination && timelineCursor) {
-    filter.$or = [
-      {
-        createdAt: {
-          $lt: new Date(timelineCursor.createdAt),
-        },
-      },
-      {
-        createdAt: new Date(timelineCursor.createdAt),
-        _id: {
-          $lt: new mongoose.Types.ObjectId(timelineCursor.id),
-        },
-      },
-    ];
+const applyTimelineCursorFilter = (filter, timelineCursor) => {
+  if (!timelineCursor) {
+    return;
   }
 
-  const totalConsultations = await Consultation.countDocuments(
-    totalConsultationFilter,
+  filter.$or = [
+    {
+      createdAt: {
+        $lt: new Date(timelineCursor.createdAt),
+      },
+    },
+    {
+      createdAt: new Date(timelineCursor.createdAt),
+      _id: {
+        $lt: new mongoose.Types.ObjectId(timelineCursor.id),
+      },
+    },
+  ];
+};
+
+const getConsultations = async (filter, paging) => {
+  const consultationFilter = { ...filter };
+  applyTimelineCursorFilter(
+    consultationFilter,
+    paging.isCursorPagination ? paging.timelineCursor : null,
   );
 
-  const consultations = await Consultation.find(filter)
+  return Consultation.find(consultationFilter)
     .populate({
       path: "doctorEmployeeId",
       select: `
@@ -162,113 +179,151 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
       createdAt: -1,
       _id: -1,
     })
-    .skip(isCursorPagination ? 0 : (timelinePage - 1) * limit)
-    .limit(isCursorPagination ? limit + 1 : limit)
+    .skip(
+      paging.isCursorPagination ? 0 : (paging.timelinePage - 1) * paging.limit,
+    )
+    .limit(paging.isCursorPagination ? paging.limit + 1 : paging.limit)
     .lean();
+};
+
+const sortEmbeddedRecords = (records, dateField) =>
+  (records?.filter((record) => !record.isDeleted) ?? []).sort(
+    (a, b) =>
+      getSortableTime(b[dateField], b.createdAt) -
+      getSortableTime(a[dateField], a.createdAt),
+  );
+
+const getVisibleCursorRecords = (records, cursor, dateField, limit) =>
+  records
+    .filter((record) => isAfterCursor(record, cursor, dateField))
+    .slice(0, limit + 1);
+
+const paginateEmbeddedSection = ({
+  records,
+  dateField,
+  cursor,
+  page,
+  paging,
+}) => {
+  const sortedRecords = sortEmbeddedRecords(records, dateField);
+  const pageRecords = paging.isCursorPagination
+    ? getVisibleCursorRecords(sortedRecords, cursor, dateField, paging.limit)
+    : sortedRecords.slice((page - 1) * paging.limit, page * paging.limit);
+  const hasNextPage =
+    paging.isCursorPagination && pageRecords.length > paging.limit;
+
+  return {
+    allRecords: sortedRecords,
+    visibleRecords: hasNextPage ? pageRecords.slice(0, paging.limit) : pageRecords,
+    hasNextPage,
+  };
+};
+
+const buildSectionMeta = ({
+  paging,
+  page,
+  total,
+  visibleRecords,
+  hasNextPage,
+  dateField,
+}) => {
+  if (paging.isCursorPagination) {
+    return buildSectionCursorMeta(
+      visibleRecords,
+      hasNextPage,
+      dateField,
+      paging.limit,
+    );
+  }
+
+  return {
+    ...buildPaginationMeta(page, paging.limit, total),
+    totalPages: Math.max(Math.ceil(total / paging.limit), 1),
+  };
+};
+
+const buildResponseMeta = ({
+  paging,
+  totalConsultations,
+  consultations,
+  hasNextConsultationsPage,
+  labSection,
+  documentSection,
+}) => ({
+  consultations: paging.isCursorPagination
+    ? buildSectionCursorMeta(
+        consultations,
+        hasNextConsultationsPage,
+        "createdAt",
+        paging.limit,
+      )
+    : buildPaginationMeta(
+        paging.timelinePage,
+        paging.limit,
+        totalConsultations,
+      ),
+  labReports: buildSectionMeta({
+    paging,
+    page: paging.labPage,
+    total: labSection.allRecords.length,
+    visibleRecords: labSection.visibleRecords,
+    hasNextPage: labSection.hasNextPage,
+    dateField: "reportDate",
+  }),
+  medicalDocuments: buildSectionMeta({
+    paging,
+    page: paging.documentPage,
+    total: documentSection.allRecords.length,
+    visibleRecords: documentSection.visibleRecords,
+    hasNextPage: documentSection.hasNextPage,
+    dateField: "recordDate",
+  }),
+});
+
+const getHealthRecordDetailsService = async (patientId, user, query) => {
+  const paging = getPagingOptions(query);
+  const patient = await getPatient(patientId);
+
+  await assertDoctorCanAccessPatient(patientId, user);
+
+  const filter = buildConsultationFilter(patientId, user);
+  const totalConsultations = await Consultation.countDocuments(filter);
+  const consultations = await getConsultations(filter, paging);
   const hasNextConsultationsPage =
-    isCursorPagination && consultations.length > limit;
+    paging.isCursorPagination && consultations.length > paging.limit;
   const paginatedConsultations = hasNextConsultationsPage
-    ? consultations.slice(0, limit)
+    ? consultations.slice(0, paging.limit)
     : consultations;
 
-  /* Lab Reports Pagination */
-  const getSortableTime = (value, fallback) => {
-    const timestamp = new Date(value || fallback || 0).getTime();
-
-    return Number.isNaN(timestamp) ? 0 : timestamp;
-  };
-
-  const allLabReports = (
-    patient.labReports?.filter((report) => !report.isDeleted) ?? []
-  ).sort(
-    (a, b) =>
-      getSortableTime(b.reportDate, b.createdAt) -
-      getSortableTime(a.reportDate, a.createdAt),
-  );
-  const labReports = isCursorPagination
-    ? allLabReports.filter((report) =>
-        isAfterCursor(report, labCursor, "reportDate"),
-      )
-    : allLabReports;
-
-  const paginatedLabReports = labReports.slice(
-    isCursorPagination ? 0 : (labPage - 1) * limit,
-    isCursorPagination ? limit + 1 : labPage * limit,
-  );
-  const hasNextLabReportsPage =
-    isCursorPagination && paginatedLabReports.length > limit;
-  const visibleLabReports = hasNextLabReportsPage
-    ? paginatedLabReports.slice(0, limit)
-    : paginatedLabReports;
-
-  /* Medical Documents Pagination */
-  const allMedicalDocuments = (
-    patient.medicalDocuments?.filter((document) => !document.isDeleted) ?? []
-  ).sort(
-    (a, b) =>
-      getSortableTime(b.recordDate, b.createdAt) -
-      getSortableTime(a.recordDate, a.createdAt),
-  );
-  const medicalDocuments = isCursorPagination
-    ? allMedicalDocuments.filter((document) =>
-        isAfterCursor(document, documentCursor, "recordDate"),
-      )
-    : allMedicalDocuments;
-
-  const labTotalPages = Math.max(Math.ceil(allLabReports.length / limit), 1);
-  const documentTotalPages = Math.max(
-    Math.ceil(allMedicalDocuments.length / limit),
-    1,
-  );
-  const paginatedMedicalDocuments = medicalDocuments.slice(
-    isCursorPagination ? 0 : (documentPage - 1) * limit,
-    isCursorPagination ? limit + 1 : documentPage * limit,
-  );
-  const hasNextMedicalDocumentsPage =
-    isCursorPagination && paginatedMedicalDocuments.length > limit;
-  const visibleMedicalDocuments = hasNextMedicalDocumentsPage
-    ? paginatedMedicalDocuments.slice(0, limit)
-    : paginatedMedicalDocuments;
+  const labSection = paginateEmbeddedSection({
+    records: patient.labReports,
+    dateField: "reportDate",
+    cursor: paging.labCursor,
+    page: paging.labPage,
+    paging,
+  });
+  const documentSection = paginateEmbeddedSection({
+    records: patient.medicalDocuments,
+    dateField: "recordDate",
+    cursor: paging.documentCursor,
+    page: paging.documentPage,
+    paging,
+  });
 
   /* Response */
   return {
     patient,
     consultations: paginatedConsultations,
-    labReports: visibleLabReports,
-    medicalDocuments: visibleMedicalDocuments,
-    meta: {
-      consultations: isCursorPagination
-        ? buildSectionCursorMeta(
-            paginatedConsultations,
-            hasNextConsultationsPage,
-            "createdAt",
-          )
-        : buildPaginationMeta(timelinePage, limit, totalConsultations),
-      labReports: isCursorPagination
-        ? buildSectionCursorMeta(
-            visibleLabReports,
-            hasNextLabReportsPage,
-            "reportDate",
-          )
-        : {
-            ...buildPaginationMeta(labPage, limit, allLabReports.length),
-            totalPages: labTotalPages,
-          },
-      medicalDocuments: isCursorPagination
-        ? buildSectionCursorMeta(
-            visibleMedicalDocuments,
-            hasNextMedicalDocumentsPage,
-            "recordDate",
-          )
-        : {
-            ...buildPaginationMeta(
-              documentPage,
-              limit,
-              allMedicalDocuments.length,
-            ),
-            totalPages: documentTotalPages,
-          },
-    },
+    labReports: labSection.visibleRecords,
+    medicalDocuments: documentSection.visibleRecords,
+    meta: buildResponseMeta({
+      paging,
+      totalConsultations,
+      consultations: paginatedConsultations,
+      hasNextConsultationsPage,
+      labSection,
+      documentSection,
+    }),
   };
 };
 

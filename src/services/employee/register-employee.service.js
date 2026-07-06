@@ -37,7 +37,6 @@ const registerEmployee = async (employeeData, currentUser) => {
     maxPatientsPerDay,
     securityQuestion,
     securityAnswer: hashedSecurityAnswer,
-    role,
   } = employeeData;
 
   // Super admin authorization

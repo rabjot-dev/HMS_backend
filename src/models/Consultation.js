@@ -1,5 +1,35 @@
 const mongoose = require("mongoose");
 
+const requiredRef = (ref) => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref,
+  required: true,
+});
+
+const nullableUserRef = (defaultValue = null) => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: defaultValue,
+});
+
+const softDeleteFields = () => ({
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedBy: nullableUserRef(),
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
+});
+
+const auditFields = () => ({
+  createdBy: nullableUserRef(),
+  updatedBy: nullableUserRef(),
+  ...softDeleteFields(),
+});
+
 // Medicine prescribed during consultation
 const prescriptionSchema = new mongoose.Schema({
   medicineName: {
@@ -24,21 +54,15 @@ const consultationSchema = new mongoose.Schema(
   {
     // Linked appointment
     appointmentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Appointment",
-      required: true,
+      ...requiredRef("Appointment"),
     },
     // Patient details
     patientId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
-      required: true,
+      ...requiredRef("Patient"),
     },
     // Doctor handling the consultation
     doctorEmployeeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
-      required: true,
+      ...requiredRef("Employee"),
     },
     // Doctor's diagnosis
     diagnosis: {
@@ -82,29 +106,7 @@ const consultationSchema = new mongoose.Schema(
       enum: ["IN_PROGRESS", "COMPLETED"],
       default: "IN_PROGRESS",
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
+    ...auditFields(),
     followUpDate: {
       type: Date,
       default: null,
@@ -126,8 +128,7 @@ const consultationSchema = new mongoose.Schema(
           trim: true,
         },
         uploadedBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
+          ...nullableUserRef(undefined),
         },
         uploadedAt: {
           type: Date,
@@ -142,8 +143,7 @@ const consultationSchema = new mongoose.Schema(
         type: String,
         trim: true,
         uploadedBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
+          ...nullableUserRef(undefined),
         },
         uploadedAt: {
           type: Date,

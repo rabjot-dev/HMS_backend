@@ -1,106 +1,58 @@
 const Employee = require("../../models/Employee");
-const mongoose = require("mongoose");
 
 const {
-  buildCursorPaginationMeta,
-  decodeCursor,
+  applyCursorFilter,
+  buildPagedResult,
   getPagination,
-  buildPaginationMeta,
 } = require("../../utils/pagination");
 
-const getEmployeesService = async (query) => {
-  const {
-    search,
-    status,
-    department,
-    designation,
-    page,
-    limit,
-    cursor,
-    pagination: paginationMode,
-  } = query;
+const applySearchFilter = (filter, search) => {
+  if (!search?.trim()) {
+    return;
+  }
 
+  filter.$or = [
+    { name: { $regex: search, $options: "i" } },
+    { email: { $regex: search, $options: "i" } },
+    { employeeCode: { $regex: search, $options: "i" } },
+  ];
+};
+
+const applyExactTextFilter = (filter, filterKey, value) => {
+  if (!value?.trim()) {
+    return;
+  }
+
+  filter[filterKey] = {
+    $regex: `^${value.trim()}$`,
+    $options: "i",
+  };
+};
+
+const applyFilters = (filter, query) => {
+  if (query.status) {
+    filter.status = query.status;
+  }
+
+  applyExactTextFilter(filter, "department", query.department);
+  applyExactTextFilter(filter, "designation", query.designation);
+};
+
+const getEmployeesService = async (query) => {
   const filter = {
     isDeleted: false,
   };
 
-  // search
-  if (search?.trim()) {
-    filter.$or = [
-      {
-        name: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        email: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        employeeCode: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-    ];
-  }
-
-  // filters
-  if (status) {
-    filter.status = status;
-  }
-
-  if (department?.trim()) {
-    filter.department = {
-      $regex: `^${department.trim()}$`,
-      $options: "i",
-    };
-  }
-
-  if (designation?.trim()) {
-    filter.designation = {
-      $regex: `^${designation.trim()}$`,
-      $options: "i",
-    };
-  }
+  applySearchFilter(filter, query.search);
+  applyFilters(filter, query);
 
   // pagination
-  const pagination = getPagination(page, limit);
-  const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
+  const pagination = getPagination(query.page, query.limit);
+  const isCursorPagination =
+    query.pagination === "cursor" || Boolean(query.cursor);
   const totalFilter = { ...filter };
 
-  if (isCursorPagination && cursor) {
-    const decodedCursor = decodeCursor(cursor);
-
-    if (decodedCursor) {
-      const existingSearch = filter.$or;
-      delete filter.$or;
-
-      const cursorFilter = [
-        {
-          createdAt: {
-            $lt: new Date(decodedCursor.createdAt),
-          },
-        },
-        {
-          createdAt: new Date(decodedCursor.createdAt),
-          _id: {
-            $lt: new mongoose.Types.ObjectId(decodedCursor.id),
-          },
-        },
-      ];
-
-      filter.$and = [
-        ...(existingSearch ? [{ $or: existingSearch }] : []),
-        {
-          $or: cursorFilter,
-        },
-      ];
-    }
-  }
+  applyCursorFilter(filter, isCursorPagination ? query.cursor : null);
 
   const total = await Employee.countDocuments(totalFilter);
 
@@ -116,23 +68,12 @@ const getEmployeesService = async (query) => {
     .limit(isCursorPagination ? pagination.limit + 1 : pagination.limit)
     .lean();
 
-  const hasNextCursorPage =
-    isCursorPagination && employees.length > pagination.limit;
-  const data = hasNextCursorPage
-    ? employees.slice(0, pagination.limit)
-    : employees;
-
-  return {
-    data,
-    meta: isCursorPagination
-      ? buildCursorPaginationMeta(
-          pagination.limit,
-          data,
-          hasNextCursorPage,
-          total,
-        )
-      : buildPaginationMeta(pagination.page, pagination.limit, total),
-  };
+  return buildPagedResult({
+    items: employees,
+    pagination,
+    isCursorPagination,
+    total,
+  });
 };
 
 module.exports = getEmployeesService;

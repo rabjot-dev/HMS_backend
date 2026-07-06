@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const Patient = require("../../models/Patient");
 const ApiError = require("../../utils/ApiError");
@@ -51,9 +51,6 @@ const deleteLabReportService = async (patientId, reportId, deletedBy) => {
   report.deletedBy = deletedBy;
   report.deletedAt = new Date();
 
-  patient.markModified("labReports");
-
-  await patient.save();
   patient.markModified("labReports");
 
   await patient.save();

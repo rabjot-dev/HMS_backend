@@ -2,6 +2,30 @@ const mongoose = require("mongoose");
 const ROLES = require("../constants/roles");
 const STATUS = require("../constants/status");
 
+const nullableRef = (ref) => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref,
+  default: null,
+});
+
+const softDeleteFields = () => ({
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedBy: nullableRef("User"),
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
+});
+
+const auditFields = () => ({
+  createdBy: nullableRef("User"),
+  updatedBy: nullableRef("User"),
+  ...softDeleteFields(),
+});
+
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -25,14 +49,10 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     employeeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
-      default: null,
+      ...nullableRef("Employee"),
     },
     patientId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
-      default: null,
+      ...nullableRef("Patient"),
     },
     // Tracks whether the user has completed first-time login setup
     isFirstLogin: {
@@ -63,29 +83,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     // Audit fields
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
+    ...auditFields(),
   },
   {
     timestamps: true,

@@ -5,22 +5,33 @@ const getNextTokenNumber = require("../../utils/getNextTokenNumber");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
 const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
-const bookAppointment = async (appointmentData, user) => {
-  const {
-    patientId,
-    doctorId,
-    appointmentDate,
-    appointmentTime,
-    reason,
-    notes,
-    appointmentType,
-    priority,
-    paymentStatus,
-    visitMode,
-    symptoms,
-  } = appointmentData;
 
-  // Prevent booking appointments for past dates
+const getAppointmentDateRange = (appointmentDate, useNoon = true) => {
+  if (!useNoon) {
+    const startOfDay = new Date(appointmentDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+
+    return {
+      normalizedDate: startOfDay,
+      nextDay: endOfDay,
+    };
+  }
+
+  const [year, month, day] = appointmentDate.split("-").map(Number);
+  const normalizedDate = new Date(year, month - 1, day, 12, 0, 0);
+  const nextDay = new Date(normalizedDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  return {
+    normalizedDate,
+    nextDay,
+  };
+};
+
+const assertFutureAppointmentDate = (appointmentDate, message) => {
   const selectedDate = new Date(appointmentDate);
   const today = new Date();
 
@@ -28,14 +39,11 @@ const bookAppointment = async (appointmentData, user) => {
   selectedDate.setHours(0, 0, 0, 0);
 
   if (selectedDate < today) {
-    throw new ApiError(
-      422,
-      "Cannot book appointment for past dates",
-      "PAST_DATE_NOT_ALLOWED",
-    );
+    throw new ApiError(422, message, "PAST_DATE_NOT_ALLOWED");
   }
+};
 
-  // Verify patient exists
+const findActivePatient = async (patientId) => {
   const patient = await Patient.findOne({
     _id: patientId,
     isDeleted: false,
@@ -45,7 +53,10 @@ const bookAppointment = async (appointmentData, user) => {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
-  // Verify doctor exists
+  return patient;
+};
+
+const findActiveDoctor = async (doctorId) => {
   const doctor = await Employee.findOne({
     _id: doctorId,
     isDeleted: false,
@@ -55,7 +66,10 @@ const bookAppointment = async (appointmentData, user) => {
     throw new ApiError(404, "Doctor not found", "DOCTOR_NOT_FOUND");
   }
 
-  // Check if doctor is currently available
+  return doctor;
+};
+
+const assertDoctorCanWork = (doctor, appointmentDate) => {
   if (!doctor?.availability?.isAvailable) {
     throw new ApiError(
       400,
@@ -64,7 +78,6 @@ const bookAppointment = async (appointmentData, user) => {
     );
   }
 
-  // Ensure appointment is on a doctor's working day
   const appointmentDay = new Date(appointmentDate)
     .toLocaleDateString("en-US", {
       weekday: "long",
@@ -78,38 +91,35 @@ const bookAppointment = async (appointmentData, user) => {
       "DOCTOR_NOT_AVAILABLE_ON_DAY",
     );
   }
+};
 
-  // Prevent booking during break hours
+const assertSlotOutsideBreak = (doctor, appointmentTime) => {
   const breakStartTime = doctor?.availability?.breakStartTime;
   const breakEndTime = doctor?.availability?.breakEndTime;
 
-  if (breakStartTime && breakEndTime) {
-    if (appointmentTime >= breakStartTime && appointmentTime < breakEndTime) {
-      throw new ApiError(
-        400,
-        "Selected slot falls during doctor break time",
-        "SLOT_DURING_BREAK_TIME",
-      );
-    }
+  if (
+    breakStartTime &&
+    breakEndTime &&
+    appointmentTime >= breakStartTime &&
+    appointmentTime < breakEndTime
+  ) {
+    throw new ApiError(
+      400,
+      "Selected slot falls during doctor break time",
+      "SLOT_DURING_BREAK_TIME",
+    );
   }
+};
 
-  // Normalize date for daily queries
-  const [year, month, day] = appointmentDate.split("-").map(Number);
-
-  const normalizedDate = new Date(year, month - 1, day, 12, 0, 0);
-
-  const nextDay = new Date(normalizedDate);
-  nextDay.setDate(nextDay.getDate() + 1);
-
-  // Check doctor's daily appointment limit
+const assertDoctorDailyLimit = async (doctor, doctorId, dateRange) => {
   const totalAppointments = await Appointment.countDocuments({
     doctorEmployeeId: doctorId,
     appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
+      $gte: dateRange.normalizedDate,
+      $lt: dateRange.nextDay,
     },
     status: {
-      $ne: "CANCELLED",
+      $ne: STATUS.CANCELLED,
     },
     isDeleted: false,
   });
@@ -121,17 +131,18 @@ const bookAppointment = async (appointmentData, user) => {
       "DOCTOR_DAILY_LIMIT_REACHED",
     );
   }
+};
 
-  // Prevent double-booking of doctor slot
+const assertDoctorSlotAvailable = async (doctorId, appointmentTime, dateRange) => {
   const existingAppointment = await Appointment.findOne({
     doctorEmployeeId: doctorId,
     timeSlot: appointmentTime,
     appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
+      $gte: dateRange.normalizedDate,
+      $lt: dateRange.nextDay,
     },
     status: {
-      $nin: ["CANCELLED", "NO_SHOW"],
+      $nin: [STATUS.CANCELLED, STATUS.NO_SHOW],
     },
     isDeleted: false,
   });
@@ -143,19 +154,32 @@ const bookAppointment = async (appointmentData, user) => {
       "SLOT_ALREADY_BOOKED",
     );
   }
+};
 
-  // Prevent patient from booking multiple appointments at same time
-  const existingPatientAppointment = await Appointment.findOne({
+const assertPatientSlotAvailable = async ({
+  patientId,
+  appointmentTime,
+  dateRange,
+  includeDeletedFilter,
+}) => {
+  const patientConflictFilter = {
     patientId,
     timeSlot: appointmentTime,
     appointmentDate: {
-      $gte: normalizedDate,
-      $lt: nextDay,
+      $gte: dateRange.normalizedDate,
+      $lt: dateRange.nextDay,
     },
     status: {
-      $nin: ["CANCELLED", "NO_SHOW"],
+      $nin: [STATUS.CANCELLED, STATUS.NO_SHOW],
     },
-  });
+  };
+
+  if (includeDeletedFilter) {
+    patientConflictFilter.isDeleted = false;
+  }
+
+  const existingPatientAppointment =
+    await Appointment.findOne(patientConflictFilter);
 
   if (existingPatientAppointment) {
     throw new ApiError(
@@ -164,33 +188,117 @@ const bookAppointment = async (appointmentData, user) => {
       "PATIENT_APPOINTMENT_CONFLICT",
     );
   }
+};
 
-  // Generate unique appointment ID
-  const appointmentId = await generateAppointmentId();
-
-  // Generate queue token number
-  const tokenNumber = await getNextTokenNumber(doctorId, appointmentDate);
-
-  // Create appointment record
-  const appointment = await Appointment.create({
-    appointmentId,
-    patientId,
-    doctorEmployeeId: doctorId,
+const prepareAppointmentBooking = async ({
+  patientId,
+  doctorId,
+  appointmentDate,
+  appointmentTime,
+  includePatientDeletedFilter = false,
+}) => {
+  assertFutureAppointmentDate(
     appointmentDate,
-    timeSlot: appointmentTime,
-    appointmentType,
-    priority,
-    paymentStatus,
-    visitMode,
-    symptoms,
-    reason,
-    notes,
-    tokenNumber,
-    createdByEmployeeId: user.employeeId,
-    status: "BOOKED",
+    "Cannot book appointment for past dates",
+  );
+
+  await findActivePatient(patientId);
+  const doctor = await findActiveDoctor(doctorId);
+  assertDoctorCanWork(doctor, appointmentDate);
+  assertSlotOutsideBreak(doctor, appointmentTime);
+
+  const dateRange = getAppointmentDateRange(appointmentDate);
+
+  await assertDoctorDailyLimit(doctor, doctorId, dateRange);
+  await assertDoctorSlotAvailable(doctorId, appointmentTime, dateRange);
+  await assertPatientSlotAvailable({
+    patientId,
+    appointmentTime,
+    dateRange,
+    includeDeletedFilter: includePatientDeletedFilter,
   });
 
-  return appointment;
+  return {
+    dateRange,
+    doctor,
+  };
 };
+
+const buildAppointmentPayload = ({
+  appointmentData,
+  patientId,
+  appointmentId,
+  tokenNumber,
+  createdBy,
+  status,
+}) => ({
+  appointmentId,
+  patientId,
+  doctorEmployeeId: appointmentData.doctorId,
+  appointmentDate: appointmentData.appointmentDate,
+  timeSlot: appointmentData.appointmentTime,
+  appointmentType: appointmentData.appointmentType,
+  priority: appointmentData.priority,
+  paymentStatus: appointmentData.paymentStatus,
+  visitMode: appointmentData.visitMode,
+  symptoms: appointmentData.symptoms,
+  reason: appointmentData.reason,
+  notes: appointmentData.notes,
+  tokenNumber,
+  status,
+  ...createdBy,
+});
+
+const createAppointmentRecord = async ({
+  appointmentData,
+  patientId,
+  tokenNumber,
+  createdBy,
+  status,
+}) => {
+  const appointmentId = await generateAppointmentId();
+
+  return Appointment.create(
+    buildAppointmentPayload({
+      appointmentData,
+      patientId,
+      appointmentId,
+      tokenNumber,
+      createdBy,
+      status,
+    }),
+  );
+};
+
+const bookAppointment = async (appointmentData, user) => {
+  const { patientId, doctorId, appointmentDate, appointmentTime } =
+    appointmentData;
+
+  await prepareAppointmentBooking({
+    patientId,
+    doctorId,
+    appointmentDate,
+    appointmentTime,
+  });
+
+  const tokenNumber = await getNextTokenNumber(doctorId, appointmentDate);
+
+  return createAppointmentRecord({
+    appointmentData,
+    patientId,
+    tokenNumber,
+    createdBy: {
+      createdByEmployeeId: user.employeeId,
+    },
+    status: STATUS.BOOKED,
+  });
+};
+
+bookAppointment.assertDoctorCanWork = assertDoctorCanWork;
+bookAppointment.assertFutureAppointmentDate = assertFutureAppointmentDate;
+bookAppointment.createAppointmentRecord = createAppointmentRecord;
+bookAppointment.findActiveDoctor = findActiveDoctor;
+bookAppointment.getAppointmentDateRange = getAppointmentDateRange;
+bookAppointment.prepareAppointmentBooking = prepareAppointmentBooking;
 
 module.exports = bookAppointment;

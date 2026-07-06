@@ -1,6 +1,30 @@
 const mongoose = require("mongoose");
 const STATUS = require("../constants/status");
 
+const nullableUserRef = () => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+});
+
+const softDeleteFields = () => ({
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedBy: nullableUserRef(),
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
+});
+
+const auditFields = () => ({
+  createdBy: nullableUserRef(),
+  updatedBy: nullableUserRef(),
+  ...softDeleteFields(),
+});
+
 const employeeSchema = new mongoose.Schema(
   {
     employeeCode: {
@@ -112,29 +136,16 @@ const employeeSchema = new mongoose.Schema(
         default: true,
       },
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
+    ...auditFields(),
     approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
+      ...nullableUserRef(),
     },
     approvalDate: {
       type: Date,
       default: null,
     },
     rejectedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
+      ...nullableUserRef(),
     },
     rejectedDate: {
       type: Date,
@@ -143,19 +154,6 @@ const employeeSchema = new mongoose.Schema(
     rejectionReason: {
       type: String,
       trim: true,
-      default: null,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
       default: null,
     },
   },

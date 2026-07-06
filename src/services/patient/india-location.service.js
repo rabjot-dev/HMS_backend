@@ -23,15 +23,17 @@ const areaCache = new Map();
 
 const cleanName = (value) =>
   String(value || "")
-    .replace(/&amp;/g, "&")
-    .replace(/\s+/g, " ")
+    .replaceAll('&amp;', "&")
+    .replaceAll('<', "&lt;")
+    .replaceAll('>', "&gt;")
+    .replaceAll(/\s+/g, " ")
     .trim();
 
 const normalizeName = (value) =>
   cleanName(value)
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
+    .replaceAll(/[^a-z0-9]+/g, " ")
+    .replaceAll(/\s+/g, " ")
     .trim();
 
 const normalizeAlias = (value) => {
@@ -47,14 +49,33 @@ const normalizeAlias = (value) => {
 const getNameVariants = (value) => {
   const name = cleanName(value);
   const variants = new Set();
-  const beforeParenthesis = name.replace(/\s*\([^)]*\)\s*/g, " ").trim();
-  const parenthesisMatches = [...name.matchAll(/\(([^)]*)\)/g)];
 
-  parenthesisMatches.forEach((match) => {
-    if (match[1]) {
-      variants.add(match[1].trim());
+  const open = name.indexOf("(");
+
+  const beforeParenthesis =
+    open === -1 ? name.trim() : name.slice(0, open).trim();
+
+  let start = 0;
+
+  while (true) {
+    const openIndex = name.indexOf("(", start);
+    if (openIndex === -1) {
+      break;
     }
-  });
+
+    const closeIndex = name.indexOf(")", openIndex + 1);
+    if (closeIndex === -1) {
+      break;
+    }
+
+    const variant = name.slice(openIndex + 1, closeIndex).trim();
+
+    if (variant) {
+      variants.add(variant);
+    }
+
+    start = closeIndex + 1;
+  }
 
   if (beforeParenthesis) {
     variants.add(beforeParenthesis);
@@ -66,7 +87,6 @@ const getNameVariants = (value) => {
 
   return [...variants].filter(Boolean);
 };
-
 const namesMatch = (first, second) => {
   const firstName = normalizeAlias(first);
   const secondName = normalizeAlias(second);
@@ -292,7 +312,7 @@ const getTaluksByDistrict = async (stateName, districtName) => {
         .map((item) => cleanName(item.subDistrict))
         .filter(Boolean),
     ),
-  ].sort();
+  ].sort((a, b) => a.localeCompare(b));
 };
 
 const fetchPostOffices = async (searchTerm) => {
@@ -428,7 +448,7 @@ const getPincodesByDistrict = async (stateName, districtName) => {
         .map((postOffice) => postOffice.Pincode)
         .filter((pincode) => /^\d{6}$/.test(String(pincode))),
     ),
-  ].sort();
+  ].sort((a, b) => Number(a) - Number(b));
 
   pincodeCache.set(cacheKey, {
     data: pincodes,

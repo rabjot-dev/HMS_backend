@@ -1,9 +1,28 @@
 const Appointment = require("../../models/Appointment");
-const Employee = require("../../models/Employee");
 
 const generateSlots = require("../../utils/generateSlots");
 const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
+const bookAppointment = require("./book-appointment.service");
+
+const parseSlotDate = (slot) => {
+  const [time, period] = slot.split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+
+  if (period === "PM" && hours !== 12) {
+    hours += 12;
+  }
+
+  if (period === "AM" && hours === 12) {
+    hours = 0;
+  }
+
+  const slotDate = new Date();
+  slotDate.setHours(hours, minutes, 0, 0);
+
+  return slotDate;
+};
+
 const getAvailableSlots = async (doctorId, appointmentDate) => {
   // Validate required fields
   if (!doctorId || !appointmentDate) {
@@ -14,53 +33,13 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
     );
   }
 
-  // Prevent slot lookup for past dates
-  const selectedDate = new Date(appointmentDate);
-  const today = new Date();
+  bookAppointment.assertFutureAppointmentDate(
+    appointmentDate,
+    "Cannot select past dates",
+  );
 
-  today.setHours(0, 0, 0, 0);
-
-  if (selectedDate < today) {
-    throw new ApiError(
-      422,
-      "Cannot select past dates",
-      "PAST_DATE_NOT_ALLOWED",
-    );
-  }
-
-  // Find doctor record
-  const doctor = await Employee.findOne({
-    _id: doctorId,
-    isDeleted: false,
-  });
-
-  if (!doctor) {
-    throw new ApiError(404, "Doctor not found", "DOCTOR_NOT_FOUND");
-  }
-
-  // Check doctor availability status
-  if (!doctor?.availability?.isAvailable) {
-    throw new ApiError(
-      400,
-      "Doctor is currently unavailable",
-      "DOCTOR_UNAVAILABLE",
-    );
-  }
-
-  // Verify doctor works on selected day
-  const appointmentDay = new Date(appointmentDate)
-    .toLocaleDateString("en-US", {
-      weekday: "long",
-    })
-    .toUpperCase();
-
-  if (!doctor?.availability?.workingDays?.includes(appointmentDay)) {
-    throw new ApiError(
-      400,
-      `Doctor is not available on ${appointmentDay}`,
-      "DOCTOR_NOT_AVAILABLE_ON_DAY",
-    );
-  }
+  const doctor = await bookAppointment.findActiveDoctor(doctorId);
+  bookAppointment.assertDoctorCanWork(doctor, appointmentDate);
 
   // Generate all possible slots
   const allSlots = generateSlots(
@@ -71,13 +50,10 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
     doctor?.availability?.breakEndTime,
   );
 
-  // Normalize date for appointment search
-  const normalizedDate = new Date(appointmentDate);
-
-  normalizedDate.setHours(0, 0, 0, 0);
-
-  const nextDay = new Date(normalizedDate);
-  nextDay.setDate(nextDay.getDate() + 1);
+  const { normalizedDate, nextDay } = bookAppointment.getAppointmentDateRange(
+    appointmentDate,
+    false,
+  );
 
   // Fetch existing appointments
   const bookedAppointments = await Appointment.find({
@@ -103,25 +79,9 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   const isToday = normalizedDate.toDateString() === currentDate.toDateString();
 
   if (isToday) {
-    availableSlots = availableSlots.filter((slot) => {
-      const [time, period] = slot.split(" ");
-
-      let [hours, minutes] = time.split(":").map(Number);
-
-      if (period === "PM" && hours !== 12) {
-        hours += 12;
-      }
-
-      if (period === "AM" && hours === 12) {
-        hours = 0;
-      }
-
-      const slotDate = new Date();
-
-      slotDate.setHours(hours, minutes, 0, 0);
-
-      return slotDate > currentDate;
-    });
+    availableSlots = availableSlots.filter(
+      (slot) => parseSlotDate(slot) > currentDate,
+    );
   }
 
   return availableSlots;

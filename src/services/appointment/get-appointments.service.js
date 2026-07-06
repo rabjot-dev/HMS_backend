@@ -1,37 +1,16 @@
 const Appointment = require("../../models/Appointment");
-const mongoose = require("mongoose");
 
 const Patient = require("../../models/Patient");
 
 const Employee = require("../../models/Employee");
 
 const {
-  buildCursorPaginationMeta,
-  decodeCursor,
-  getPagination,
-  buildPaginationMeta,
+  applyMappedFilters,
+  executePagedQuery,
+  preparePagedFilter,
 } = require("../../utils/pagination");
 
-const getAppointmentsService = async (user, query) => {
-  const {
-    search,
-    status,
-    doctor,
-    appointmentDate,
-    visitMode,
-    appointmentType,
-    priority,
-    page,
-    limit,
-    cursor,
-    pagination: paginationMode,
-  } = query;
-
-  const filter = {
-    isDeleted: false,
-  };
-
-  /* Role Based Visibility */
+const applyRoleVisibility = (filter, user) => {
   if (user.roles?.includes("DOCTOR")) {
     filter.doctorEmployeeId = user.employeeId;
   }
@@ -39,136 +18,113 @@ const getAppointmentsService = async (user, query) => {
   if (user.roles?.includes("PATIENT")) {
     filter.patientId = user.patientId;
   }
+};
 
-  /* Filters */
-  if (status && status !== "ALL") {
-    filter.status = status;
-  }
-  if (doctor) {
-    filter.doctorEmployeeId = doctor;
-  }
+const applyBasicFilters = (filter, query) => {
+  const filterMap = {
+    doctor: "doctorEmployeeId",
+    visitMode: "visitMode",
+    appointmentType: "appointmentType",
+    priority: "priority",
+  };
 
-  if (visitMode) {
-    filter.visitMode = visitMode;
-  }
-
-  if (appointmentType) {
-    filter.appointmentType = appointmentType;
+  if (query.status && query.status !== "ALL") {
+    filter.status = query.status;
   }
 
-  if (priority) {
-    filter.priority = priority;
+  applyMappedFilters(filter, query, filterMap);
+};
+
+const applyAppointmentDateFilter = (filter, appointmentDate) => {
+  if (!appointmentDate) {
+    return;
   }
 
-  /* Appointment Date */
-  if (appointmentDate) {
-    const selectedDate = new Date(appointmentDate);
+  const selectedDate = new Date(appointmentDate);
+  selectedDate.setHours(0, 0, 0, 0);
 
-    selectedDate.setHours(0, 0, 0, 0);
+  const nextDay = new Date(selectedDate);
+  nextDay.setDate(nextDay.getDate() + 1);
 
-    const nextDay = new Date(selectedDate);
+  filter.appointmentDate = {
+    $gte: selectedDate,
+    $lt: nextDay,
+  };
+};
 
-    nextDay.setDate(nextDay.getDate() + 1);
+const findMatchingIdsForSearch = async (search) => {
+  const patients = await Patient.find({
+    $or: [
+      { firstName: { $regex: search, $options: "i" } },
+      { lastName: { $regex: search, $options: "i" } },
+      { patientId: { $regex: search, $options: "i" } },
+    ],
+  })
+    .select("_id")
+    .lean();
 
-    filter.appointmentDate = {
-      $gte: selectedDate,
-      $lt: nextDay,
-    };
+  const doctors = await Employee.find({
+    name: {
+      $regex: search,
+      $options: "i",
+    },
+  })
+    .select("_id")
+    .lean();
+
+  return {
+    patientIds: patients.map((patient) => patient._id),
+    doctorIds: doctors.map((doctor) => doctor._id),
+  };
+};
+
+const applySearchFilter = async (filter, search) => {
+  if (!search?.trim()) {
+    return;
   }
 
-  /* Search */
-  if (search?.trim()) {
-    const patients = await Patient.find({
-      $or: [
-        {
-          firstName: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-        {
-          lastName: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-        {
-          patientId: {
-            $regex: search,
-            $options: "i",
-          },
-        },
-      ],
-    })
-      .select("_id")
-      .lean();
+  const { patientIds, doctorIds } = await findMatchingIdsForSearch(search);
 
-    const doctors = await Employee.find({
-      name: {
-        $regex: search,
-        $options: "i",
-      },
-    })
-      .select("_id")
-      .lean();
+  filter.$or = [
+    { appointmentId: { $regex: search, $options: "i" } },
+    { patientId: { $in: patientIds } },
+    { doctorEmployeeId: { $in: doctorIds } },
+  ];
+};
 
-    filter.$or = [
-      {
-        appointmentId: {
-          $regex: search,
-          $options: "i",
-        },
-      },
-      {
-        patientId: {
-          $in: patients.map((patient) => patient._id),
-        },
-      },
-      {
-        doctorEmployeeId: {
-          $in: doctors.map((doctor) => doctor._id),
-        },
-      },
-    ];
-  }
+const getAppointmentSort = (isCursorPagination) =>
+  isCursorPagination
+    ? {
+        createdAt: -1,
+        _id: -1,
+      }
+    : {
+        appointmentDate: -1,
+        timeSlot: -1,
+      };
 
-  /* Pagination */
-  const pagination = getPagination(page, limit);
-  const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
-  const totalFilter = { ...filter };
+const getAppointmentsService = async (user, query) => {
+  const filter = {
+    isDeleted: false,
+  };
 
-  if (isCursorPagination && cursor) {
-    const decodedCursor = decodeCursor(cursor);
+  applyRoleVisibility(filter, user);
+  applyBasicFilters(filter, query);
+  applyAppointmentDateFilter(filter, query.appointmentDate);
+  await applySearchFilter(filter, query.search);
 
-    if (decodedCursor) {
-      const existingSearch = filter.$or;
-      delete filter.$or;
+  const { pagination, isCursorPagination, totalFilter } = preparePagedFilter(
+    filter,
+    query,
+  );
 
-      filter.$and = [
-        ...(existingSearch ? [{ $or: existingSearch }] : []),
-        {
-          $or: [
-            {
-              createdAt: {
-                $lt: new Date(decodedCursor.createdAt),
-              },
-            },
-            {
-              createdAt: new Date(decodedCursor.createdAt),
-              _id: {
-                $lt: new mongoose.Types.ObjectId(decodedCursor.id),
-              },
-            },
-          ],
-        },
-      ];
-    }
-  }
-
-  const total = await Appointment.countDocuments(totalFilter);
-
-  const appointments = await Appointment.find(filter)
-    .populate({
+  return executePagedQuery({
+    model: Appointment,
+    filter,
+    totalFilter,
+    pagination,
+    isCursorPagination,
+    buildQuery: (appointments) => appointments.populate({
       path: "patientId",
       select: "patientId firstName lastName phone",
       match: {
@@ -197,38 +153,8 @@ const getAppointmentsService = async (user, query) => {
           createdAt
         `,
     )
-    .sort(
-      isCursorPagination
-        ? {
-            createdAt: -1,
-            _id: -1,
-          }
-        : {
-            appointmentDate: -1,
-            timeSlot: -1,
-          },
-    )
-    .skip(isCursorPagination ? 0 : pagination.skip)
-    .limit(isCursorPagination ? pagination.limit + 1 : pagination.limit)
-    .lean();
-
-  const hasNextCursorPage =
-    isCursorPagination && appointments.length > pagination.limit;
-  const data = hasNextCursorPage
-    ? appointments.slice(0, pagination.limit)
-    : appointments;
-
-  return {
-    data,
-    meta: isCursorPagination
-      ? buildCursorPaginationMeta(
-          pagination.limit,
-          data,
-          hasNextCursorPage,
-          total,
-        )
-      : buildPaginationMeta(pagination.page, pagination.limit, total),
-  };
+    .sort(getAppointmentSort(isCursorPagination)),
+  });
 };
 
 module.exports = getAppointmentsService;

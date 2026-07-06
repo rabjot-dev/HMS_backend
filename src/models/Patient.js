@@ -1,5 +1,71 @@
 const mongoose = require("mongoose");
 
+const userRef = () => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+});
+
+const employeeRef = () => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Employee",
+});
+
+const softDeleteFields = () => ({
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedBy: userRef(),
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
+});
+
+const auditFields = () => ({
+  createdBy: userRef(),
+  updatedBy: userRef(),
+  ...softDeleteFields(),
+});
+
+const uploadedDocumentFields = () => ({
+  uploadedBy: userRef(),
+  uploadedAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedBy: userRef(),
+  updatedAt: {
+    type: Date,
+    default: null,
+  },
+  ...softDeleteFields(),
+});
+
+const storedDocumentFields = (fields) => ({
+  type: [
+    {
+      title: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      ...fields,
+      documentUrl: {
+        type: String,
+        default: null,
+      },
+      notes: {
+        type: String,
+        trim: true,
+      },
+      ...uploadedDocumentFields(),
+    },
+  ],
+  default: [],
+});
+
 const patientSchema = new mongoose.Schema(
   {
     // Basic patient information
@@ -113,8 +179,7 @@ const patientSchema = new mongoose.Schema(
     },
     // Hospital-related information
     assignedDoctor: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
+      ...employeeRef(),
     },
     department: {
       type: String,
@@ -129,37 +194,8 @@ const patientSchema = new mongoose.Schema(
       enum: ["ACTIVE", "DISCHARGED", "INACTIVE"],
       default: "ACTIVE",
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
-    labReports: {
-      type: [
-        {
-          title: {
-            type: String,
-            required: true,
-            trim: true,
-          },
+    ...auditFields(),
+    labReports: storedDocumentFields({
           labName: {
             type: String,
             trim: true,
@@ -176,57 +212,8 @@ const patientSchema = new mongoose.Schema(
             type: Date,
             required: true,
           },
-          documentUrl: {
-            type: String,
-            default: null,
-          },
-          notes: {
-            type: String,
-            trim: true,
-          },
-          uploadedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          uploadedAt: {
-            type: Date,
-            default: Date.now,
-          },
-          updatedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          updatedAt: {
-            type: Date,
-            default: null,
-          },
-          isDeleted: {
-            type: Boolean,
-            default: false,
-          },
-          deletedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          deletedAt: {
-            type: Date,
-            default: null,
-          },
-        },
-      ],
-      default: [],
-    },
-    medicalDocuments: {
-      type: [
-        {
-          title: {
-            type: String,
-            required: true,
-            trim: true,
-          },
+    }),
+    medicalDocuments: storedDocumentFields({
           documentType: {
             type: String,
             required: true,
@@ -243,49 +230,7 @@ const patientSchema = new mongoose.Schema(
           recordDate: {
             type: Date,
           },
-          documentUrl: {
-            type: String,
-            default: null,
-          },
-          notes: {
-            type: String,
-            trim: true,
-          },
-          uploadedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          uploadedAt: {
-            type: Date,
-            default: Date.now,
-          },
-          updatedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          updatedAt: {
-            type: Date,
-            default: null,
-          },
-          isDeleted: {
-            type: Boolean,
-            default: false,
-          },
-          deletedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          deletedAt: {
-            type: Date,
-            default: null,
-          },
-        },
-      ],
-      default: [],
-    },
+    }),
   },
   {
     timestamps: true,

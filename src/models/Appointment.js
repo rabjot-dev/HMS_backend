@@ -1,6 +1,30 @@
 const mongoose = require("mongoose");
 const STATUS = require("../constants/status");
 
+const requiredRef = (ref) => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref,
+  required: true,
+});
+
+const nullableRef = (ref) => ({
+  type: mongoose.Schema.Types.ObjectId,
+  ref,
+  default: null,
+});
+
+const softDeleteFields = () => ({
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+  deletedBy: nullableRef("User"),
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
+});
+
 const appointmentSchema = new mongoose.Schema(
   {
     appointmentId: {
@@ -10,14 +34,10 @@ const appointmentSchema = new mongoose.Schema(
       trim: true,
     },
     patientId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
-      required: true,
+      ...requiredRef("Patient"),
     },
     doctorEmployeeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
-      required: true,
+      ...requiredRef("Employee"),
     },
     appointmentDate: {
       type: Date,
@@ -45,14 +65,10 @@ const appointmentSchema = new mongoose.Schema(
       default: STATUS.BOOKED,
     },
     createdByEmployeeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Employee",
-      default: null,
+      ...nullableRef("Employee"),
     },
     createdByPatientId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Patient",
-      default: null,
+      ...nullableRef("Patient"),
     },
     // Type of appointment
     appointmentType: {
@@ -91,23 +107,17 @@ const appointmentSchema = new mongoose.Schema(
       },
     ],
     updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
+      ...nullableRef("User"),
     },
     approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
+      ...nullableRef("User"),
     },
     approvalDate: {
       type: Date,
       default: null,
     },
     rejectedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
+      ...nullableRef("User"),
     },
     rejectedDate: {
       type: Date,
@@ -118,19 +128,7 @@ const appointmentSchema = new mongoose.Schema(
       trim: true,
       default: null,
     },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
+    ...softDeleteFields(),
   },
   {
     timestamps: true,
