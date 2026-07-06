@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Install Dependencies
         run: npm install
@@ -29,6 +29,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/hms_project/HMS_backend
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/feature/R_SP6
             npm install
             pm2 restart  hms_backend 
+            pm2 save
