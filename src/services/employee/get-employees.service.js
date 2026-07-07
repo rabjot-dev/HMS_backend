@@ -55,14 +55,14 @@ const getEmployeesService = async (query) => {
 
   if (department?.trim()) {
     filter.department = {
-      $regex: `^${department.trim()}$`,
+      $regex: department.trim(),
       $options: "i",
     };
   }
 
   if (designation?.trim()) {
     filter.designation = {
-      $regex: `^${designation.trim()}$`,
+      $regex: designation.trim(),
       $options: "i",
     };
   }

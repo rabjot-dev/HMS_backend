@@ -55,6 +55,19 @@ const bookAppointment = async (appointmentData, user) => {
     throw new ApiError(404, "Doctor not found", "DOCTOR_NOT_FOUND");
   }
 
+  // Prevent booking before the doctor's joining date
+  if (doctor.joiningDate) {
+    const joiningDate = new Date(doctor.joiningDate);
+    joiningDate.setHours(0, 0, 0, 0);
+    if (selectedDate < joiningDate) {
+      throw new ApiError(
+        400,
+        "Appointment date cannot be before the doctor's joining date",
+        "APPOINTMENT_BEFORE_JOINING_DATE",
+      );
+    }
+  }
+
   // Check if doctor is currently available
   if (!doctor?.availability?.isAvailable) {
     throw new ApiError(
