@@ -57,7 +57,7 @@ const registerValidation = [
 ];
 
 const loginValidation = [
-  body("loginId").notEmpty().withMessage("Email/EmpId is required"),
+  body("loginId").trim().notEmpty().withMessage("Email/EmpId is required"),
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
@@ -147,3 +147,4 @@ module.exports = {
   forgotPasswordValidation,
   resetPasswordValidation,
 };
+

@@ -6,6 +6,21 @@ const generateAppointmentId = require("../../utils/generateAppointmentId");
 const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
 
+const getStartOfDay = (value) => {
+  if (typeof value === "string") {
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setHours(0, 0, 0, 0);
+
+    return date;
+  }
+
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+
+  return date;
+};
+
 const getAppointmentDateRange = (appointmentDate, useNoon = true) => {
   if (!useNoon) {
     const startOfDay = new Date(appointmentDate);
@@ -67,6 +82,23 @@ const findActiveDoctor = async (doctorId) => {
   }
 
   return doctor;
+};
+
+const assertDoctorJoinedBeforeAppointment = (doctor, appointmentDate) => {
+  if (!doctor?.joiningDate) {
+    return;
+  }
+
+  const selectedDate = getStartOfDay(appointmentDate);
+  const joiningDate = getStartOfDay(doctor.joiningDate);
+
+  if (selectedDate < joiningDate) {
+    throw new ApiError(
+      422,
+      "Can book appointment after joining of doctor",
+      "DOCTOR_JOINING_DATE_NOT_REACHED",
+    );
+  }
 };
 
 const assertDoctorCanWork = (doctor, appointmentDate) => {
@@ -295,6 +327,7 @@ const bookAppointment = async (appointmentData, user) => {
 };
 
 bookAppointment.assertDoctorCanWork = assertDoctorCanWork;
+bookAppointment.assertDoctorJoinedBeforeAppointment = assertDoctorJoinedBeforeAppointment;
 bookAppointment.assertFutureAppointmentDate = assertFutureAppointmentDate;
 bookAppointment.createAppointmentRecord = createAppointmentRecord;
 bookAppointment.findActiveDoctor = findActiveDoctor;

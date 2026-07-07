@@ -5,9 +5,9 @@ const getDoctorsService = async () => {
   return Employee.find({
     designation: "DOCTOR",
     status: STATUS.ACTIVE,
-    isDeleted: false,
+    isDeleted: { $ne: true },
   })
-    .select("name department specialization availability consultationFee")
+    .select("name employeeCode department specialization joiningDate availability consultationFee")
     .sort({
       name: 1,
     })
@@ -15,3 +15,4 @@ const getDoctorsService = async () => {
 };
 
 module.exports = getDoctorsService;
+

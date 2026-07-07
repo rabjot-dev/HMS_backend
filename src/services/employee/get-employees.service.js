@@ -6,41 +6,52 @@ const {
   getPagination,
 } = require("../../utils/pagination");
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 const applySearchFilter = (filter, search) => {
-  if (!search?.trim()) {
+  const value = search?.trim();
+
+  if (!value) {
     return;
   }
 
+  const regex = escapeRegex(value);
+
   filter.$or = [
-    { name: { $regex: search, $options: "i" } },
-    { email: { $regex: search, $options: "i" } },
-    { employeeCode: { $regex: search, $options: "i" } },
+    { name: { $regex: regex, $options: "i" } },
+    { email: { $regex: regex, $options: "i" } },
+    { employeeCode: { $regex: regex, $options: "i" } },
+    { phone: { $regex: regex, $options: "i" } },
+    { department: { $regex: regex, $options: "i" } },
+    { designation: { $regex: regex, $options: "i" } },
   ];
 };
 
-const applyExactTextFilter = (filter, filterKey, value) => {
-  if (!value?.trim()) {
+const applyTextFilter = (filter, filterKey, value) => {
+  const filterValue = value?.trim();
+
+  if (!filterValue) {
     return;
   }
 
   filter[filterKey] = {
-    $regex: `^${value.trim()}$`,
+    $regex: escapeRegex(filterValue),
     $options: "i",
   };
 };
 
 const applyFilters = (filter, query) => {
-  if (query.status) {
-    filter.status = query.status;
+  if (query.status?.trim()) {
+    filter.status = query.status.trim();
   }
 
-  applyExactTextFilter(filter, "department", query.department);
-  applyExactTextFilter(filter, "designation", query.designation);
+  applyTextFilter(filter, "department", query.department);
+  applyTextFilter(filter, "designation", query.designation);
 };
 
 const getEmployeesService = async (query) => {
   const filter = {
-    isDeleted: false,
+    isDeleted: { $ne: true },
   };
 
   applySearchFilter(filter, query.search);

@@ -1,8 +1,9 @@
 const { body } = require("express-validator");
 
-// Reusable name regex
+// Reusable validation values
 const nameRegex = /^[A-Za-z\s'-]+$/;
-const locationNameRegex = /^[A-Za-z\s'().&-]+$/;
+const lettersOnlyNameRegex = /^[A-Za-z\s]+$/;
+const locationNameRegex = /^[A-Za-z0-9\s'().,&/-]+$/;
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const genders = ["MALE", "FEMALE", "OTHER"];
 const maritalStatuses = ["SINGLE", "MARRIED", "DIVORCED"];
@@ -38,19 +39,44 @@ const optionalName = (field, label, min = 2, max = 100) =>
     .isLength({ min, max })
     .withMessage(`${label} must be between ${min} and ${max} characters`);
 
+const requiredLettersOnlyName = (field, label) =>
+  body(field)
+    .trim()
+    .notEmpty()
+    .withMessage(`${label} is required`)
+    .matches(lettersOnlyNameRegex)
+    .withMessage(`${label} can contain only letters and spaces`);
+
+const optionalLettersOnlyName = (field, label, min = 2, max = 100) =>
+  body(field)
+    .optional({ checkFalsy: true })
+    .trim()
+    .matches(lettersOnlyNameRegex)
+    .withMessage(`${label} can contain only letters and spaces`)
+    .isLength({ min, max })
+    .withMessage(`${label} must be between ${min} and ${max} characters`);
+
 const optionalEnum = (field, allowedValues, message) =>
   body(field).optional().isIn(allowedValues).withMessage(message);
 
 const optionalPhone = (field, message) =>
   body(field).optional().matches(/^\d{10}$/).withMessage(message);
 
+const requiredPhone = (field, label) =>
+  body(field)
+    .trim()
+    .notEmpty()
+    .withMessage(`${label} is required`)
+    .matches(/^\d{10}$/)
+    .withMessage(`${label} must be exactly 10 digits`);
+
 const optionalIsoDate = (field, message) =>
   body(field).optional({ checkFalsy: true }).isISO8601().withMessage(message);
 
 // Validation for creating a patient
 const createPatientValidation = [
-  requiredName("firstName", "First name"),
-  requiredName("lastName", "Last name"),
+  requiredLettersOnlyName("firstName", "First name"),
+  requiredLettersOnlyName("lastName", "Last name"),
   body("dateOfBirth")
     .notEmpty()
     .withMessage("Date of birth is required")
@@ -75,8 +101,9 @@ const createPatientValidation = [
     .matches(/^\d{10}$/)
     .withMessage("Phone number must be exactly 10 digits"),
   body("email")
-    .optional({ checkFalsy: true })
     .trim()
+    .notEmpty()
+    .withMessage("Email is required")
     .normalizeEmail()
     .isEmail()
     .withMessage("Invalid email address"),
@@ -93,7 +120,7 @@ const createPatientValidation = [
     .trim()
     .matches(locationNameRegex)
     .withMessage(
-      "City can contain only letters, spaces, apostrophes, hyphens, periods, ampersands and parentheses",
+      "City can contain only letters, numbers, spaces, apostrophes, hyphens, periods, commas, slashes, ampersands and parentheses",
     )
     .isLength({ max: 100 })
     .withMessage("City cannot exceed 100 characters"),
@@ -102,7 +129,7 @@ const createPatientValidation = [
     .trim()
     .matches(locationNameRegex)
     .withMessage(
-      "State can contain only letters, spaces, apostrophes, hyphens, periods, ampersands and parentheses",
+      "State can contain only letters, numbers, spaces, apostrophes, hyphens, periods, commas, slashes, ampersands and parentheses",
     )
     .isLength({ max: 100 })
     .withMessage("State cannot exceed 100 characters"),
@@ -111,7 +138,7 @@ const createPatientValidation = [
     .trim()
     .matches(locationNameRegex)
     .withMessage(
-      "Taluk can contain only letters, spaces, apostrophes, hyphens, periods, ampersands and parentheses",
+      "Taluk can contain only letters, numbers, spaces, apostrophes, hyphens, periods, commas, slashes, ampersands and parentheses",
     )
     .isLength({ max: 100 })
     .withMessage("Taluk cannot exceed 100 characters"),
@@ -120,7 +147,7 @@ const createPatientValidation = [
     .trim()
     .matches(locationNameRegex)
     .withMessage(
-      "Post office can contain only letters, spaces, apostrophes, hyphens, periods, ampersands and parentheses",
+      "Post office can contain only letters, numbers, spaces, apostrophes, hyphens, periods, commas, slashes, ampersands and parentheses",
     )
     .isLength({ max: 100 })
     .withMessage("Post office cannot exceed 100 characters"),
@@ -137,11 +164,8 @@ const createPatientValidation = [
     )
     .isLength({ max: 100 })
     .withMessage("Country cannot exceed 100 characters"),
-  optionalName("emergencyContactName", "Emergency contact name"),
-  optionalPhone(
-    "emergencyContactPhone",
-    "Emergency contact phone must be exactly 10 digits",
-  ),
+  requiredLettersOnlyName("emergencyContactName", "Emergency contact name"),
+  requiredPhone("emergencyContactPhone", "Emergency contact phone"),
   optionalName("relationship", "Relationship", 2, 50),
   body("insuranceCoverageAmount")
     .optional({ checkFalsy: true })
@@ -156,8 +180,8 @@ const createPatientValidation = [
 
 // Validation for updating a patient
 const updatePatientValidation = [
-  optionalName("firstName", "First name", 2, 50),
-  optionalName("lastName", "Last name", 2, 50),
+  optionalLettersOnlyName("firstName", "First name", 2, 50),
+  optionalLettersOnlyName("lastName", "Last name", 2, 50),
   body("dateOfBirth")
     .optional()
     .isISO8601()
@@ -171,7 +195,11 @@ const updatePatientValidation = [
     .optional({ checkFalsy: true })
     .isEmail()
     .withMessage("Invalid email address"),
-  body("pincode").optional().matches(/^\d{6}$/).withMessage("Pincode must be 6 digits"),
+  body("pincode")
+    .optional()
+    .matches(/^\d{6}$/)
+    .withMessage("Pincode must be 6 digits"),
+  optionalLettersOnlyName("emergencyContactName", "Emergency contact name"),
   optionalPhone(
     "emergencyContactPhone",
     "Emergency contact phone must be exactly 10 digits",
@@ -189,3 +217,7 @@ module.exports = {
   createPatientValidation,
   updatePatientValidation,
 };
+
+
+
+

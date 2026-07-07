@@ -1,6 +1,7 @@
 const Appointment = require("../../models/Appointment");
 const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
+const bookAppointment = require("./book-appointment.service");
 
 const updateMyAppointment = async (appointmentId, patientId, updateData) => {
   const { appointmentDate, appointmentTime, symptoms } = updateData;
@@ -37,6 +38,11 @@ const updateMyAppointment = async (appointmentId, patientId, updateData) => {
   if (selectedDate < today) {
     throw new ApiError(422, "Past date not allowed", "PAST_DATE_NOT_ALLOWED");
   }
+
+  const doctor = await bookAppointment.findActiveDoctor(
+    appointment.doctorEmployeeId,
+  );
+  bookAppointment.assertDoctorJoinedBeforeAppointment(doctor, appointmentDate);
 
   const [year, month, day] = appointmentDate.split("-").map(Number);
 

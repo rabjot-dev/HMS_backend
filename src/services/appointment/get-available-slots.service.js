@@ -39,6 +39,7 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
   );
 
   const doctor = await bookAppointment.findActiveDoctor(doctorId);
+  bookAppointment.assertDoctorJoinedBeforeAppointment(doctor, appointmentDate);
   bookAppointment.assertDoctorCanWork(doctor, appointmentDate);
 
   // Generate all possible slots
@@ -88,3 +89,4 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
 };
 
 module.exports = getAvailableSlots;
+

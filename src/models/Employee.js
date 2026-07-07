@@ -79,7 +79,6 @@ const employeeSchema = new mongoose.Schema(
     medicalRegistrationNo: {
       type: String,
       trim: true,
-      default: null,
       unique: true,
       sparse: true,
     },
@@ -178,3 +177,4 @@ employeeSchema.index({
   isDeleted: 1,
 });
 module.exports = mongoose.model("Employee", employeeSchema);
+

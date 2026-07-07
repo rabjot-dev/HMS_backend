@@ -103,9 +103,7 @@ const registerEmployee = async (employeeData, currentUser) => {
   }
 
   const employeeCode = await generateSequentialId(prefix);
-
-  // Create employee record
-  const employee = await Employee.create({
+  const employeePayload = {
     employeeCode,
     name,
     email: email.toLowerCase(),
@@ -114,23 +112,31 @@ const registerEmployee = async (employeeData, currentUser) => {
     gender,
     designation,
     joiningDate,
-    medicalRegistrationNo,
-    specialization,
-    qualification,
-    consultationFee,
-    availabilitySlots,
-    availability: {
-      workingDays: workingDays || [],
-      startTime,
-      endTime,
-      slotDuration: slotDuration || 15,
-      breakStartTime,
-      breakEndTime,
-      maxPatientsPerDay: maxPatientsPerDay || 40,
-    },
     status: STATUS.ACTIVE,
     createdBy: currentUser.userId,
-  });
+  };
+
+  if (designation === ROLES.DOCTOR) {
+    Object.assign(employeePayload, {
+      medicalRegistrationNo,
+      specialization,
+      qualification,
+      consultationFee,
+      availabilitySlots,
+      availability: {
+        workingDays: workingDays || [],
+        startTime,
+        endTime,
+        slotDuration: slotDuration || 15,
+        breakStartTime,
+        breakEndTime,
+        maxPatientsPerDay: maxPatientsPerDay || 40,
+      },
+    });
+  }
+
+  // Create employee record
+  const employee = await Employee.create(employeePayload);
 
   // Generate temporary password for first login
   const temporaryPassword = generateTemporaryPassword();

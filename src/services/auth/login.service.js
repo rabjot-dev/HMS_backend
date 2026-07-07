@@ -9,7 +9,8 @@ const generateAccessToken = require("../../utils/generateAccessToken");
 const generateRefreshToken = require("../../utils/generateRefreshToken");
 
 const loginUser = async (loginData) => {
-  const { loginId, password } = loginData;
+  const { password } = loginData;
+  const loginId = loginData.loginId?.trim();
 
   let user = null;
 
@@ -18,12 +19,12 @@ const loginUser = async (loginData) => {
   if (isEmailLogin) {
     user = await User.findOne({
       email: loginId.toLowerCase(),
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
   } else {
     const employee = await Employee.findOne({
       employeeCode: loginId,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
 
     if (!employee) {
@@ -32,7 +33,7 @@ const loginUser = async (loginData) => {
 
     user = await User.findOne({
       employeeId: employee._id,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
   }
 
@@ -95,3 +96,6 @@ const loginUser = async (loginData) => {
 };
 
 module.exports = loginUser;
+
+
+

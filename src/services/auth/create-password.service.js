@@ -6,12 +6,12 @@ const ApiError = require("../../utils/ApiError");
 
 const createEmployeePassword = async (passwordData) => {
   const {
-    loginId,
     temporaryPassword,
     newPassword,
     securityQuestion,
     securityAnswer,
   } = passwordData;
+  const loginId = passwordData.loginId?.trim();
 
   let user = null;
 
@@ -20,12 +20,12 @@ const createEmployeePassword = async (passwordData) => {
   if (isEmailLogin) {
     user = await User.findOne({
       email: loginId.toLowerCase(),
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
   } else {
     const employee = await Employee.findOne({
       employeeCode: loginId,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
 
     if (!employee) {
@@ -34,7 +34,7 @@ const createEmployeePassword = async (passwordData) => {
 
     user = await User.findOne({
       employeeId: employee._id,
-      isDeleted: false,
+      isDeleted: { $ne: true },
     });
   }
 
@@ -80,3 +80,6 @@ const createEmployeePassword = async (passwordData) => {
 };
 
 module.exports = createEmployeePassword;
+
+
+
