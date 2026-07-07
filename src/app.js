@@ -78,7 +78,14 @@ app.get("/health", (req, res) => {
     message: "Server is running",
   });
 });
-
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    application: "Hospital Management System API",
+    version: "1.0.0",
+    environment: process.env.NODE_ENV
+  });
+});
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use("/api/auth", authRoutes);
