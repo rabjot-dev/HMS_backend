@@ -2,9 +2,12 @@ const express = require("express");
 
 const authMiddleware = require("../middleware/auth.middleware");
 const nodePermissionMiddleware = require("../middleware/node-permission.middleware");
+const roleMiddleware = require("../middleware/role.middleware");
+const ROLES = require("../constants/roles");
 
 const {
   getAdminStats,
+  getDashboardAuditLogs,
   getRecentEmployees,
   getDoctorStats,
   getReceptionistStats,
@@ -27,6 +30,14 @@ router.get(
   authMiddleware,
   nodePermissionMiddleware,
   getRecentEmployees,
+);
+
+// Get latest audit logs for admin dashboard
+router.get(
+  "/audit-logs",
+  authMiddleware,
+  roleMiddleware(ROLES.SUPER_ADMIN, ROLES.ADMIN),
+  getDashboardAuditLogs,
 );
 
 // Get doctor dashboard statistics

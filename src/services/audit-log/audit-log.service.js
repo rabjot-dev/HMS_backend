@@ -49,6 +49,26 @@ const writeAuditLog = async ({
     details,
   });
 
+const getRecentAuditLogs = async ({ limit = 20 } = {}) => {
+  const pageSize = Math.min(Math.max(Number.parseInt(limit, 10) || 20, 1), 50);
+
+  return AuditLog.find({})
+    .populate({
+      path: "performedBy",
+      select: "email roles employeeId",
+      populate: {
+        path: "employeeId",
+        select: "name employeeCode designation",
+      },
+    })
+    .sort({
+      timestamp: -1,
+      _id: -1,
+    })
+    .limit(pageSize)
+    .lean();
+};
+
 const auditFromRequest = (req, auditData) =>
   writeAuditLog({
     ...auditData,
@@ -73,5 +93,6 @@ const auditFromRequestSafe = (req, auditData) => {
 module.exports = {
   auditFromRequest,
   auditFromRequestSafe,
+  getRecentAuditLogs,
   writeAuditLog,
 };

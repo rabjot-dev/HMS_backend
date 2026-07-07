@@ -28,6 +28,7 @@ const applyBasicFilters = (filter, query) => {
     assignedDoctor: "assignedDoctor",
     department: "department",
     gender: "gender",
+    bloodGroup: "bloodGroup",
   };
 
   Object.entries(filterMap).forEach(([queryKey, filterKey]) => {
@@ -97,6 +98,7 @@ const getPatientsService = async (user, query) => {
         phone
         email
         gender
+        bloodGroup
         patientType
         status
         department

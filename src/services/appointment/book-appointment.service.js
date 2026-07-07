@@ -43,6 +43,13 @@ const assertFutureAppointmentDate = (appointmentDate, message) => {
   }
 };
 
+const getDateOnly = (date) => {
+  const dateOnly = new Date(date);
+  dateOnly.setHours(0, 0, 0, 0);
+
+  return dateOnly;
+};
+
 const findActivePatient = async (patientId) => {
   const patient = await Patient.findOne({
     _id: patientId,
@@ -69,7 +76,23 @@ const findActiveDoctor = async (doctorId) => {
   return doctor;
 };
 
+const assertDoctorJoined = (doctor, appointmentDate) => {
+  if (!doctor?.joiningDate) {
+    return;
+  }
+
+  if (getDateOnly(appointmentDate) < getDateOnly(doctor.joiningDate)) {
+    throw new ApiError(
+      400,
+      "Doctor is not available before joining date",
+      "DOCTOR_NOT_JOINED_YET",
+    );
+  }
+};
+
 const assertDoctorCanWork = (doctor, appointmentDate) => {
+  assertDoctorJoined(doctor, appointmentDate);
+
   if (!doctor?.availability?.isAvailable) {
     throw new ApiError(
       400,
