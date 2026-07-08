@@ -21,6 +21,7 @@ module.exports = [
     apiPermissions: [
       api("GET", "/api/dashboard/admin-stats"),
       api("GET", "/api/dashboard/recent-employees"),
+      api("GET", "/api/dashboard/audit-logs"),
       api("POST", "/api/nodes"),
       api("PUT", "/api/nodes/:id"),
       api("DELETE", "/api/nodes/:id"),

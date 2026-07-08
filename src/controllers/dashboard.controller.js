@@ -6,6 +6,7 @@ const getRecentEmployeesService = require("../services/dashboard/get-recent-empl
 const getDoctorStatsService = require("../services/dashboard/get-doctor-stats.service");
 const getReceptionistStatsService = require("../services/dashboard/get-receptionist-stats.service");
 const getTodayAppointmentsService = require("../services/dashboard/get-today-appointments.service");
+const { getRecentAuditLogs } = require("../services/audit-log/audit-log.service");
 
 const getAdminStats = asyncHandler(async (req, res) => {
   const stats = await getAdminStatsService();
@@ -73,8 +74,21 @@ const getTodayAppointments = asyncHandler(async (req, res) => {
     );
 });
 
+const getDashboardAuditLogs = asyncHandler(async (req, res) => {
+  const auditLogs = await getRecentAuditLogs({
+    limit: req.query.limit,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, "Audit logs retrieved successfully", auditLogs),
+    );
+});
+
 module.exports = {
   getAdminStats,
+  getDashboardAuditLogs,
   getRecentEmployees,
   getDoctorStats,
   getReceptionistStats,
