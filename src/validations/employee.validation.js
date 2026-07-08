@@ -1,5 +1,7 @@
 const { body } = require("express-validator");
-const ROLES = require("../constants/roles");
+const EMPLOYEE_PREFIX = require("../constants/employee-prefix");
+
+const employeeDesignations = Object.keys(EMPLOYEE_PREFIX);
 
 const registerEmployeeValidation = [
   body("name")
@@ -33,17 +35,17 @@ const registerEmployeeValidation = [
     .withMessage("Department is required")
     .isLength({ min: 2, max: 100 })
     .withMessage("Department must be between 2 and 100 characters"),
-  body("designation").trim().notEmpty().withMessage("Designation is required"),
+  body("designation")
+    .trim()
+    .notEmpty()
+    .withMessage("Designation is required")
+    .isIn(employeeDesignations)
+    .withMessage("Invalid employee designation"),
   body("joiningDate")
     .notEmpty()
     .withMessage("Joining date is required")
     .isISO8601()
     .withMessage("Invalid joining date format"),
-  body("role")
-    .notEmpty()
-    .withMessage("Role is required")
-    .isIn(Object.values(ROLES))
-    .withMessage("Invalid employee role"),
   body("consultationFee")
     .optional()
     .isNumeric()
