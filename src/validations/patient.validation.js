@@ -1,6 +1,7 @@
 const { body } = require("express-validator");
 
 // Reusable name regex
+const patientNameRegex = /^[A-Za-z]+$/;
 const nameRegex = /^[A-Za-z\s'-]+$/;
 const locationNameRegex = /^[A-Za-z\s'().&-]+$/;
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -22,10 +23,19 @@ const requiredName = (field, label) =>
     .trim()
     .notEmpty()
     .withMessage(`${label} is required`)
-    .matches(nameRegex)
+    .matches(patientNameRegex)
     .withMessage(
-      `${label} can contain only letters, spaces, apostrophes and hyphens`,
+      `${label} can contain only letters`,
     );
+
+const optionalPatientName = (field, label, min = 2, max = 50) =>
+  body(field)
+    .optional()
+    .trim()
+    .matches(patientNameRegex)
+    .withMessage(`${label} can contain only letters`)
+    .isLength({ min, max })
+    .withMessage(`${label} must be between ${min} and ${max} characters`);
 
 const optionalName = (field, label, min = 2, max = 100) =>
   body(field)
@@ -33,7 +43,7 @@ const optionalName = (field, label, min = 2, max = 100) =>
     .trim()
     .matches(nameRegex)
     .withMessage(
-      `${label} can contain only letters, spaces, apostrophes and hyphens`,
+      `${label} can contain only letters`,
     )
     .isLength({ min, max })
     .withMessage(`${label} must be between ${min} and ${max} characters`);
@@ -133,7 +143,7 @@ const createPatientValidation = [
     .trim()
     .matches(nameRegex)
     .withMessage(
-      "Country can contain only letters, spaces, apostrophes and hyphens",
+      "Country can contain only letters",
     )
     .isLength({ max: 100 })
     .withMessage("Country cannot exceed 100 characters"),
@@ -156,8 +166,8 @@ const createPatientValidation = [
 
 // Validation for updating a patient
 const updatePatientValidation = [
-  optionalName("firstName", "First name", 2, 50),
-  optionalName("lastName", "Last name", 2, 50),
+  optionalPatientName("firstName", "First name", 2, 50),
+  optionalPatientName("lastName", "Last name", 2, 50),
   body("dateOfBirth")
     .optional()
     .isISO8601()

@@ -1,4 +1,43 @@
 const { body } = require("express-validator");
+const ROLES = require("../constants/roles");
+
+const employeeDesignations = [
+  ROLES.DOCTOR,
+  ROLES.NURSE,
+  ROLES.RECEPTIONIST,
+  ROLES.LAB_TECH,
+  ROLES.PHARMACIST,
+  ROLES.CASHIER,
+];
+
+const departments = [
+  "CARDIOLOGY",
+  "ORTHOPEDICS",
+  "NEUROLOGY",
+  "PEDIATRICS",
+  "DERMATOLOGY",
+  "GYNECOLOGY",
+  "ONCOLOGY",
+  "RADIOLOGY",
+  "PATHOLOGY",
+  "EMERGENCY",
+  "ICU",
+  "GENERAL_MEDICINE",
+  "ENT",
+  "UROLOGY",
+  "PSYCHIATRY",
+  "PULMONOLOGY",
+  "GASTROENTEROLOGY",
+  "NEPHROLOGY",
+  "OPHTHALMOLOGY",
+  "SURGERY",
+  "ADMINISTRATION",
+  "PHARMACY",
+  "LABORATORY",
+  "RECEPTION",
+  "BILLING",
+  "HR",
+];
 
 const registerValidation = [
   body("name")
@@ -20,9 +59,23 @@ const registerValidation = [
     .withMessage("Phone number is required")
     .matches(/^\d{10}$/)
     .withMessage("Phone number must contain exactly 10 digits"),
-  body("gender").notEmpty().withMessage("Gender is required"),
-  body("department").trim().notEmpty().withMessage("Department is required"),
-  body("designation").trim().notEmpty().withMessage("Designation is required"),
+  body("gender")
+    .notEmpty()
+    .withMessage("Gender is required")
+    .isIn(["MALE", "FEMALE", "OTHER"])
+    .withMessage("Invalid gender"),
+  body("department")
+    .trim()
+    .notEmpty()
+    .withMessage("Department is required")
+    .isIn(departments)
+    .withMessage("Invalid department"),
+  body("designation")
+    .trim()
+    .notEmpty()
+    .withMessage("Designation is required")
+    .isIn(employeeDesignations)
+    .withMessage("Invalid designation"),
   body("joiningDate")
     .notEmpty()
     .withMessage("Joining date is required")
@@ -53,7 +106,9 @@ const registerValidation = [
   body("securityAnswer")
     .trim()
     .notEmpty()
-    .withMessage("Security answer is required"),
+    .withMessage("Security answer is required")
+    .isLength({ min: 2, max: 100 })
+    .withMessage("Security answer must be between 2 and 100 characters"),
 ];
 
 const loginValidation = [

@@ -47,6 +47,9 @@ const buildErrorPayload = (statusCode, message, errorCode, details) => ({
   message,
   errorCode,
   ...(details ? { details } : {}),
+  ...(errorCode === "VALIDATION_ERROR" && Array.isArray(details)
+    ? { errors: details }
+    : {}),
 });
 
 const getDuplicateField = (error) => Object.keys(error.keyPattern || {})[0];

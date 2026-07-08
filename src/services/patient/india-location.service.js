@@ -18,6 +18,8 @@ let cachedLocations = null;
 let cacheExpiresAt = 0;
 let cachedAdminAreas = null;
 let adminAreaCacheExpiresAt = 0;
+let adminAreaFetchPromise = null;
+const talukCache = new Map();
 const pincodeCache = new Map();
 const areaCache = new Map();
 
@@ -264,14 +266,30 @@ const getAdminAreas = async () => {
     return cachedAdminAreas;
   }
 
-  cachedAdminAreas = await fetchAdminAreaData();
+  if (!adminAreaFetchPromise) {
+    adminAreaFetchPromise = fetchAdminAreaData().finally(() => {
+      adminAreaFetchPromise = null;
+    });
+  }
+
+  cachedAdminAreas = await adminAreaFetchPromise;
   adminAreaCacheExpiresAt = Date.now() + CACHE_TTL_MS;
 
   return cachedAdminAreas;
 };
 
+const warmAdminAreaCache = () => {
+  getAdminAreas().catch((error) => {
+    logger.warn("Unable to warm admin area cache", {
+      reason: error.message,
+    });
+  });
+};
+
 const getStates = async () => {
   const locations = await getLocations();
+
+  warmAdminAreaCache();
 
   return locations.map(({ id, name }) => ({
     id,
@@ -287,32 +305,50 @@ const getDistrictsByStateId = async (stateId) => {
     return null;
   }
 
+  warmAdminAreaCache();
+
   return state.districts;
 };
 
 const getTaluksByDistrict = async (stateName, districtName) => {
+  const stateNameClean = cleanName(stateName);
+  const districtNameClean = cleanName(districtName);
+  const cacheKey = `${normalizeName(stateNameClean)}:${normalizeName(districtNameClean)}`;
+  const cached = talukCache.get(cacheKey);
+
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data;
+  }
+
   const adminAreas = await getAdminAreas();
-  const state = adminAreas.find((item) => namesMatch(item.state, stateName));
+  const state = adminAreas.find((item) => namesMatch(item.state, stateNameClean));
 
   if (!state) {
     return [];
   }
 
   const district = (state.districts || []).find((item) =>
-    namesMatch(item.district, districtName),
+    namesMatch(item.district, districtNameClean),
   );
 
   if (!district) {
     return [];
   }
 
-  return [
+  const taluks = [
     ...new Set(
       (district.subDistricts || [])
         .map((item) => cleanName(item.subDistrict))
         .filter(Boolean),
     ),
   ].sort((a, b) => a.localeCompare(b));
+
+  talukCache.set(cacheKey, {
+    data: taluks,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+
+  return taluks;
 };
 
 const fetchPostOffices = async (searchTerm) => {
