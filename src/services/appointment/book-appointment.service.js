@@ -3,6 +3,7 @@ const Employee = require("../../models/Employee");
 const Patient = require("../../models/Patient");
 const getNextTokenNumber = require("../../utils/getNextTokenNumber");
 const generateAppointmentId = require("../../utils/generateAppointmentId");
+const generateSlots = require("../../utils/generateSlots");
 const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
 
@@ -116,6 +117,20 @@ const assertDoctorCanWork = (doctor, appointmentDate) => {
   }
 };
 
+const assertDoctorHasSchedule = (doctor) => {
+  if (
+    !doctor?.availability?.startTime ||
+    !doctor?.availability?.endTime ||
+    !doctor?.availability?.slotDuration
+  ) {
+    throw new ApiError(
+      400,
+      "Doctor availability schedule is incomplete",
+      "DOCTOR_SCHEDULE_INCOMPLETE",
+    );
+  }
+};
+
 const assertSlotOutsideBreak = (doctor, appointmentTime) => {
   const breakStartTime = doctor?.availability?.breakStartTime;
   const breakEndTime = doctor?.availability?.breakEndTime;
@@ -130,6 +145,26 @@ const assertSlotOutsideBreak = (doctor, appointmentTime) => {
       400,
       "Selected slot falls during doctor break time",
       "SLOT_DURING_BREAK_TIME",
+    );
+  }
+};
+
+const assertValidGeneratedSlot = (doctor, appointmentTime) => {
+  assertDoctorHasSchedule(doctor);
+
+  const validSlots = generateSlots(
+    doctor.availability.startTime,
+    doctor.availability.endTime,
+    doctor.availability.slotDuration,
+    doctor.availability.breakStartTime,
+    doctor.availability.breakEndTime,
+  );
+
+  if (!validSlots.includes(appointmentTime)) {
+    throw new ApiError(
+      400,
+      "Selected slot is not part of the doctor's available schedule",
+      "INVALID_APPOINTMENT_SLOT",
     );
   }
 };
@@ -229,6 +264,7 @@ const prepareAppointmentBooking = async ({
   const doctor = await findActiveDoctor(doctorId);
   assertDoctorCanWork(doctor, appointmentDate);
   assertSlotOutsideBreak(doctor, appointmentTime);
+  assertValidGeneratedSlot(doctor, appointmentTime);
 
   const dateRange = getAppointmentDateRange(appointmentDate);
 
@@ -319,6 +355,8 @@ const bookAppointment = async (appointmentData, user) => {
 
 bookAppointment.assertDoctorCanWork = assertDoctorCanWork;
 bookAppointment.assertFutureAppointmentDate = assertFutureAppointmentDate;
+bookAppointment.assertSlotOutsideBreak = assertSlotOutsideBreak;
+bookAppointment.assertValidGeneratedSlot = assertValidGeneratedSlot;
 bookAppointment.createAppointmentRecord = createAppointmentRecord;
 bookAppointment.findActiveDoctor = findActiveDoctor;
 bookAppointment.getAppointmentDateRange = getAppointmentDateRange;

@@ -6,6 +6,8 @@ const validateMiddleware = require("../middleware/validate.middleware");
 
 const {
   registerEmployeeValidation,
+  updateEmployeeValidation,
+  doctorAvailabilityValidation,
 } = require("../validations/employee.validation");
 const {
   paginationQueryValidation,
@@ -53,6 +55,8 @@ router.patch(
   "/doctor/availability",
   authMiddleware,
   nodePermissionMiddleware,
+  doctorAvailabilityValidation,
+  validateMiddleware,
   updateDoctorAvailability,
 );
 
@@ -93,7 +97,14 @@ router.patch(
 router.get("/:id", authMiddleware, nodePermissionMiddleware, getEmployeeById);
 
 // Update Employee
-router.put("/:id", authMiddleware, nodePermissionMiddleware, updateEmployee);
+router.put(
+  "/:id",
+  authMiddleware,
+  nodePermissionMiddleware,
+  updateEmployeeValidation,
+  validateMiddleware,
+  updateEmployee,
+);
 
 // Activate Employee
 router.patch(

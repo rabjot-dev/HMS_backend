@@ -29,6 +29,12 @@ const validateMiddleware = require("../middleware/validate.middleware");
 const {
   paginationQueryValidation,
 } = require("../validations/common.validation");
+const {
+  bookAppointmentValidation,
+  bookPatientAppointmentValidation,
+  updateAppointmentValidation,
+  updateMyAppointmentValidation,
+} = require("../validations/appointment.validation");
 
 // Get today's queue for a doctor
 router.get(
@@ -62,6 +68,8 @@ router.post(
   authMiddleware,
   nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
+  bookPatientAppointmentValidation,
+  validateMiddleware,
   bookPatientAppointment,
 );
 
@@ -114,6 +122,8 @@ router.put(
   authMiddleware,
   nodePermissionMiddleware,
   roleMiddleware(ROLES.PATIENT),
+  updateMyAppointmentValidation,
+  validateMiddleware,
   updateMyAppointment,
 );
 
@@ -135,10 +145,24 @@ router.get(
 );
 
 // Book appointment (Admin/Receptionist/Super Admin)
-router.post("/", authMiddleware, nodePermissionMiddleware, bookAppointment);
+router.post(
+  "/",
+  authMiddleware,
+  nodePermissionMiddleware,
+  bookAppointmentValidation,
+  validateMiddleware,
+  bookAppointment,
+);
 
 // Update appointment
-router.put("/:id", authMiddleware, nodePermissionMiddleware, updateAppointment);
+router.put(
+  "/:id",
+  authMiddleware,
+  nodePermissionMiddleware,
+  updateAppointmentValidation,
+  validateMiddleware,
+  updateAppointment,
+);
 
 // Delete appointment
 router.delete(

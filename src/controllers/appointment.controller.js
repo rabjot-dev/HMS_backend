@@ -5,6 +5,7 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 
 const Appointment = require("../models/Appointment");
+const STATUS = require("../constants/status");
 const getAvailableSlotsService = require("../services/appointment/get-available-slots.service");
 const bookAppointmentService = require("../services/appointment/book-appointment.service");
 const bookPatientAppointmentService = require("../services/appointment/book-patient-appointment.service");
@@ -22,6 +23,19 @@ const validateObjectId = (id, message) => {
     throw new ApiError(400, message, "INVALID_ID");
   }
 };
+
+const formatDateForValidation = (date) => {
+  if (typeof date === "string") {
+    return date.split("T")[0];
+  }
+
+  return date.toISOString().split("T")[0];
+};
+
+const requiresActiveSlotValidation = (status) =>
+  ![STATUS.CANCELLED, STATUS.COMPLETED, STATUS.REJECTED, STATUS.NO_SHOW].includes(
+    status,
+  );
 
 const getAvailableSlots = asyncHandler(async (req, res) => {
   const { doctorId, appointmentDate } = req.query;
@@ -206,14 +220,34 @@ const updateAppointment = asyncHandler(async (req, res) => {
   }
 
   const updatedDoctorId = doctorEmployeeId || appointment.doctorEmployeeId;
-  const updatedAppointmentDate = appointmentDate || appointment.appointmentDate;
+  const updatedAppointmentDate =
+    appointmentDate || formatDateForValidation(appointment.appointmentDate);
   const updatedTimeSlot = timeSlot || appointment.timeSlot;
+  const updatedStatus = status || appointment.status;
+
+  if (requiresActiveSlotValidation(updatedStatus)) {
+    const doctor = await bookAppointmentService.findActiveDoctor(updatedDoctorId);
+
+    bookAppointmentService.assertDoctorCanWork(doctor, updatedAppointmentDate);
+    bookAppointmentService.assertSlotOutsideBreak(doctor, updatedTimeSlot);
+    bookAppointmentService.assertValidGeneratedSlot(doctor, updatedTimeSlot);
+  }
+
+  const { normalizedDate, nextDay } =
+    bookAppointmentService.getAppointmentDateRange(updatedAppointmentDate, false);
 
   const conflictingAppointment = await Appointment.findOne({
     _id: { $ne: id },
     doctorEmployeeId: updatedDoctorId,
-    appointmentDate: updatedAppointmentDate,
+    appointmentDate: {
+      $gte: normalizedDate,
+      $lt: nextDay,
+    },
     timeSlot: updatedTimeSlot,
+    status: {
+      $nin: [STATUS.CANCELLED, STATUS.REJECTED, STATUS.NO_SHOW],
+    },
+    isDeleted: false,
   });
 
   if (conflictingAppointment) {

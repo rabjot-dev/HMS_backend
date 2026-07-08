@@ -25,7 +25,9 @@ const requiredName = (field, label) =>
     .matches(nameRegex)
     .withMessage(
       `${label} can contain only letters, spaces, apostrophes and hyphens`,
-    );
+    )
+    .isLength({ min: 2, max: 50 })
+    .withMessage(`${label} must be between 2 and 50 characters`);
 
 const optionalName = (field, label, min = 2, max = 100) =>
   body(field)
@@ -169,6 +171,8 @@ const updatePatientValidation = [
   optionalPhone("phone", "Phone number must be exactly 10 digits"),
   body("email")
     .optional({ checkFalsy: true })
+    .trim()
+    .normalizeEmail()
     .isEmail()
     .withMessage("Invalid email address"),
   body("pincode").optional().matches(/^\d{6}$/).withMessage("Pincode must be 6 digits"),
