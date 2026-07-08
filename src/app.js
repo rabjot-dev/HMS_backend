@@ -19,6 +19,7 @@ const openApiDocument = require("../docs/openapi.json");
 const createRateLimitMiddleware = require("./middleware/rate-limit.middleware");
 const requestContextMiddleware = require("./middleware/request-context.middleware");
 const logger = require("./utils/logger");
+const compression = require("compression");
 const app = express();
 app.disable("x-powered-by");
 
@@ -28,6 +29,7 @@ const allowedOrigins = (process.env.CORS_ORIGINS || "")
   .filter(Boolean);
 
 app.use(helmet());
+app.use(compression());
 app.use(requestContextMiddleware);
 app.use(
   cors({
