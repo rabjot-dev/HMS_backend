@@ -1,36 +1,25 @@
-name: Deploy Backend
-
+name: Deploy HMS Backend
+ 
 on:
   push:
     branches:
-      - feature/R_SP6
-
+      - feature/selma-sprint5
+ 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+ 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Deploy EC2
+        uses: appleboy/ssh-action@v1
         with:
-          node-version: 20
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.EC2_SELMA_HOST }}
+          username: ${{ secrets.EC2_SELMA_USER }}
+          key: ${{ secrets.EC2_SELMA_SSH }}
           script: |
-            cd /home/ubuntu/hms_project/HMS_backend
-            git fetch origin
-            git reset --hard origin/feature/R_SP6
-            npm install
-            pm2 restart  hms_backend 
+            cd HMS/HMS_backend
+            git pull origin feature/selma-sprint5
+            npm ci
+            pm2 restart hms-backend || pm2 start src/server.js --name hms-backend
             pm2 save
+ 
