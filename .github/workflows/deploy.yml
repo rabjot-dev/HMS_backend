@@ -30,4 +30,4 @@ jobs:
             sleep 10
             echo "Running health check..."
             curl --fail https://bootstraphms.duckdns.org/health
-            echo "Backend deployment completed successfully."
+            echo "Backend deployment completed successfully."cre

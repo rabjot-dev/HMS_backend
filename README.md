@@ -1,6 +1,6 @@
-# 🏥 Hospital Management System - Backend
+#  Hospital Management System - Backend
 
-## 📖 Overview
+## Overview
 
 Hospital Management System Backend is a RESTful API built using Node.js, Express.js, and MongoDB. It provides authentication, role-based authorization, employee management, patient management, appointments, consultations, health records, audit logging, and dashboard services.
 
@@ -193,7 +193,7 @@ Health Check
 
 ---
 
-## ❤️ Health Check
+## Health Check
 
 GET
 
