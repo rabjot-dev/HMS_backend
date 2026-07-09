@@ -74,12 +74,17 @@ app.use(
   }),
 );
 
-app.get("/health", (req, res) => {
+const healthCheckHandler = (req, res) => {
   return res.status(200).json({
     success: true,
+    status: "UP",
     message: "Server is running",
+    timestamp: new Date().toISOString(),
   });
-});
+};
+
+app.get("/health", healthCheckHandler);
+app.get("/api/health", healthCheckHandler);
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
