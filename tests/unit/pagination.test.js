@@ -25,6 +25,7 @@ describe("pagination utilities", () => {
       page: 2,
       limit: 10,
       total: 21,
+      totalRecords: 21,
       totalPages: 3,
       hasNextPage: true,
       hasPreviousPage: true,
