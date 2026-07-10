@@ -35,8 +35,10 @@ const encodeSectionCursor = (item, dateField) => {
   ).toString("base64url");
 };
 
-const buildSectionCursorMeta = (items, hasNextPage, dateField, limit) => ({
+const buildSectionCursorMeta = (items, hasNextPage, dateField, limit, total) => ({
   limit,
+  total,
+  totalRecords: total,
   nextCursor: hasNextPage
     ? encodeSectionCursor(items[items.length - 1], dateField)
     : null,
@@ -233,6 +235,7 @@ const buildSectionMeta = ({
       hasNextPage,
       dateField,
       paging.limit,
+      total,
     );
   }
 
@@ -256,6 +259,7 @@ const buildResponseMeta = ({
         hasNextConsultationsPage,
         "createdAt",
         paging.limit,
+        totalConsultations,
       )
     : buildPaginationMeta(
         paging.timelinePage,
