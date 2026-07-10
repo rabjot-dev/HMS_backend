@@ -229,6 +229,10 @@ const updateAppointment = asyncHandler(async (req, res) => {
     const doctor = await bookAppointmentService.findActiveDoctor(updatedDoctorId);
 
     bookAppointmentService.assertDoctorCanWork(doctor, updatedAppointmentDate);
+    bookAppointmentService.assertFutureAppointmentTime(
+      updatedAppointmentDate,
+      updatedTimeSlot,
+    );
     bookAppointmentService.assertSlotOutsideBreak(doctor, updatedTimeSlot);
     bookAppointmentService.assertValidGeneratedSlot(doctor, updatedTimeSlot);
   }

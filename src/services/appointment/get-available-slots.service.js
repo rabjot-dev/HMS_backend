@@ -5,24 +5,6 @@ const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
 const bookAppointment = require("./book-appointment.service");
 
-const parseSlotDate = (slot) => {
-  const [time, period] = slot.split(" ");
-  let [hours, minutes] = time.split(":").map(Number);
-
-  if (period === "PM" && hours !== 12) {
-    hours += 12;
-  }
-
-  if (period === "AM" && hours === 12) {
-    hours = 0;
-  }
-
-  const slotDate = new Date();
-  slotDate.setHours(hours, minutes, 0, 0);
-
-  return slotDate;
-};
-
 const getAvailableSlots = async (doctorId, appointmentDate) => {
   // Validate required fields
   if (!doctorId || !appointmentDate) {
@@ -72,17 +54,10 @@ const getAvailableSlots = async (doctorId, appointmentDate) => {
     bookedAppointments.map((appointment) => appointment.timeSlot),
   );
   // Remove past slots if selected date is today
-  let availableSlots = allSlots.filter((slot) => !bookedSlots.has(slot));
-
-  const currentDate = new Date();
-
-  const isToday = normalizedDate.toDateString() === currentDate.toDateString();
-
-  if (isToday) {
-    availableSlots = availableSlots.filter(
-      (slot) => parseSlotDate(slot) > currentDate,
-    );
-  }
+  const availableSlots = bookAppointment.filterFutureSlotsForDate(
+    allSlots.filter((slot) => !bookedSlots.has(slot)),
+    appointmentDate,
+  );
 
   return availableSlots;
 };

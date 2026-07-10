@@ -31,6 +31,7 @@ const updateMyAppointment = async (appointmentId, patientId, updateData) => {
     appointmentDate,
     "Past date not allowed",
   );
+  bookAppointment.assertFutureAppointmentTime(appointmentDate, appointmentTime);
 
   const doctor = await bookAppointment.findActiveDoctor(
     appointment.doctorEmployeeId,

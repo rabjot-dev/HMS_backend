@@ -7,6 +7,39 @@ const generateSlots = require("../../utils/generateSlots");
 const STATUS = require("../../constants/status");
 const ApiError = require("../../utils/ApiError");
 
+const HOSPITAL_TIME_ZONE = process.env.HOSPITAL_TIME_ZONE || "Asia/Kolkata";
+
+const hospitalDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: HOSPITAL_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+const hospitalDateTimeFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: HOSPITAL_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+const getFormatterParts = (formatter, date) =>
+  Object.fromEntries(
+    formatter
+      .formatToParts(date)
+      .filter(({ type }) => type !== "literal")
+      .map(({ type, value }) => [type, value]),
+  );
+
+const formatHospitalDateKey = (date) => {
+  const parts = getFormatterParts(hospitalDateFormatter, date);
+
+  return `${parts.year}-${parts.month}-${parts.day}`;
+};
+
 const getAppointmentDateRange = (appointmentDate, useNoon = true) => {
   if (!useNoon) {
     const startOfDay = new Date(appointmentDate);
@@ -41,6 +74,59 @@ const assertFutureAppointmentDate = (appointmentDate, message) => {
 
   if (selectedDate < today) {
     throw new ApiError(422, message, "PAST_DATE_NOT_ALLOWED");
+  }
+};
+
+const getAppointmentDateKey = (appointmentDate) => {
+  if (typeof appointmentDate === "string") {
+    return appointmentDate.split("T")[0];
+  }
+
+  return formatHospitalDateKey(new Date(appointmentDate));
+};
+
+const getCurrentHospitalTime = () => {
+  const now = getFormatterParts(hospitalDateTimeFormatter, new Date());
+
+  return {
+    dateKey: `${now.year}-${now.month}-${now.day}`,
+    minutes: Number(now.hour) * 60 + Number(now.minute),
+  };
+};
+
+const getSlotMinutes = (slot) => {
+  const [hours, minutes] = String(slot).split(":").map(Number);
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+};
+
+const isPastAppointmentSlot = (appointmentDate, appointmentTime) => {
+  const slotMinutes = getSlotMinutes(appointmentTime);
+
+  if (slotMinutes === null) {
+    return false;
+  }
+
+  const now = getCurrentHospitalTime();
+
+  return getAppointmentDateKey(appointmentDate) === now.dateKey &&
+    slotMinutes <= now.minutes;
+};
+
+const filterFutureSlotsForDate = (slots, appointmentDate) =>
+  slots.filter((slot) => !isPastAppointmentSlot(appointmentDate, slot));
+
+const assertFutureAppointmentTime = (appointmentDate, appointmentTime) => {
+  if (isPastAppointmentSlot(appointmentDate, appointmentTime)) {
+    throw new ApiError(
+      422,
+      "Cannot book appointment for a past time slot",
+      "PAST_TIME_NOT_ALLOWED",
+    );
   }
 };
 
@@ -259,6 +345,7 @@ const prepareAppointmentBooking = async ({
     appointmentDate,
     "Cannot book appointment for past dates",
   );
+  assertFutureAppointmentTime(appointmentDate, appointmentTime);
 
   await findActivePatient(patientId);
   const doctor = await findActiveDoctor(doctorId);
@@ -355,9 +442,11 @@ const bookAppointment = async (appointmentData, user) => {
 
 bookAppointment.assertDoctorCanWork = assertDoctorCanWork;
 bookAppointment.assertFutureAppointmentDate = assertFutureAppointmentDate;
+bookAppointment.assertFutureAppointmentTime = assertFutureAppointmentTime;
 bookAppointment.assertSlotOutsideBreak = assertSlotOutsideBreak;
 bookAppointment.assertValidGeneratedSlot = assertValidGeneratedSlot;
 bookAppointment.createAppointmentRecord = createAppointmentRecord;
+bookAppointment.filterFutureSlotsForDate = filterFutureSlotsForDate;
 bookAppointment.findActiveDoctor = findActiveDoctor;
 bookAppointment.getAppointmentDateRange = getAppointmentDateRange;
 bookAppointment.prepareAppointmentBooking = prepareAppointmentBooking;
