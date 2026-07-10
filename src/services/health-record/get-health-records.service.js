@@ -83,6 +83,17 @@ const getHealthRecordsService = async (user, query) => {
     });
   }
 
+  const countPipeline = [
+    ...pipeline,
+    {
+      $count: "total",
+    },
+  ];
+
+  const countResult = await Consultation.aggregate(countPipeline);
+
+  const total = countResult[0]?.total || 0;
+
   if (isCursorPagination && cursor) {
     const decodedCursor = decodeCursor(cursor);
 
@@ -106,17 +117,6 @@ const getHealthRecordsService = async (user, query) => {
       });
     }
   }
-
-  const countPipeline = [
-    ...pipeline,
-    {
-      $count: "total",
-    },
-  ];
-
-  const countResult = await Consultation.aggregate(countPipeline);
-
-  const total = countResult[0]?.total || 0;
 
   pipeline.push(
     {
