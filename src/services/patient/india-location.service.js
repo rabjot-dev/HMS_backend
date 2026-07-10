@@ -25,9 +25,9 @@ const areaCache = new Map();
 
 const cleanName = (value) =>
   String(value || "")
-    .replaceAll('&amp;', "&")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;")
+    .replaceAll("&amp;", "&")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
     .replaceAll(/\s+/g, " ")
     .trim();
 
@@ -248,7 +248,11 @@ const getLocations = async () => {
 };
 
 const fetchAdminAreaData = async () => {
-  const data = await fetchJson(INDIA_ADMIN_AREA_SOURCE_URL, 15000, "Admin area");
+  const data = await fetchJson(
+    INDIA_ADMIN_AREA_SOURCE_URL,
+    15000,
+    "Admin area",
+  );
 
   if (!Array.isArray(data)) {
     throw new ApiError(
@@ -321,7 +325,9 @@ const getTaluksByDistrict = async (stateName, districtName) => {
   }
 
   const adminAreas = await getAdminAreas();
-  const state = adminAreas.find((item) => namesMatch(item.state, stateNameClean));
+  const state = adminAreas.find((item) =>
+    namesMatch(item.state, stateNameClean),
+  );
 
   if (!state) {
     return [];
