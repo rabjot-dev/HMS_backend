@@ -162,6 +162,15 @@ appointmentSchema.index({
   status: 1,
   isDeleted: 1,
 });
+
+// Supports the default unfiltered, cursor-paginated list query
+// (filter: { isDeleted: false }, sort: { createdAt: -1, _id: -1 })
+appointmentSchema.index({
+  isDeleted: 1,
+  createdAt: -1,
+  _id: -1,
+});
+
 const Appointment =
   mongoose.models.Appointment ||
   mongoose.model("Appointment", appointmentSchema);

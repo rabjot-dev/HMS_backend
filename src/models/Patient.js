@@ -261,4 +261,12 @@ patientSchema.index({
   isDeleted: 1,
 });
 
+// Supports the default unfiltered, cursor-paginated list query
+// (filter: { isDeleted: false }, sort: { createdAt: -1, _id: -1 })
+patientSchema.index({
+  isDeleted: 1,
+  createdAt: -1,
+  _id: -1,
+});
+
 module.exports = mongoose.model("Patient", patientSchema);
