@@ -3,12 +3,13 @@ const bcrypt = require("bcryptjs");
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
 const STATUS = require("../../constants/status");
+const ROLES = require("../../constants/roles");
 const ApiError = require("../../utils/ApiError");
 
 const generateAccessToken = require("../../utils/generateAccessToken");
 const generateRefreshToken = require("../../utils/generateRefreshToken");
 
-const loginUser = async (loginData) => {
+const loginUser = async (loginData, clientType) => {
   const { loginId, password } = loginData;
 
   let user = null;
@@ -69,6 +70,10 @@ const loginUser = async (loginData) => {
 
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid credentials", "UNAUTHORIZED");
+  }
+
+  if (clientType === "mobile" && !user.roles.includes(ROLES.PATIENT)) {
+    throw new ApiError(403, "Access denied. Mobile app is for patients only.", "FORBIDDEN");
   }
 
   const tokenPayload = {

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { auditFields, documentTrackingFields } = require("../utils/schemaFields");
 
 const patientSchema = new mongoose.Schema(
   {
@@ -129,29 +130,7 @@ const patientSchema = new mongoose.Schema(
       enum: ["ACTIVE", "DISCHARGED", "INACTIVE"],
       default: "ACTIVE",
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
+    ...auditFields,
     labReports: {
       type: [
         {
@@ -184,37 +163,7 @@ const patientSchema = new mongoose.Schema(
             type: String,
             trim: true,
           },
-          uploadedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          uploadedAt: {
-            type: Date,
-            default: Date.now,
-          },
-          updatedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          updatedAt: {
-            type: Date,
-            default: null,
-          },
-          isDeleted: {
-            type: Boolean,
-            default: false,
-          },
-          deletedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          deletedAt: {
-            type: Date,
-            default: null,
-          },
+          ...documentTrackingFields,
         },
       ],
       default: [],
@@ -251,37 +200,7 @@ const patientSchema = new mongoose.Schema(
             type: String,
             trim: true,
           },
-          uploadedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          uploadedAt: {
-            type: Date,
-            default: Date.now,
-          },
-          updatedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          updatedAt: {
-            type: Date,
-            default: null,
-          },
-          isDeleted: {
-            type: Boolean,
-            default: false,
-          },
-          deletedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-          },
-          deletedAt: {
-            type: Date,
-            default: null,
-          },
+          ...documentTrackingFields,
         },
       ],
       default: [],

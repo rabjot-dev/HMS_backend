@@ -17,8 +17,15 @@ const {
 } = require("../utils/refresh-cookie");
 
 const login = asyncHandler(async (req, res) => {
-  const loginResponse = await loginUser(req.body);
+  const clientType = req.headers["x-client-type"];
+  const loginResponse = await loginUser(req.body, clientType);
   const { refreshToken, ...safeLoginResponse } = loginResponse;
+
+  if (clientType === "mobile") {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Login successful", { ...safeLoginResponse, refreshToken }));
+  }
 
   setRefreshCookie(res, refreshToken);
 
@@ -108,16 +115,17 @@ const resetPassword = asyncHandler(async (req, res) => {
 });
 
 const refreshToken = asyncHandler(async (req, res) => {
-  const refreshToken = getRefreshTokenFromRequest(req);
+  const clientType = req.headers["x-client-type"];
+  const token = getRefreshTokenFromRequest(req);
 
-  if (!refreshToken) {
+  if (!token) {
     throw new ApiError(401, "Refresh token is required", "UNAUTHORIZED");
   }
 
-  const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+  const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
   const user = await User.findById(decoded.userId);
 
-  if (!user || user.refreshToken !== refreshToken) {
+  if (!user || user.refreshToken !== token) {
     throw new ApiError(401, "Invalid refresh token", "UNAUTHORIZED");
   }
 
@@ -135,6 +143,16 @@ const refreshToken = asyncHandler(async (req, res) => {
 
   user.refreshToken = nextRefreshToken;
   await user.save();
+
+  if (clientType === "mobile") {
+    return res.status(200).json(
+      new ApiResponse(200, "Access token refreshed successfully", {
+        accessToken,
+        refreshToken: nextRefreshToken,
+      }),
+    );
+  }
+
   setRefreshCookie(res, nextRefreshToken);
 
   return res.status(200).json(

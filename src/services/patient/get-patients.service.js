@@ -1,10 +1,9 @@
 const Patient = require("../../models/Patient");
 const Appointment = require("../../models/Appointment");
-const mongoose = require("mongoose");
 
 const {
+  applyCursorFilter,
   buildCursorPaginationMeta,
-  decodeCursor,
   getPagination,
   buildPaginationMeta,
 } = require("../../utils/pagination");
@@ -110,33 +109,7 @@ const getPatientsService = async (user, query) => {
   const totalFilter = { ...filter };
 
   if (isCursorPagination && cursor) {
-    const decodedCursor = decodeCursor(cursor);
-
-    if (decodedCursor) {
-      const existingSearch = filter.$or;
-      delete filter.$or;
-
-      const cursorFilter = [
-        {
-          createdAt: {
-            $lt: new Date(decodedCursor.createdAt),
-          },
-        },
-        {
-          createdAt: new Date(decodedCursor.createdAt),
-          _id: {
-            $lt: new mongoose.Types.ObjectId(decodedCursor.id),
-          },
-        },
-      ];
-
-      filter.$and = [
-        ...(existingSearch ? [{ $or: existingSearch }] : []),
-        {
-          $or: cursorFilter,
-        },
-      ];
-    }
+    applyCursorFilter(filter, cursor);
   }
 
   const total = await Patient.countDocuments(totalFilter);

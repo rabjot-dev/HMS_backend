@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const STATUS = require("../constants/status");
+const { softDeleteFields, approvalFields } = require("../utils/schemaFields");
 
 const appointmentSchema = new mongoose.Schema(
   {
@@ -95,42 +96,8 @@ const appointmentSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
-    approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    approvalDate: {
-      type: Date,
-      default: null,
-    },
-    rejectedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    rejectedDate: {
-      type: Date,
-      default: null,
-    },
-    rejectionReason: {
-      type: String,
-      trim: true,
-      default: null,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
+    ...approvalFields,
+    ...softDeleteFields,
   },
   {
     timestamps: true,

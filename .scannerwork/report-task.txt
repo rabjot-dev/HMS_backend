@@ -1,6 +1,6 @@
-projectKey=HMS_Sprint4_Backend
+projectKey=SPRINT4-BACKEND
 serverUrl=http://localhost:9000
 serverVersion=26.1.0.118079
-dashboardUrl=http://localhost:9000/dashboard?id=HMS_Sprint4_Backend
-ceTaskId=f9469db3-655a-4dae-8cae-6e0b1dda3372
-ceTaskUrl=http://localhost:9000/api/ce/task?id=f9469db3-655a-4dae-8cae-6e0b1dda3372
+dashboardUrl=http://localhost:9000/dashboard?id=SPRINT4-BACKEND
+ceTaskId=3efa114a-bbaa-4089-9bd8-87d95f1d3ae6
+ceTaskUrl=http://localhost:9000/api/ce/task?id=3efa114a-bbaa-4089-9bd8-87d95f1d3ae6

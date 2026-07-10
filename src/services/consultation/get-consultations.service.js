@@ -1,16 +1,26 @@
 const Consultation = require("../../models/Consultation");
-const mongoose = require("mongoose");
-
 const Patient = require("../../models/Patient");
-
 const Employee = require("../../models/Employee");
 
 const {
+  applyCursorFilter,
   buildCursorPaginationMeta,
-  decodeCursor,
   getPagination,
   buildPaginationMeta,
 } = require("../../utils/pagination");
+
+const applyDateRangeFilter = (filter, startDate, endDate) => {
+  if (!startDate && !endDate) return;
+  filter.createdAt = {};
+  if (startDate) {
+    filter.createdAt.$gte = new Date(startDate);
+  }
+  if (endDate) {
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    filter.createdAt.$lte = end;
+  }
+};
 
 const getConsultationsService = async (user, query) => {
   const {
@@ -47,20 +57,7 @@ const getConsultationsService = async (user, query) => {
     filter.status = status;
   }
 
-  if (startDate || endDate) {
-    filter.createdAt = {};
-
-    if (startDate) {
-      filter.createdAt.$gte = new Date(startDate);
-    }
-
-    if (endDate) {
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-
-      filter.createdAt.$lte = end;
-    }
-  }
+  applyDateRangeFilter(filter, startDate, endDate);
 
   if (search?.trim()) {
     const patients = await Patient.find({
@@ -121,31 +118,7 @@ const getConsultationsService = async (user, query) => {
   const isCursorPagination = paginationMode === "cursor" || Boolean(cursor);
 
   if (isCursorPagination && cursor) {
-    const decodedCursor = decodeCursor(cursor);
-
-    if (decodedCursor) {
-      const existingSearch = filter.$or;
-      delete filter.$or;
-
-      filter.$and = [
-        ...(existingSearch ? [{ $or: existingSearch }] : []),
-        {
-          $or: [
-            {
-              createdAt: {
-                $lt: new Date(decodedCursor.createdAt),
-              },
-            },
-            {
-              createdAt: new Date(decodedCursor.createdAt),
-              _id: {
-                $lt: new mongoose.Types.ObjectId(decodedCursor.id),
-              },
-            },
-          ],
-        },
-      ];
-    }
+    applyCursorFilter(filter, cursor);
   }
 
   const total = await Consultation.countDocuments(filter);

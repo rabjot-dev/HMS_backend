@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const STATUS = require("../constants/status");
+const { auditFields, approvalFields } = require("../utils/schemaFields");
 
 const employeeSchema = new mongoose.Schema(
   {
@@ -112,52 +113,8 @@ const employeeSchema = new mongoose.Schema(
         default: true,
       },
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    approvalDate: {
-      type: Date,
-      default: null,
-    },
-    rejectedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    rejectedDate: {
-      type: Date,
-      default: null,
-    },
-    rejectionReason: {
-      type: String,
-      trim: true,
-      default: null,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
+    ...auditFields,
+    ...approvalFields,
   },
   {
     timestamps: true,

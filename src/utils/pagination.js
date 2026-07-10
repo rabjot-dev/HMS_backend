@@ -1,7 +1,28 @@
-const getPagination = (page = 1, limit = 10) => {
-  const currentPage = Math.max(parseInt(page, 10) || 1, 1);
+const mongoose = require("mongoose");
 
-  const pageSize = Math.max(parseInt(limit, 10) || 10, 1);
+const applyCursorFilter = (filter, cursor) => {
+  const decodedCursor = decodeCursor(cursor);
+  if (!decodedCursor) return;
+  const existingSearch = filter.$or;
+  delete filter.$or;
+  filter.$and = [
+    ...(existingSearch ? [{ $or: existingSearch }] : []),
+    {
+      $or: [
+        { createdAt: { $lt: new Date(decodedCursor.createdAt) } },
+        {
+          createdAt: new Date(decodedCursor.createdAt),
+          _id: { $lt: new mongoose.Types.ObjectId(decodedCursor.id) },
+        },
+      ],
+    },
+  ];
+};
+
+const getPagination = (page = 1, limit = 10) => {
+  const currentPage = Math.max(Number.parseInt(page, 10) || 1, 1);
+
+  const pageSize = Math.max(Number.parseInt(limit, 10) || 10, 1);
 
   const skip = (currentPage - 1) * pageSize;
 
@@ -65,6 +86,7 @@ const buildPaginationMeta = (page, limit, total) => {
 };
 
 module.exports = {
+  applyCursorFilter,
   buildCursorPaginationMeta,
   getPagination,
   buildPaginationMeta,

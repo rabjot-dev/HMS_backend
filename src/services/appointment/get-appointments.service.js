@@ -1,16 +1,31 @@
 const Appointment = require("../../models/Appointment");
-const mongoose = require("mongoose");
-
 const Patient = require("../../models/Patient");
-
 const Employee = require("../../models/Employee");
 
 const {
+  applyCursorFilter,
   buildCursorPaginationMeta,
-  decodeCursor,
   getPagination,
   buildPaginationMeta,
 } = require("../../utils/pagination");
+
+const applyRoleFilter = (user, filter) => {
+  if (user.roles?.includes("DOCTOR")) {
+    filter.doctorEmployeeId = user.employeeId;
+  }
+  if (user.roles?.includes("PATIENT")) {
+    filter.patientId = user.patientId;
+  }
+};
+
+const applyAppointmentDateFilter = (filter, appointmentDate) => {
+  if (!appointmentDate) return;
+  const selectedDate = new Date(appointmentDate);
+  selectedDate.setHours(0, 0, 0, 0);
+  const nextDay = new Date(selectedDate);
+  nextDay.setDate(nextDay.getDate() + 1);
+  filter.appointmentDate = { $gte: selectedDate, $lt: nextDay };
+};
 
 const getAppointmentsService = async (user, query) => {
   const {
@@ -32,13 +47,7 @@ const getAppointmentsService = async (user, query) => {
   };
 
   /* Role Based Visibility */
-  if (user.roles?.includes("DOCTOR")) {
-    filter.doctorEmployeeId = user.employeeId;
-  }
-
-  if (user.roles?.includes("PATIENT")) {
-    filter.patientId = user.patientId;
-  }
+  applyRoleFilter(user, filter);
 
   /* Filters */
   if (status && status !== "ALL") {
@@ -61,20 +70,7 @@ const getAppointmentsService = async (user, query) => {
   }
 
   /* Appointment Date */
-  if (appointmentDate) {
-    const selectedDate = new Date(appointmentDate);
-
-    selectedDate.setHours(0, 0, 0, 0);
-
-    const nextDay = new Date(selectedDate);
-
-    nextDay.setDate(nextDay.getDate() + 1);
-
-    filter.appointmentDate = {
-      $gte: selectedDate,
-      $lt: nextDay,
-    };
-  }
+  applyAppointmentDateFilter(filter, appointmentDate);
 
   /* Search */
   if (search?.trim()) {
@@ -138,31 +134,7 @@ const getAppointmentsService = async (user, query) => {
   const totalFilter = { ...filter };
 
   if (isCursorPagination && cursor) {
-    const decodedCursor = decodeCursor(cursor);
-
-    if (decodedCursor) {
-      const existingSearch = filter.$or;
-      delete filter.$or;
-
-      filter.$and = [
-        ...(existingSearch ? [{ $or: existingSearch }] : []),
-        {
-          $or: [
-            {
-              createdAt: {
-                $lt: new Date(decodedCursor.createdAt),
-              },
-            },
-            {
-              createdAt: new Date(decodedCursor.createdAt),
-              _id: {
-                $lt: new mongoose.Types.ObjectId(decodedCursor.id),
-              },
-            },
-          ],
-        },
-      ];
-    }
+    applyCursorFilter(filter, cursor);
   }
 
   const total = await Appointment.countDocuments(totalFilter);

@@ -1,9 +1,8 @@
 const Employee = require("../../models/Employee");
-const mongoose = require("mongoose");
 
 const {
+  applyCursorFilter,
   buildCursorPaginationMeta,
-  decodeCursor,
   getPagination,
   buildPaginationMeta,
 } = require("../../utils/pagination");
@@ -73,33 +72,7 @@ const getEmployeesService = async (query) => {
   const totalFilter = { ...filter };
 
   if (isCursorPagination && cursor) {
-    const decodedCursor = decodeCursor(cursor);
-
-    if (decodedCursor) {
-      const existingSearch = filter.$or;
-      delete filter.$or;
-
-      const cursorFilter = [
-        {
-          createdAt: {
-            $lt: new Date(decodedCursor.createdAt),
-          },
-        },
-        {
-          createdAt: new Date(decodedCursor.createdAt),
-          _id: {
-            $lt: new mongoose.Types.ObjectId(decodedCursor.id),
-          },
-        },
-      ];
-
-      filter.$and = [
-        ...(existingSearch ? [{ $or: existingSearch }] : []),
-        {
-          $or: cursorFilter,
-        },
-      ];
-    }
+    applyCursorFilter(filter, cursor);
   }
 
   const total = await Employee.countDocuments(totalFilter);

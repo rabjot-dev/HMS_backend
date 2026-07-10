@@ -7,6 +7,18 @@ const ROLES = require("../../constants/roles");
 const ApiError = require("../../utils/ApiError");
 const { buildPaginationMeta, decodeCursor } = require("../../utils/pagination");
 
+const assertDoctorHasPatientAccess = async (user, patientId) => {
+  if (!user.roles?.includes(ROLES.DOCTOR)) return;
+  const hasAccess = await Consultation.exists({
+    patientId,
+    doctorEmployeeId: user.employeeId,
+    isDeleted: false,
+  });
+  if (!hasAccess) {
+    throw new ApiError(403, "Access denied", "ACCESS_DENIED");
+  }
+};
+
 const getHealthRecordDetailsService = async (patientId, user, query) => {
   const limit = Math.min(Math.max(Number(query.limit) || 5, 1), 10000);
   const isCursorPagination =
@@ -59,6 +71,20 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     );
   };
 
+  const paginateInMemory = (allItems, cursor, page, dateField) => {
+    const filtered = isCursorPagination
+      ? allItems.filter((item) => isAfterCursor(item, cursor, dateField))
+      : allItems;
+    const start = isCursorPagination ? 0 : (page - 1) * limit;
+    const end = isCursorPagination ? limit + 1 : page * limit;
+    const paginated = filtered.slice(start, end);
+    const hasNextPage = isCursorPagination && paginated.length > limit;
+    return {
+      visible: hasNextPage ? paginated.slice(0, limit) : paginated,
+      hasNextPage,
+    };
+  };
+
   const patient = await Patient.findOne({
     _id: patientId,
     isDeleted: false,
@@ -86,17 +112,7 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
     throw new ApiError(404, "Patient not found", "PATIENT_NOT_FOUND");
   }
 
-  if (user.roles?.includes(ROLES.DOCTOR)) {
-    const hasAccess = await Consultation.exists({
-      patientId,
-      doctorEmployeeId: user.employeeId,
-      isDeleted: false,
-    });
-
-    if (!hasAccess) {
-      throw new ApiError(403, "Access denied", "ACCESS_DENIED");
-    }
-  }
+  await assertDoctorHasPatientAccess(user, patientId);
 
   const filter = {
     patientId,
@@ -185,21 +201,8 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
       getSortableTime(b.reportDate, b.createdAt) -
       getSortableTime(a.reportDate, a.createdAt),
   );
-  const labReports = isCursorPagination
-    ? allLabReports.filter((report) =>
-        isAfterCursor(report, labCursor, "reportDate"),
-      )
-    : allLabReports;
-
-  const paginatedLabReports = labReports.slice(
-    isCursorPagination ? 0 : (labPage - 1) * limit,
-    isCursorPagination ? limit + 1 : labPage * limit,
-  );
-  const hasNextLabReportsPage =
-    isCursorPagination && paginatedLabReports.length > limit;
-  const visibleLabReports = hasNextLabReportsPage
-    ? paginatedLabReports.slice(0, limit)
-    : paginatedLabReports;
+  const { visible: visibleLabReports, hasNextPage: hasNextLabReportsPage } =
+    paginateInMemory(allLabReports, labCursor, labPage, "reportDate");
 
   /* Medical Documents Pagination */
   const allMedicalDocuments = (
@@ -209,26 +212,13 @@ const getHealthRecordDetailsService = async (patientId, user, query) => {
       getSortableTime(b.recordDate, b.createdAt) -
       getSortableTime(a.recordDate, a.createdAt),
   );
-  const medicalDocuments = isCursorPagination
-    ? allMedicalDocuments.filter((document) =>
-        isAfterCursor(document, documentCursor, "recordDate"),
-      )
-    : allMedicalDocuments;
-
   const labTotalPages = Math.max(Math.ceil(allLabReports.length / limit), 1);
   const documentTotalPages = Math.max(
     Math.ceil(allMedicalDocuments.length / limit),
     1,
   );
-  const paginatedMedicalDocuments = medicalDocuments.slice(
-    isCursorPagination ? 0 : (documentPage - 1) * limit,
-    isCursorPagination ? limit + 1 : documentPage * limit,
-  );
-  const hasNextMedicalDocumentsPage =
-    isCursorPagination && paginatedMedicalDocuments.length > limit;
-  const visibleMedicalDocuments = hasNextMedicalDocumentsPage
-    ? paginatedMedicalDocuments.slice(0, limit)
-    : paginatedMedicalDocuments;
+  const { visible: visibleMedicalDocuments, hasNextPage: hasNextMedicalDocumentsPage } =
+    paginateInMemory(allMedicalDocuments, documentCursor, documentPage, "recordDate");
 
   /* Response */
   return {

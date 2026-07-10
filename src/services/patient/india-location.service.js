@@ -23,15 +23,15 @@ const areaCache = new Map();
 
 const cleanName = (value) =>
   String(value || "")
-    .replace(/&amp;/g, "&")
-    .replace(/\s+/g, " ")
+    .replaceAll("&amp;", "&")
+    .replaceAll(/\s+/g, " ")
     .trim();
 
 const normalizeName = (value) =>
   cleanName(value)
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
+    .replaceAll(/[^a-z0-9]+/g, " ")
+    .replaceAll(/\s+/g, " ")
     .trim();
 
 const normalizeAlias = (value) => {
@@ -47,8 +47,8 @@ const normalizeAlias = (value) => {
 const getNameVariants = (value) => {
   const name = cleanName(value);
   const variants = new Set();
-  const beforeParenthesis = name.replace(/\s*\([^)]*\)\s*/g, " ").trim();
-  const parenthesisMatches = [...name.matchAll(/\(([^)]*)\)/g)];
+  const beforeParenthesis = name.replaceAll(/\s{0,10}\([^)]{0,500}\)\s{0,10}/g, " ").trim();
+  const parenthesisMatches = [...name.matchAll(/\(([^)]{0,500})\)/g)];
 
   parenthesisMatches.forEach((match) => {
     if (match[1]) {
@@ -292,7 +292,7 @@ const getTaluksByDistrict = async (stateName, districtName) => {
         .map((item) => cleanName(item.subDistrict))
         .filter(Boolean),
     ),
-  ].sort();
+  ].sort((a, b) => a.localeCompare(b));
 };
 
 const fetchPostOffices = async (searchTerm) => {
@@ -428,7 +428,7 @@ const getPincodesByDistrict = async (stateName, districtName) => {
         .map((postOffice) => postOffice.Pincode)
         .filter((pincode) => /^\d{6}$/.test(String(pincode))),
     ),
-  ].sort();
+  ].sort((a, b) => a.localeCompare(b));
 
   pincodeCache.set(cacheKey, {
     data: pincodes,

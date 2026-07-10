@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-
 const ROLES = require("../constants/roles");
+const { auditFields } = require("../utils/schemaFields");
 
 const nodeSchema = new mongoose.Schema(
   {
@@ -57,29 +57,7 @@ const nodeSchema = new mongoose.Schema(
       ref: "Node",
       default: null,
     },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
-    deletedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
+    ...auditFields,
   },
   {
     timestamps: true,

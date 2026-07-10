@@ -2,7 +2,7 @@ const Node = require("../models/Node");
 const ApiError = require("../utils/ApiError");
 
 const normalizePath = (path) => {
-  const normalized = `/${path || ""}`.replace(/\/+/g, "/").replace(/\/$/, "");
+  const normalized = `/${path || ""}`.replaceAll(/\/+/g, "/").replaceAll(/\/$/, "");
 
   return normalized || "/";
 };
